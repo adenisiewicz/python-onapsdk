@@ -1,6 +1,6 @@
 requests
+jinja2
 mock
 pytest
 pytest-cov
 pytest-mock
-

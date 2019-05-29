@@ -28,7 +28,8 @@ setup(name='onapsdk',
       py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
       include_package_data=True,
       install_requires=[
-          'requests'
+          'requests',
+          'jinja2'
       ],
       setup_requires=["pytest-runner"],
       tests_require=[
@@ -37,4 +38,3 @@ setup(name='onapsdk',
         "pytest-cov",
         "pytest-mock"],
       zip_safe=False)
-

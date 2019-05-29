@@ -29,7 +29,8 @@ setup(name='onapsdk',
       include_package_data=True,
       install_requires=[
           'requests',
-          'jinja2'
+          'jinja2',
+          'simplejson'
       ],
       setup_requires=["pytest-runner"],
       tests_require=[

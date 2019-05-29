@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """ONAP Service module."""
+from typing import Dict
+from typing import Union
+from typing import Any
+
 import logging
 import requests
 from requests.adapters import HTTPAdapter
@@ -59,7 +63,7 @@ class OnapService():
         try:
             # build the request with the requested method
             session = self.__requests_retry_session()
-            response = session.request(method, url, headers=header,
+            response = session.request(method, url, headers=self.header,
                                        verify=False, proxies=self.proxy,
                                        **kwargs)
 
@@ -93,7 +97,7 @@ class OnapService():
             self.__logger.error("[%s][%s] Failed to perform: %s", self.server,
                                 action, err)
             self.__logger.error("[%s][%s] sent header: %s", self.server, action,
-                                header)
+                                self.header)
             self.__logger.error("[%s][%s] url used: %s", self.server, action,
                                 url)
             self.__logger.error("[%s][%s] data sent: %s", self.server, action,
@@ -103,7 +107,7 @@ class OnapService():
         return None
 
     def send_message_json(self, method: str, action: str, url: str,
-                     **kwargs) -> Union[Dict[Any, Any], None]:
+                          **kwargs) -> Union[Dict[Any, Any], None]:
         """
         Send a message to an ONAP service and parse the response as JSON.
 
@@ -142,8 +146,9 @@ class OnapService():
                 raise exception
         return {}
 
+    @staticmethod
     def __requests_retry_session(
-            self, retries: int = 10,
+            retries: int = 10,
             backoff_factor: float = 0.3,
             session: requests.Session = None) -> requests.Session:
         """

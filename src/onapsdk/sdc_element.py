@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """SDC Element module."""
+from typing import Dict
+
 from onapsdk.onap_service import OnapService
 
 class SdcElement(OnapService):

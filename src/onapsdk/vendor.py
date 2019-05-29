@@ -118,7 +118,7 @@ class Vendor(SdcElement):
 
         Returns:
             bool: True if same object, False if not
-            
+
         """
         if isinstance(other, Vendor):
             return self.name == other.name

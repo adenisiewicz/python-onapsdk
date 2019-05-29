@@ -84,12 +84,7 @@ class Vendor(SdcElement):
         return False
 
     def create(self) -> None:
-        """
-        Create the vendor in SDC if not already existing.
-
-        Returns:
-            True if created
-        """
+        """Create the vendor in SDC if not already existing."""
         if not self.exists():
             url = "{}/vendor-license-models".format(self.base_url)
             template = self.__jinja_env.get_template('vendor_create.json.j2')
@@ -103,12 +98,7 @@ class Vendor(SdcElement):
                 self.version = create_result['version']['id']
 
     def submit(self) -> None:
-        """
-        Submit the SDC vendor in order to have it.
-
-        Returns:
-            None: [description]
-        """
+        """Submit the SDC vendor in order to have it."""
         if self.status != const.CERTIFIED:
             url = "{}/vendor-license-models/{}/versions/{}/actions".format(
                 self.base_url, self.identifier, self.version)
@@ -121,13 +111,14 @@ class Vendor(SdcElement):
 
     def __eq__(self, other: Vendor) -> bool:
         """
-        Check equality for Vendor
+        Check equality for Vendor.
 
         Args:
             other: another object
 
         Returns:
             bool: True if same object, False if not
+            
         """
         if isinstance(other, Vendor):
             return self.name == other.name

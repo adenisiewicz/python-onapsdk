@@ -45,6 +45,7 @@ def test_send_message_error_400_exception(mock_request):
 
 @mock.patch.object(Session, 'request')
 def test_send_message_error_timeout_no_exception(mock_request):
+    """Should return None given if issues on request."""
     svc = OnapService()
     mock_request.side_effect = Timeout()
     response = svc.send_message("GET", 'test get', 'http://my.url/')
@@ -54,6 +55,7 @@ def test_send_message_error_timeout_no_exception(mock_request):
 
 @mock.patch.object(Session, 'request')
 def test_send_message_error_timeout_exception(mock_request):
+    """Should raise Exception given if issues on request."""
     with pytest.raises(KeyError):
         svc = OnapService()
         mock_request.side_effect = Timeout()
@@ -64,6 +66,7 @@ def test_send_message_error_timeout_exception(mock_request):
 
 @mock.patch.object(Session, 'request')
 def test_send_message_OK(mock_request):
+    """Should give response of request if OK."""
     svc = OnapService()
     mocked_response = Response()
     mocked_response.status_code = 200
@@ -72,3 +75,55 @@ def test_send_message_OK(mock_request):
     mock_request.assert_called_once_with('GET', 'http://my.url/', headers=None,
                                          verify=False, proxies=None)
     assert response == mocked_response
+
+@mock.patch.object(OnapService, 'send_message')
+def test_send_message_json_bad_send_no_exception(mock_send):
+    svc = OnapService()
+    mock_send.return_value = None
+    response = svc.send_message_json("GET", 'test get', 'http://my.url/')
+    mock_send.assert_called_once_with("GET", 'test get', 'http://my.url/')
+    assert response == {}
+
+@mock.patch.object(OnapService, 'send_message')
+def test_send_message_json_bad_send_exception(mock_send):
+    with pytest.raises(Timeout):
+        svc = OnapService()
+        mock_send.side_effect = Timeout
+        response = svc.send_message_json("GET", 'test get', 'http://my.url/', exception=Timeout)
+        mock_send.assert_called_once_with("GET", 'test get', 'http://my.url/', exception=Timeout)
+
+@mock.patch.object(OnapService, 'send_message')
+def test_send_message_json_bad_json_no_exception(mock_send):
+    svc = OnapService()
+    mocked_response = Response()
+    mocked_response._content = b'yolo'
+    mocked_response.encoding = "UTF-8"
+    mocked_response.status_code = 200
+    mock_send.return_value = mocked_response
+    response = svc.send_message_json("GET", 'test get', 'http://my.url/')
+    mock_send.assert_called_once_with("GET", 'test get', 'http://my.url/')
+    assert response == {}
+
+@mock.patch.object(OnapService, 'send_message')
+def test_send_message_json_bad_json_no_exception(mock_send):
+    with pytest.raises(Timeout):
+        svc = OnapService()
+        mocked_response = Response()
+        mocked_response._content = b'yolo'
+        mocked_response.encoding = "UTF-8"
+        mocked_response.status_code = 200
+        mock_send.return_value = mocked_response
+        response = svc.send_message_json("GET", 'test get', 'http://my.url/', exception=Timeout)
+        mock_send.assert_called_once_with("GET", 'test get', 'http://my.url/', exception=Timeout)
+
+@mock.patch.object(OnapService, 'send_message')
+def test_send_message_json_OK(mock_send):
+    svc = OnapService()
+    mocked_response = Response()
+    mocked_response._content = b'{"yolo": "yala"}'
+    mocked_response.encoding = "UTF-8"
+    mocked_response.status_code = 200
+    mock_send.return_value = mocked_response
+    response = svc.send_message_json("GET", 'test get', 'http://my.url/')
+    mock_send.assert_called_once_with("GET", 'test get', 'http://my.url/')
+    assert response['yolo'] == 'yala'

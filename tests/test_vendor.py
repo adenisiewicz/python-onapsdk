@@ -5,6 +5,7 @@ import mock
 import pytest
 
 from onapsdk.vendor import Vendor
+import onapsdk.constants as const
 
 @mock.patch.object(Vendor, 'send_message_json')
 def test_get_all_no_vendors(mock_send):
@@ -140,3 +141,41 @@ def test_create_OK(mock_send, mock_exists):
     assert vendor.status == "state_created"
     assert vendor.identifier == "1234"
     assert vendor.version == "5678"
+
+@mock.patch.object(Vendor, 'send_message')
+def test_submit_already_certified(mock_send):
+    """Do nothing if already certified."""
+    vendor = Vendor()
+    vendor.status = const.CERTIFIED
+    vendor.submit()
+    mock_send.assert_not_called()
+
+@mock.patch.object(Vendor, 'send_message')
+def test_submit_not_created(mock_send):
+    """Do nothing if not created."""
+    vendor = Vendor()
+    vendor.created = False
+    vendor.submit()
+    mock_send.assert_not_called()
+
+@mock.patch.object(Vendor, 'send_message')
+def test_submit_certified_NOK(mock_send):
+    """Don't update status if submission NOK."""
+    vendor = Vendor()
+    vendor.created = True
+    mock_send.return_value = None
+    expected_data = '{\n  "action": "Submit"\n}'
+    vendor.submit()
+    mock_send.assert_called_once_with("PUT", "submit vendor", mock.ANY, data=expected_data)
+    assert vendor.status != const.CERTIFIED
+
+@mock.patch.object(Vendor, 'send_message')
+def test_submit_certified_OK(mock_send):
+    """Set status to CERTIFIED if  submission OK."""
+    vendor = Vendor()
+    vendor.created = True
+    mock_send.return_value = mock.Mock()
+    expected_data = '{\n  "action": "Submit"\n}'
+    vendor.submit()
+    mock_send.assert_called_once_with("PUT", "submit vendor", mock.ANY, data=expected_data)
+    assert vendor.status == const.CERTIFIED

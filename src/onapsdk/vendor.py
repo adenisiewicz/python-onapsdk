@@ -106,7 +106,7 @@ class Vendor(SdcElement):
 
     def submit(self) -> None:
         """Submit the SDC vendor in order to have it."""
-        if self.status != const.CERTIFIED:
+        if self.status != const.CERTIFIED and self.created:
             url = "{}/vendor-license-models/{}/versions/{}/actions".format(
                 self.base_url, self.identifier, self.version)
             template = self._jinja_env.get_template('vendor_submit.json')

@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+"""Test vendor module."""
+import mock
+import pytest
+
+from onapsdk.vendor import Vendor
+
+@mock.patch.object(Vendor, 'send_message_json')
+def test_get_all_no_vendors(mock_send):
+    """Returns empty array if no vendors."""
+    vendor = Vendor()
+    mock_send.return_value = {}
+    assert vendor.get_all() == []
+    mock_send.assert_called_once_with("GET", 'get vendors', mock.ANY)
+
+@mock.patch.object(Vendor, 'send_message_json')
+def test_get_all_some_vendors(mock_send):
+    """Returns a list of vendors."""
+    vendor = Vendor()
+    mock_send.return_value = {'results':[
+        {'name': 'one', 'id': '1234'},
+        {'name': 'two', 'id': '1235'}]}
+    assert len(vendor.get_all()) == 2
+    vendor_1 = vendor.get_all()[0]
+    assert vendor_1.name == "one"
+    assert vendor_1.identifier == "1234"
+    vendor_2 = vendor.get_all()[1]
+    assert vendor_2.name == "two"
+    assert vendor_2.identifier == "1235"
+    mock_send.assert_called_with("GET", 'get vendors', mock.ANY)

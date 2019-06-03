@@ -49,7 +49,7 @@ class Vendor(SdcElement):
             the list of the vendors
 
         """
-        self.__logger.debug("retrieving all vendors from SDC")
+        self.__logger.info("retrieving all vendors from SDC")
         url = "{}/vendor-license-models".format(self.base_url)
         vendor_lists = self.send_message_json('GET', 'get vendors', url)
         vendors = []
@@ -92,6 +92,7 @@ class Vendor(SdcElement):
 
     def create(self) -> None:
         """Create the vendor in SDC if not already existing."""
+        self.__logger.info("attempting to create vendor %s in SDC", self.name)
         if not self.exists():
             url = "{}/vendor-license-models".format(self.base_url)
             template = self._jinja_env.get_template('vendor_create.json.j2')
@@ -99,13 +100,22 @@ class Vendor(SdcElement):
             create_result = self.send_message_json('POST', 'create vendor',
                                                    url, data=data)
             if create_result:
+                self.__logger.info("vendor %s is created in SDC", self.name)
                 self.created = True
                 self.status = create_result['version']['status']
                 self.identifier = create_result['itemId']
                 self.version = create_result['version']['id']
+            else:
+                self.__logger.error(
+                    "an error occured during creation of vendor %s in SDC",
+                    self.name)
+        else:
+            self.__logger.warn("vendor %s is already created in SDC", self.name)
 
     def submit(self) -> None:
         """Submit the SDC vendor in order to have it."""
+        self.__logger.info("attempting to certify/sumbit vendor %s in SDC",
+                           self.name)
         if self.status != const.CERTIFIED and self.created:
             url = "{}/vendor-license-models/{}/versions/{}/actions".format(
                 self.base_url, self.identifier, self.version)
@@ -114,7 +124,19 @@ class Vendor(SdcElement):
             submitted = self.send_message('PUT', 'submit vendor', url,
                                           data=data)
             if submitted:
+                self.__logger.info("vendor %s is submitted/certified in SDC",
+                                   self.name)
                 self.status = const.CERTIFIED
+            else:
+                self.__logger.error(
+                    "an error occured during submission/creation of vendor" +
+                    " %s in SDC", self.name)
+        elif self.status == const.CERTIFIED:
+            self.__logger.warn(
+                "vendor %s in SDC is already submitted/certified",
+                self.name)
+        elif not self.created:
+            self.__logger.warn("vendor %s in SDC is not created", self.name)
 
     def __eq__(self, other: 'Vendor') -> bool:
         """

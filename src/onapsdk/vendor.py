@@ -41,7 +41,7 @@ class Vendor(SdcElement):
         self.base_url = "{}/sdc1/feProxy/onboarding-api/v1.0".format(
             self.base_front_url)
 
-    def get_all(self) -> List[Vendor]:
+    def get_all(self) -> List['Vendor']:
         """
         Get the vendors list created in SDC.
 
@@ -109,7 +109,7 @@ class Vendor(SdcElement):
             if submitted:
                 self.status = const.CERTIFIED
 
-    def __eq__(self, other: Vendor) -> bool:
+    def __eq__(self, other: 'Vendor') -> bool:
         """
         Check equality for Vendor.
 

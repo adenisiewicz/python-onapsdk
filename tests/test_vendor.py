@@ -31,7 +31,7 @@ def test_get_all_some_vendors(mock_send):
     mock_send.assert_called_with("GET", 'get vendors', mock.ANY)
 
 def test_init_no_name():
-    """Check init with no names"""
+    """Check init with no names."""
     vendor = Vendor()
     assert vendor.identifier == None
     assert vendor.version == None
@@ -42,7 +42,7 @@ def test_init_no_name():
     assert "sdc1/feProxy/onboarding-api/v1.0" in vendor.base_url
 
 def test_init_with_name():
-    """Check init with no names"""
+    """Check init with no names."""
     vendor = Vendor(name="YOLO")
     assert vendor.identifier == None
     assert vendor.version == None

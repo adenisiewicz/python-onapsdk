@@ -4,10 +4,12 @@
 import pytest
 
 from onapsdk.sdc_element import SdcElement
+from onapsdk.onap_service import OnapService
 
 def test_init():
     """Test the initialization."""
     element = SdcElement()
+    assert isinstance(element, OnapService)
     assert element.server == "SDC"
     assert element.base_front_url == "http://sdc.api.fe.simpledemo.onap.org:30206"
     assert element.base_back_url == "http://sdc.api.be.simpledemo.onap.org:30205"

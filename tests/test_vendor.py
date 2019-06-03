@@ -6,6 +6,7 @@ import pytest
 
 from onapsdk.vendor import Vendor
 import onapsdk.constants as const
+from onapsdk.sdc_element import SdcElement
 
 @mock.patch.object(Vendor, 'send_message_json')
 def test_get_all_no_vendors(mock_send):
@@ -36,6 +37,7 @@ def test_get_all_some_vendors(mock_send):
 def test_init_no_name():
     """Check init with no names."""
     vendor = Vendor()
+    assert isinstance(vendor, SdcElement)
     assert vendor.identifier == None
     assert vendor.version == None
     assert vendor.name == "Generic-Vendor"

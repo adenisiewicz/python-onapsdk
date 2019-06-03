@@ -110,7 +110,7 @@ class Vendor(SdcElement):
                     "an error occured during creation of vendor %s in SDC",
                     self.name)
         else:
-            self.__logger.warn("vendor %s is already created in SDC", self.name)
+            self.__logger.warning("vendor %s is already created in SDC", self.name)
 
     def submit(self) -> None:
         """Submit the SDC vendor in order to have it."""
@@ -128,15 +128,15 @@ class Vendor(SdcElement):
                                    self.name)
                 self.status = const.CERTIFIED
             else:
-                self.__logger.error(
-                    "an error occured during submission/creation of vendor" +
-                    " %s in SDC", self.name)
+                self.__logger.error((
+                    "an error occured during submission/creation of vendor"
+                    " %s in SDC"), self.name)
         elif self.status == const.CERTIFIED:
-            self.__logger.warn(
+            self.__logger.warning(
                 "vendor %s in SDC is already submitted/certified",
                 self.name)
         elif not self.created:
-            self.__logger.warn("vendor %s in SDC is not created", self.name)
+            self.__logger.warning("vendor %s in SDC is not created", self.name)
 
     def __eq__(self, other: 'Vendor') -> bool:
         """

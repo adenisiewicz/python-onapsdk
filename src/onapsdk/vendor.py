@@ -49,6 +49,7 @@ class Vendor(SdcElement):
             the list of the vendors
 
         """
+        self.__logger.debug("retrieving all vendors from SDC")
         url = "{}/vendor-license-models".format(self.base_url)
         vendor_lists = self.send_message_json('GET', 'get vendors', url)
         vendors = []
@@ -58,6 +59,7 @@ class Vendor(SdcElement):
                 vendor.identifier = vendor_info['id']
                 vendor.created = True
                 vendors.append(vendor)
+        self.__logger.debug("number of vendors returned: %s", len(vendors))
         return vendors
 
     def exists(self) -> bool:
@@ -68,9 +70,12 @@ class Vendor(SdcElement):
             True if exists, False either
 
         """
-        for vendor in self.get_all():
+        self.__logger.debug("check if vendor %s exists in SDC", self.name)
+        vendors = self.get_all()
+        for vendor in vendors:
+            self.__logger.debug("checking if %s is the same", vendor.name)
             if vendor == self:
-                self.__logger.info("Vendor found")
+                self.__logger.info("Vendor found, updating information")
                 self.identifier = vendor.identifier
                 self.created = True
                 url = "{}/items/{}/versions".format(self.base_url,
@@ -78,9 +83,11 @@ class Vendor(SdcElement):
                 vendor_details = self.send_message_json('GET', 'get vendors',
                                                         url)
                 if vendor_details:
+                    self.__logger.debug("details found, updating")
                     self.status = vendor_details['results'][-1]['status']
                     self.version = vendor_details['results'][-1]['id']
                 return True
+        self.__logger.info("vendor %s doesn't exists in SDC", self.name)
         return False
 
     def create(self) -> None:

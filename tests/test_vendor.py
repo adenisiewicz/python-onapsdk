@@ -25,9 +25,11 @@ def test_get_all_some_vendors(mock_send):
     vendor_1 = vendor.get_all()[0]
     assert vendor_1.name == "one"
     assert vendor_1.identifier == "1234"
+    assert vendor_1.created
     vendor_2 = vendor.get_all()[1]
     assert vendor_2.name == "two"
     assert vendor_2.identifier == "1235"
+    assert vendor_2.created
     mock_send.assert_called_with("GET", 'get vendors', mock.ANY)
 
 def test_init_no_name():
@@ -67,3 +69,36 @@ def test_equality_not_equals():
     vendor_2 = Vendor(name="not_equal")
     vendor_2.identifier  = "1234"
     assert vendor_1 != vendor_2
+
+
+def test_equality_not_equals_not_same_object():
+    """Check a Vendor and something different are not equals."""
+    vendor_1 = Vendor(name="equal")
+    vendor_1.identifier  = "1234"
+    vendor_2 = "equal"
+    assert vendor_1 != vendor_2
+
+@mock.patch.object(Vendor, 'get_all')
+def test_exists_not_exists(mock_get_all):
+    """Return False if vendor doesn't exist in SDC."""
+    vendor_1 = Vendor(name="one")
+    vendor_1.identifier = "1234"
+    vendor_1.created = True
+    mock_get_all.return_value = [vendor_1]
+    vendor = Vendor(name="two")
+    assert not vendor.exists()
+
+@mock.patch.object(Vendor, 'get_all')
+@mock.patch.object(Vendor, 'send_message_json')
+def test_exists_exists(mock_send, mock_get_all):
+    """Return True if vendor exists in SDC."""
+    vendor_1 = Vendor(name="one")
+    vendor_1.identifier = "1234"
+    vendor_1.created = True
+    mock_get_all.return_value = [vendor_1]
+    mock_send.return_value = {'results':
+        [{'status': 'state_one', 'id': "5678"}]}
+    vendor = Vendor(name="one")
+    assert vendor.exists()
+    assert vendor.status == "state_one"
+    assert vendor.version == "5678"

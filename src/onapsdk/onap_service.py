@@ -35,7 +35,7 @@ class OnapService():
         self.server: str
         self.header: Dict[str, str]
         self.proxy: Dict[str, str]
-        self.__jinja_env = Environment(loader=PackageLoader('onapsdk'))
+        self._jinja_env = Environment(loader=PackageLoader('onapsdk'))
 
     def send_message(self, method: str, action: str, url: str,
                      **kwargs) -> Union[requests.Request, None]:

@@ -94,7 +94,7 @@ class Vendor(SdcElement):
         """Create the vendor in SDC if not already existing."""
         if not self.exists():
             url = "{}/vendor-license-models".format(self.base_url)
-            template = self.__jinja_env.get_template('vendor_create.json.j2')
+            template = self._jinja_env.get_template('vendor_create.json.j2')
             data = template.render(name=self.name)
             create_result = self.send_message_json('POST', 'create vendor',
                                                    url, data=data)
@@ -109,7 +109,7 @@ class Vendor(SdcElement):
         if self.status != const.CERTIFIED:
             url = "{}/vendor-license-models/{}/versions/{}/actions".format(
                 self.base_url, self.identifier, self.version)
-            template = self.__jinja_env.get_template('vendor_submit.json')
+            template = self._jinja_env.get_template('vendor_submit.json')
             data = template.render()
             submitted = self.send_message('PUT', 'submit vendor', url,
                                           data=data)

@@ -102,3 +102,41 @@ def test_exists_exists(mock_send, mock_get_all):
     assert vendor.exists()
     assert vendor.status == "state_one"
     assert vendor.version == "5678"
+
+@mock.patch.object(Vendor, 'exists')
+@mock.patch.object(Vendor, 'send_message_json')
+def test_create_already_exists(mock_send, mock_exists):
+    """Do nothing if already created in SDC."""
+    vendor = Vendor()
+    mock_exists.return_value = True
+    vendor.create()
+    mock_send.assert_not_called()
+
+@mock.patch.object(Vendor, 'exists')
+@mock.patch.object(Vendor, 'send_message_json')
+def test_create_issue_in_creation(mock_send, mock_exists):
+    """Do nothing if not created but issue during creation."""
+    vendor = Vendor()
+    expected_data = '{\n  "iconRef": "icon",\n  "vendorName": "Generic-Vendor",\n  "description": "vendor"\n}'
+    mock_exists.return_value = False
+    mock_send.return_value = {}
+    vendor.create()
+    mock_send.assert_called_once_with("POST", "create vendor", mock.ANY, data=expected_data)
+    assert vendor.created == False
+
+@mock.patch.object(Vendor, 'exists')
+@mock.patch.object(Vendor, 'send_message_json')
+def test_create_OK(mock_send, mock_exists):
+    """Create and update object."""
+    vendor = Vendor()
+    expected_data = '{\n  "iconRef": "icon",\n  "vendorName": "Generic-Vendor",\n  "description": "vendor"\n}'
+    mock_exists.return_value = False
+    mock_send.return_value = {
+        'itemId': "1234",
+        'version': {'id': "5678", 'status': 'state_created'}}
+    vendor.create()
+    mock_send.assert_called_once_with("POST", "create vendor", mock.ANY, data=expected_data)
+    assert vendor.created == True
+    assert vendor.status == "state_created"
+    assert vendor.identifier == "1234"
+    assert vendor.version == "5678"

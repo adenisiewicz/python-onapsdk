@@ -32,9 +32,9 @@ class Vendor(SdcElement):
             name (optional): the name of the vendor
         """
         super().__init__()
-        self.identifier: str
-        self.version: str
-        self.status: str
+        self.identifier: str = None
+        self.version: str = None
+        self.status: str = None
         self.created: bool = False
         self.name: str = name or "Generic-Vendor"
         self.header["USER_ID"] = "cs0008"

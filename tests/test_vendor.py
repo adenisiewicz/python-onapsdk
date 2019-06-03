@@ -29,3 +29,25 @@ def test_get_all_some_vendors(mock_send):
     assert vendor_2.name == "two"
     assert vendor_2.identifier == "1235"
     mock_send.assert_called_with("GET", 'get vendors', mock.ANY)
+
+def test_init_no_name():
+    """Check init with no names"""
+    vendor = Vendor()
+    assert vendor.identifier == None
+    assert vendor.version == None
+    assert vendor.name == "Generic-Vendor"
+    assert vendor.created == False
+    assert vendor.header["USER_ID"] == "cs0008"
+    assert isinstance(vendor.base_url, str)
+    assert "sdc1/feProxy/onboarding-api/v1.0" in vendor.base_url
+
+def test_init_with_name():
+    """Check init with no names"""
+    vendor = Vendor(name="YOLO")
+    assert vendor.identifier == None
+    assert vendor.version == None
+    assert vendor.name == "YOLO"
+    assert vendor.created == False
+    assert vendor.header["USER_ID"] == "cs0008"
+    assert isinstance(vendor.base_url, str)
+    assert "sdc1/feProxy/onboarding-api/v1.0" in vendor.base_url

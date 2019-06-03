@@ -32,9 +32,9 @@ class OnapService():
 
     def __init__(self) -> None:
         """Initialize the service."""
-        self.server: str
-        self.header: Dict[str, str]
-        self.proxy: Dict[str, str]
+        self.server: str = None
+        self.header: Dict[str, str] = None
+        self.proxy: Dict[str, str] = None
         self._jinja_env = Environment(loader=PackageLoader('onapsdk'))
 
     def send_message(self, method: str, action: str, url: str,

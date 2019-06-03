@@ -51,3 +51,19 @@ def test_init_with_name():
     assert vendor.header["USER_ID"] == "cs0008"
     assert isinstance(vendor.base_url, str)
     assert "sdc1/feProxy/onboarding-api/v1.0" in vendor.base_url
+
+def test_equality_really_equals():
+    """Check two Vendors are equals if name is the same."""
+    vendor_1 = Vendor(name="equal")
+    vendor_1.identifier  = "1234"
+    vendor_2 = Vendor(name="equal")
+    vendor_2.identifier  = "1235"
+    assert vendor_1 == vendor_2
+
+def test_equality_not_equals():
+    """Check two Vendors are not equals if name is not the same."""
+    vendor_1 = Vendor(name="equal")
+    vendor_1.identifier  = "1234"
+    vendor_2 = Vendor(name="not_equal")
+    vendor_2.identifier  = "1234"
+    assert vendor_1 != vendor_2

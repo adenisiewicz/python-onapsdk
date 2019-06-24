@@ -27,7 +27,6 @@ class AaiElement(OnapService):
         self.name: str = name or "AAI"
         self.headers = headers_aai_creator(OnapService.headers)
 
-
     @classmethod
     def customers(cls):
         """Get the list of subscription types in A&AI."""

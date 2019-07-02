@@ -9,7 +9,9 @@ from onapsdk.constants import CERTIFIED, DRAFT
 from onapsdk.sdc import SDC
 
 
-class SdcResource(SDC):
+# For an unknown reason, pylint keeps seeing _unique_uuid and
+# _unique_identifier as attributes along with unique_uuid and unique_identifier
+class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
     """Mother Class of all SDC resources."""
 
     _logger: logging.Logger = logging.getLogger(__name__)
@@ -21,8 +23,8 @@ class SdcResource(SDC):
         """Initialize the object."""
         super().__init__()
         self.name: str = name
-        self._uuid: str = None
-        self._uidentifier: str = None
+        self._unique_uuid: str = None
+        self._unique_identifier: str = None
         if sdc_values:
             self.identifier = sdc_values['uuid']
             self.version = sdc_values['version']
@@ -32,26 +34,26 @@ class SdcResource(SDC):
     @property
     def unique_uuid(self) -> str:
         """Return and lazy load the unique_uuid."""
-        if not self._uuid:
+        if not self._unique_uuid:
             self.load()
-        return self._uuid
-
-    @unique_uuid.setter
-    def unique_uuid(self, value: str) -> None:
-        """Set value for unique_uuid."""
-        self._uuid = value
+        return self._unique_uuid
 
     @property
     def unique_identifier(self) -> str:
         """Return and lazy load the unique_identifier."""
-        if not self._uidentifier:
+        if not self._unique_identifier:
             self.deep_load()
-        return self._uidentifier
+        return self._unique_identifier
+
+    @unique_uuid.setter
+    def unique_uuid(self, value: str) -> None:
+        """Set value for unique_uuid."""
+        self._unique_uuid = value
 
     @unique_identifier.setter
     def unique_identifier(self, value: str) -> None:
         """Set value for unique_identifier."""
-        self._uidentifier = value
+        self._unique_identifier = value
 
     def load(self) -> None:
         """Load Object information from SDC."""

@@ -24,6 +24,7 @@ class Vf(SdcResource):
         vsp (Vsp): the Vsp used for VF creation
         uuid (str): the UUID of the VF (which is different from identifier,
                     don't ask why...)
+        unique_identifier (str): Yet Another ID, just to puzzle us...
 
     """
 

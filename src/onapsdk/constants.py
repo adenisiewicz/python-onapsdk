@@ -25,3 +25,16 @@ CERTIFY = "Certify"
 COMMIT = "Commit"
 CREATE_PACKAGE = "Create_Package"
 SUBMIT = "Submit"
+SUBMIT_FOR_TESTING = "CertificationRequest"
+CHECKOUT = "Checkout"
+CHECKIN = "Checkin"
+APPROVE = "Approve"
+DISTRIBUTE = "PROD/activate"
+TOSCA = "ToscaModel"
+DISTRIBUTION = "Distribution"
+START_CERTIFICATION = "StartCertification"
+
+##
+# Distribution States
+##
+DOWNLOAD_OK = "DOWNLOAD_OK"

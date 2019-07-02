@@ -21,7 +21,8 @@ class SdcResource(SDC):
         """Initialize the object."""
         super().__init__()
         self.name: str = name
-        self._unique_uuid: str = None
+        self._uuid: str = None
+        self._uidentifier: str = None
         if sdc_values:
             self.identifier = sdc_values['uuid']
             self.version = sdc_values['version']
@@ -31,18 +32,42 @@ class SdcResource(SDC):
     @property
     def unique_uuid(self) -> str:
         """Return and lazy load the unique_uuid."""
-        if not self._unique_uuid:
+        if not self._uuid:
             self.load()
-        return self._unique_uuid
+        return self._uuid
 
     @unique_uuid.setter
     def unique_uuid(self, value: str) -> None:
         """Set value for unique_uuid."""
-        self._unique_uuid = value
+        self._uuid = value
+
+    @property
+    def unique_identifier(self) -> str:
+        """Return and lazy load the unique_identifier."""
+        if not self._uidentifier:
+            self.deep_load()
+        return self._uidentifier
+
+    @unique_identifier.setter
+    def unique_identifier(self, value: str) -> None:
+        """Set value for unique_identifier."""
+        self._uidentifier = value
 
     def load(self) -> None:
         """Load Object information from SDC."""
         self.exists()
+
+    def deep_load(self) -> None:
+        """Deep load Object informations from SDC."""
+        url = "{}/sdc1/feProxy/rest/v1/followed".format(self.base_front_url)
+        response = self.send_message_json("GET", "Deep Load {}".format(
+            type(self).__name__), url)
+        if response:
+            for resource in response[self.PATH]:
+                if resource["uuid"] == self.identifier:
+                    self._logger.debug("Resource %s found in %s list",
+                                       resource["name"], self.PATH)
+                    self.unique_identifier = resource["uniqueId"]
 
     def _generate_action_subpath(self, action: str) -> str:
         """
@@ -184,8 +209,19 @@ class SdcResource(SDC):
         """
         self.identifier = obj.identifier
         self.unique_uuid = obj.unique_uuid
+        self.unique_identifier = obj.unique_identifier
         self.status = obj.status
         self.version = obj.version
+        self._specific_copy(obj)
+
+    def _specific_copy(self, obj: 'SdcResource') -> None:
+        """
+        Copy specific properties from object.
+
+        Args:
+            obj (SdcResource): the object to "copy"
+
+        """
 
     def update_informations_from_sdc_creation(self,
                                               details: Dict[str, Any]) -> None:
@@ -196,9 +232,11 @@ class SdcResource(SDC):
         Args:
             details ([type]): the details from SDC
         """
+        self._logger.error(details)
         self.unique_uuid = details['invariantUUID']
         self.status = self._parse_sdc_status(details['lifecycleState'])
         self.version = details['version']
+        self.unique_identifier = details['uniqueId']
 
     @staticmethod
     def _parse_sdc_status(sdc_status: str) -> str:

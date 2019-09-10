@@ -9,7 +9,7 @@ from onapsdk.onap_service import OnapService
 from onapsdk.sdc_resource import SdcResource
 from onapsdk.vf import Vf
 from onapsdk.vsp import Vsp
-from onapsdk.constants import CERTIFIED, DRAFT
+from onapsdk.constants import CERTIFIED, DRAFT, CHECKIN
 
 def test_init():
     """Test the initialization."""
@@ -141,5 +141,16 @@ def test__parse_sdc_status_certified():
 def test__parse_sdc_status_draft():
     assert SdcResource._parse_sdc_status("NOT_CERTIFIED_CHECKOUT") == DRAFT
 
+def test__parse_sdc_status_draft():
+    assert SdcResource._parse_sdc_status("NOT_CERTIFIED_CHECKIN") == CHECKIN
+
 def test__parse_sdc_status_unknown():
     assert SdcResource._parse_sdc_status("UNKNOWN") == 'UNKNOWN'
+
+def test__parse_sdc_status_empty():
+    assert SdcResource._parse_sdc_status("") is None
+
+def test__really_submit():
+    sdcResource = SdcResource()
+    with pytest.raises(NotImplementedError):
+        sdcResource._really_submit()

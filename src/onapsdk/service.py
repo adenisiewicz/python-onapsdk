@@ -50,6 +50,7 @@ class Service(SdcResource):
         """
         super().__init__(sdc_values=sdc_values)
         self.name: str = name or "ONAP-test-Service"
+        self.distribution_status = None
         if sdc_values:
             self.distribution_status = sdc_values['distributionStatus']
         self.resources = []

@@ -83,6 +83,21 @@ def test__unique_uuid_setter():
     vf.unique_uuid = "4567"
     assert vf._unique_uuid == "4567"
 
+@mock.patch.object(Vf, 'deep_load')
+def test__unique_identifier_load(mock_load):
+    vf = Vf()
+    vf.identifier = "1234"
+    assert vf.unique_identifier == None
+    mock_load.assert_called_once()
+
+@mock.patch.object(Vf, 'deep_load')
+def test__unique_identifier_no_load(mock_load):
+    vf = Vf()
+    vf.identifier = "1234"
+    vf._unique_identifier= "toto"
+    assert vf.unique_identifier == "toto"
+    mock_load.assert_not_called()
+
 def test__status_setter():
     vf = Vf()
     vf.identifier = "1234"

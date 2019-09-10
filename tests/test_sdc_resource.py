@@ -4,6 +4,7 @@
 import mock
 import pytest
 
+import onapsdk.constants as const
 from onapsdk.onap_service import OnapService
 from onapsdk.sdc_resource import SdcResource
 from onapsdk.vf import Vf
@@ -103,6 +104,36 @@ def test__status_setter():
     vf.identifier = "1234"
     vf.status = "4567"
     assert vf._status == "4567"
+
+@mock.patch.object(Vf, 'send_message_json')
+def test__deep_load_no_response(mock_send):
+    vf = Vf()
+    vf.identifier = "1234"
+    vf._version = "4567"
+    mock_send.return_value = {}
+    vf.deep_load()
+    assert vf._unique_identifier is None
+    mock_send.assert_called_once_with('GET', 'Deep Load Vf', "{}/sdc1/feProxy/rest/v1/followed".format(vf.base_front_url))
+
+@mock.patch.object(Vf, 'send_message_json')
+def test__deep_load_response_OK(mock_send):
+    vf = Vf()
+    vf.identifier = "5689"
+    vf._version = "4567"
+    mock_send.return_value = {'resources': [{'uuid': '5689', 'name': 'test', 'uniqueId': '71011'}]}
+    vf.deep_load()
+    assert vf.unique_identifier == "71011"
+    mock_send.assert_called_once_with('GET', 'Deep Load Vf', "{}/sdc1/feProxy/rest/v1/followed".format(vf.base_front_url))
+
+@mock.patch.object(Vf, 'send_message_json')
+def test__deep_load_response_NOK(mock_send):
+    vf = Vf()
+    vf.identifier = "5678"
+    vf._version = "4567"
+    mock_send.return_value = {'resources': [{'uuid': '5689', 'name': 'test', 'uniqueId': '71011'}]}
+    vf.deep_load()
+    assert vf._unique_identifier is None
+    mock_send.assert_called_once_with('GET', 'Deep Load Vf', "{}/sdc1/feProxy/rest/v1/followed".format(vf.base_front_url))
 
 def test__parse_sdc_status_certified():
     assert SdcResource._parse_sdc_status("CERTIFIED") == CERTIFIED

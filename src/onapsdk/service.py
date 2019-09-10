@@ -4,18 +4,17 @@
 """Service module."""
 import logging
 from typing import Dict
-
 from zipfile import ZipFile
 
 import onapsdk.constants as const
 from onapsdk.sdc_resource import SdcResource
-from onapsdk.utils.headers_creator import headers_sdc_creator
-from onapsdk.utils.headers_creator import headers_sdc_tester
-from onapsdk.utils.headers_creator import headers_sdc_governor
-from onapsdk.utils.headers_creator import headers_sdc_operator
+from onapsdk.utils.configuration import (components_needing_distribution,
+                                         tosca_path)
+from onapsdk.utils.headers_creator import (headers_sdc_creator,
+                                           headers_sdc_governor,
+                                           headers_sdc_operator,
+                                           headers_sdc_tester)
 from onapsdk.utils.jinja import jinja_env
-from onapsdk.utils.configuration import tosca_path
-from onapsdk.utils.configuration import components_needing_distribution
 
 
 class Service(SdcResource):
@@ -110,7 +109,7 @@ class Service(SdcResource):
 
     def submit(self) -> None:
         """Really submit the SDC Service."""
-        self._verify_action_to_sdc(const.DRAFT, const.SUBMIT_FOR_TESTING)
+        self._verify_action_to_sdc(const.CHECKIN, const.SUBMIT_FOR_TESTING)
 
     def start_certification(self) -> None:
         """Start Certification on Service."""

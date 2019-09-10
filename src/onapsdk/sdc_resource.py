@@ -5,7 +5,7 @@
 import logging
 from typing import Any, Dict, List
 
-from onapsdk.constants import CERTIFIED, DRAFT
+from onapsdk.constants import CERTIFIED, DRAFT, CHECKIN
 from onapsdk.sdc import SDC
 
 
@@ -83,7 +83,7 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             str: the subpath part
 
         """
-        return action.lower()
+        return action
 
     def _version_path(self) -> str:
         """
@@ -234,7 +234,6 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
         Args:
             details ([type]): the details from SDC
         """
-        self._logger.error(details)
         self.unique_uuid = details['invariantUUID']
         self.status = self._parse_sdc_status(details['lifecycleState'])
         self.version = details['version']
@@ -256,6 +255,10 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             return CERTIFIED
         if sdc_status == "NOT_CERTIFIED_CHECKOUT":
             return DRAFT
+        if sdc_status == "NOT_CERTIFIED_CHECKIN":
+            return CHECKIN
+        if sdc_status != "":
+            return sdc_status
         return None
 
     def _really_submit(self) -> None:

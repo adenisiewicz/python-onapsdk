@@ -20,7 +20,7 @@ def headers_sdc_creator(base_header: Dict[str, str], user: str = "cs0008",
         Dict[str, str]: the needed headers
 
     """
-    return headers_sdc_generic(base_header, authorization, user)
+    return headers_sdc_generic(base_header, user, authorization=authorization)
 
 
 def headers_sdc_tester(base_header: Dict[str, str], user: str = "jm0007",
@@ -38,7 +38,7 @@ def headers_sdc_tester(base_header: Dict[str, str], user: str = "jm0007",
         Dict[str, str]: the needed headers
 
     """
-    return headers_sdc_generic(base_header, authorization, user)
+    return headers_sdc_generic(base_header, user, authorization=authorization)
 
 
 def headers_sdc_governor(base_header: Dict[str, str], user: str = "gv0001",
@@ -56,7 +56,7 @@ def headers_sdc_governor(base_header: Dict[str, str], user: str = "gv0001",
         Dict[str, str]: the needed headers
 
     """
-    return headers_sdc_generic(base_header, authorization, user)
+    return headers_sdc_generic(base_header, user, authorization=authorization)
 
 
 def headers_sdc_operator(base_header: Dict[str, str], user: str = "op0001",

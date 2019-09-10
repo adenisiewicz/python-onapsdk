@@ -90,10 +90,10 @@ def test__status_setter():
     assert vf._status == "4567"
 
 def test__parse_sdc_status_certified():
-    assert SdcResource._parse_sdc_status("CERTIFIED") ==  CERTIFIED
+    assert SdcResource._parse_sdc_status("CERTIFIED") == CERTIFIED
 
 def test__parse_sdc_status_draft():
-    assert SdcResource._parse_sdc_status("NOT_CERTIFIED_CHECKOUT") ==  DRAFT
+    assert SdcResource._parse_sdc_status("NOT_CERTIFIED_CHECKOUT") == DRAFT
 
 def test__parse_sdc_status_unknown():
-    assert SdcResource._parse_sdc_status("UNKNOWN") is None
+    assert SdcResource._parse_sdc_status("UNKNOWN") == 'UNKNOWN'

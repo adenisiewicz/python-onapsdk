@@ -111,6 +111,7 @@ def test_exists_exists(mock_get_all):
     vf_1 = Vf(name="one")
     vf_1.identifier = "1234"
     vf_1.unique_uuid = "5689"
+    vf_1.unique_identifier = "71011"
     vf_1.status = const.DRAFT
     vf_1.version = "1.1"
     mock_get_all.return_value = [vf_1]
@@ -118,6 +119,7 @@ def test_exists_exists(mock_get_all):
     assert vf.exists()
     assert vf.identifier == "1234"
     assert vf.unique_uuid == "5689"
+    assert vf.unique_identifier == "71011"
     assert vf.status == const.DRAFT
     assert vf.version == "1.1"
 
@@ -179,7 +181,7 @@ def test_create_OK(mock_send, mock_exists):
     vf.vsp = vsp
     expected_data = '{\n    "artifacts": {},\n    "attributes": [],\n    "capabilities": {},\n    "categories":[\n        {\n            "name": "Generic",\n            "normalizedName": "generic",\n            "uniqueId": "resourceNewCategory.generic",\n            "icons": null,\n            "subcategories":[\n                {\n                    "name": "Abstract",\n                    "normalizedName": "abstract",\n                    "uniqueId": "resourceNewCategory.generic.abstract",\n                    "icons":[\n                        "objectStorage",\n                        "compute"\n                    ],\n                    "groupings": null,\n                    "ownerId": null,\n                    "empty": false\n                }\n            ],\n            "ownerId": null,\n            "empty": false\n        }\n    ],\n    "componentInstances": [],\n    "componentInstancesAttributes": {},\n    "componentInstancesProperties": {},\n    "componentType": "RESOURCE",\n    "contactId": "cs0008",\n    "csarUUID": "None",\n    "csarVersion": "1.0",\n    "deploymentArtifacts": {},\n    "description": "VF",\n    "icon": "defaulticon",\n    "name": "ONAP-test-VF",\n    "properties": [],\n    "groups": [],\n    "requirements": {},\n    "resourceType": "VF",\n    "tags": ["ONAP-test-VF"],\n    "toscaArtifacts": {},\n    "vendorName": "",\n    "vendorRelease": "1.0"\n}'
     mock_exists.return_value = False
-    mock_send.return_value = {'resourceType': 'VF', 'name': 'one', 'uuid': '1234', 'invariantUUID': '5678', 'version': '1.0', 'lifecycleState': 'NOT_CERTIFIED_CHECKOUT'}
+    mock_send.return_value = {'resourceType': 'VF', 'name': 'one', 'uuid': '1234', 'invariantUUID': '5678', 'version': '1.0', 'uniqueId': '91011', 'lifecycleState': 'NOT_CERTIFIED_CHECKOUT'}
     vf.create()
     mock_send.assert_called_once_with("POST", "create Vf", 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/resources', data=expected_data)
     assert vf.created()
@@ -244,4 +246,4 @@ def test_submit_OK(mock_send, mock_load):
     vf._version = "1234"
     vf._identifier = "12345"
     vf.submit()
-    mock_send.assert_called_once_with("POST", "Certify Vf", 'http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/resources/12345/lifecycleState/certify', data=expected_data)
+    mock_send.assert_called_once_with("POST", "Certify Vf", 'http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/resources/12345/lifecycleState/Certify', data=expected_data)

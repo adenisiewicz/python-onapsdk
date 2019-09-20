@@ -294,3 +294,82 @@ def test_load_metadata_OK(mock_send):
     svc.load_metadata()
     assert svc._distribution_id == "12"
     mock_send.assert_called_once_with('GET', 'Get Metadata for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/1/distribution', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+
+def test_get_all_url():
+    assert Service._get_all_url() == "http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/services"
+
+@mock.patch.object(Service, '_action_to_sdc')
+@mock.patch.object(Service, 'load')
+def test_really_submit_no_results(mock_load, mock_action):
+    mock_action.return_value = {}
+    svc = Service()
+    svc._really_submit()
+    mock_load.assert_not_called()
+    mock_action.assert_called_once_with('Certify')
+
+@mock.patch.object(Service, '_action_to_sdc')
+@mock.patch.object(Service, 'load')
+def test_really_submit_OK(mock_load, mock_action):
+    mock_action.return_value = "yes"
+    svc = Service()
+    svc._really_submit()
+    mock_load.assert_called_once()
+    mock_action.assert_called_once_with('Certify')
+
+def test_specific_copy():
+    svc = Service()
+    svc2 = Service()
+    svc2._distributed = True
+    assert not svc._distributed
+    svc._specific_copy(svc2)
+    assert svc._distributed
+
+@mock.patch.object(Service, 'load')
+@mock.patch.object(Service, '_action_to_sdc')
+@mock.patch.object(Service, 'created')
+def test_verify_action_to_sdc_not_created(mock_created, mock_action, mock_load):
+    mock_created.return_value = False
+    svc = Service()
+    svc._status = "no_yes"
+    svc._verify_action_to_sdc("yes", "action")
+    mock_created.assert_called()
+    mock_action.assert_not_called()
+    mock_load.assert_not_called()
+
+@mock.patch.object(Service, 'load')
+@mock.patch.object(Service, '_action_to_sdc')
+@mock.patch.object(Service, 'created')
+def test_verify_action_to_sdc_bad_status(mock_created, mock_action, mock_load):
+    mock_created.return_value = True
+    svc = Service()
+    svc._status = "no_yes"
+    svc._verify_action_to_sdc("yes", "action")
+    mock_created.assert_called()
+    mock_action.assert_not_called()
+    mock_load.assert_not_called()
+
+@mock.patch.object(Service, 'load')
+@mock.patch.object(Service, '_action_to_sdc')
+@mock.patch.object(Service, 'created')
+def test_verify_action_to_sdc_no_result(mock_created, mock_action, mock_load):
+    mock_created.return_value = True
+    mock_action.return_value = {}
+    svc = Service()
+    svc._status = "no_yes"
+    svc._verify_action_to_sdc("yes", "action")
+    mock_created.assert_called()
+    mock_action.assert_not_called()
+    mock_load.assert_not_called()
+
+@mock.patch.object(Service, 'load')
+@mock.patch.object(Service, '_action_to_sdc')
+@mock.patch.object(Service, 'created')
+def test_verify_action_to_sdc_OK(mock_created, mock_action, mock_load):
+    mock_created.return_value = True
+    mock_action.return_value = "good"
+    svc = Service()
+    svc._status = "yes"
+    svc._verify_action_to_sdc("yes", "action")
+    mock_created.assert_called()
+    mock_action.assert_called_once()
+    mock_load.assert_called_once()

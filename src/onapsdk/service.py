@@ -239,7 +239,7 @@ class Service(SdcResource):
             obj (Service): the object to "copy"
 
         """
-        self.distribution_status = obj.distribution_status
+        self._distributed = obj._distributed
 
     def _verify_action_to_sdc(self, desired_status: str,
                               desired_action: str, **kwargs) -> None:

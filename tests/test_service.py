@@ -2,8 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 """Test Service module."""
 
+from os import path
+import shutil
+
 import mock
 import pytest
+import requests
 
 import onapsdk.constants as const
 from onapsdk.service import Service
@@ -90,6 +94,21 @@ def test_distribution_id_load(mock_load):
     assert svc.distribution_id is None
     mock_load.assert_called_once()
 
+@mock.patch.object(Service, '_check_distributed')
+def test_distribution_id_no_load(mock_check_distributed):
+    svc = Service()
+    svc.identifier = "1234"
+    svc._distributed = True
+    assert svc.distributed
+    mock_check_distributed.assert_not_called()
+
+@mock.patch.object(Service, '_check_distributed')
+def test_distribution_id_load(mock_check_distributed):
+    svc = Service()
+    svc.identifier = "1234"
+    assert not svc.distributed
+    mock_check_distributed.assert_called_once()
+
 def test_distribution_id_setter():
     svc = Service()
     svc.identifier = "1234"
@@ -172,3 +191,78 @@ def test_distribute(mock_verify):
     svc = Service()
     svc.distribute()
     mock_verify.assert_called_once_with(const.DRAFT, const.DISTRIBUTE, headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+
+@mock.patch.object(Service, 'send_message')
+def test_get_tosca_no_result(mock_send):
+    if path.exists('/tmp/tosca_files'):
+        shutil.rmtree('/tmp/tosca_files')
+    mock_send.return_value = {}
+    svc = Service()
+    svc.identifier = "12"
+    svc.get_tosca()
+    mock_send.assert_called_once_with('GET', 'Download Tosca Model for ONAP-test-Service', 'http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/services/12/toscaModel', headers={'Content-Type': 'application/json', 'Accept': 'application/octet-stream', 'USER_ID': 'cs0008', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+    assert not path.exists('/tmp/tosca_files')
+
+
+def test_get_tosca_bad_csart(requests_mock):
+    if path.exists('/tmp/tosca_files'):
+        shutil.rmtree('/tmp/tosca_files')
+    with open('tests/data/bad.csar', mode='rb') as file:
+        file_content = file.read()
+        requests_mock.get('http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/services/12/toscaModel', content=file_content)
+    svc = Service()
+    svc.identifier = "12"
+    svc.get_tosca()
+
+
+def test_get_tosca_result(requests_mock):
+    if path.exists('/tmp/tosca_files'):
+        shutil.rmtree('/tmp/tosca_files')
+    with open('tests/data/test.csar', mode='rb') as file:
+        file_content = file.read()
+        requests_mock.get('http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/services/12/toscaModel', content=file_content)
+    svc = Service()
+    svc.identifier = "12"
+    svc.get_tosca()
+
+@mock.patch.object(Service, 'send_message_json')
+def test_distributed_no_result(mock_send):
+    mock_send.return_value = {}
+    svc = Service()
+    svc.distribution_id = "12"
+    assert not svc.distributed
+
+@mock.patch.object(Service, 'send_message_json')
+def test_distributed_not_distributed(mock_send):
+    mock_send.return_value = {
+        'distributionStatusList':[
+            {'omfComponentID': "SO", 'status': "DOWNLOAD_OK"},
+            {'omfComponentID': "sdnc", 'status': "DOWNLOAD_NOK"},
+            {'omfComponentID': "aai", 'status': "DOWNLOAD_OK"}]}
+    svc = Service()
+    svc.distribution_id = "12"
+    assert not svc.distributed
+    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+
+@mock.patch.object(Service, 'send_message_json')
+def test_distributed_not_distributed(mock_send):
+    mock_send.return_value = {
+        'distributionStatusList':[
+            {'omfComponentID': "SO", 'status': "DOWNLOAD_OK"},
+            {'omfComponentID': "aai", 'status': "DOWNLOAD_OK"}]}
+    svc = Service()
+    svc.distribution_id = "12"
+    assert not svc.distributed
+    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+
+@mock.patch.object(Service, 'send_message_json')
+def test_distributed_distributed(mock_send):
+    mock_send.return_value = {
+        'distributionStatusList':[
+            {'omfComponentID': "SO", 'status': "DOWNLOAD_OK"},
+            {'omfComponentID': "sdnc", 'status': "DOWNLOAD_OK"},
+            {'omfComponentID': "aai", 'status': "DOWNLOAD_OK"}]}
+    svc = Service()
+    svc.distribution_id = "12"
+    assert svc.distributed
+    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})

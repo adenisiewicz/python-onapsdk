@@ -7,7 +7,7 @@ from typing import List
 
 def tosca_path() -> str:
     """Return tosca file paths."""
-    return '/tmp/tosca_files'
+    return '/tmp/tosca_files/'
 
 
 def components_needing_distribution() -> List[str]:

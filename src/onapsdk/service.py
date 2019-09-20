@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Service module."""
+from os import makedirs
 import logging
 from typing import Dict
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 
 import onapsdk.constants as const
 from onapsdk.sdc_resource import SdcResource
@@ -33,6 +34,7 @@ class Service(SdcResource):
                                     ONAP parts.
         distribution_id (str): the ID of the distribution when service is
                                distributed.
+        distributed (bool): True if the service is distributed
         unique_identifier (str): Yet Another ID, just to puzzle us...
 
     """
@@ -55,6 +57,7 @@ class Service(SdcResource):
             self.distribution_status = sdc_values['distributionStatus']
         self.resources = []
         self._distribution_id: str = None
+        self._distributed: bool = False
 
     @property
     def distribution_id(self) -> str:
@@ -67,6 +70,13 @@ class Service(SdcResource):
     def distribution_id(self, value: str) -> None:
         """Set value for distribution_id."""
         self._distribution_id = value
+
+    @property
+    def distributed(self) -> bool:
+        """Return and lazy load the distributed state."""
+        if not self._distributed:
+            self._check_distributed()
+        return self._distributed
 
     def create(self) -> None:
         """Create the Service in SDC if not already existing."""
@@ -147,21 +157,25 @@ class Service(SdcResource):
             headers=headers)
         if result:
             csar_filename = "service-{}-csar.csar".format(self.name)
+            makedirs(tosca_path(), exist_ok=True)
             with open((tosca_path() + csar_filename), 'wb') as csar_file:
                 for chunk in result.iter_content(chunk_size=128):
                     csar_file.write(chunk)
-            with ZipFile(tosca_path() + csar_filename) as myzip:
-                for name in myzip.namelist():
-                    if (name[-13:] == "-template.yml" and
-                            name[:20] == "Definitions/service-"):
-                        service_template = name
-                with myzip.open(service_template) as file1:
-                    with open(tosca_path() +
-                              service_template[12:], 'wb') as file2:
-                        file2.write(file1.read())
+            try:
+                with ZipFile(tosca_path() + csar_filename) as myzip:
+                    for name in myzip.namelist():
+                        if (name[-13:] == "-template.yml" and
+                                name[:20] == "Definitions/service-"):
+                            service_template = name
+                    with myzip.open(service_template) as file1:
+                        with open(tosca_path() +
+                                  service_template[12:], 'wb') as file2:
+                            file2.write(file1.read())
+            except BadZipFile as exc:
+                self._logger.exception(exc)
 
-    def distributed(self) -> bool:
-        """Check if service is distributed."""
+    def _check_distributed(self) -> bool:
+        """Check if service is distributed and update status accordingly."""
         url = "{}/services/distribution/{}".format(self._base_create_url(),
                                                    self.distribution_id)
         headers = headers_sdc_operator(SdcResource.headers)
@@ -184,8 +198,9 @@ class Service(SdcResource):
                                            "distributed in %s"), key)
         for state in status.values():
             if not state:
-                return False
-        return True
+                self._distributed = False
+                return
+        self._distributed = True
 
     def load_metadata(self) -> None:
         """Load Metada of Service and retrieve informations."""

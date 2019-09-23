@@ -34,7 +34,7 @@ class ServiceInstance(SoElement):
         if self.models['service_instance'] is not None:
             self._create("service_instance_create.json.j2",
                          instance_name=self.name,
-                         cloud=self.)
+                         cloud=self.cloud)
 
         # url = SO_URL + SO_SERVICE_INSTANTIATION_URL
         # self.__logger.debug("SO request: %s", url)

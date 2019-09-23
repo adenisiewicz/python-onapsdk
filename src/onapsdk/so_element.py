@@ -37,6 +37,7 @@ class SoElement(OnapService):
     _aai = AaiElement()
 
     def __post_init__(self):
+        """Post init operations. Retrieve input from Tosca files."""
         print("tosca file: {}".format(self.tosca_file_path))
         if (self.tosca_file_path is not None or
                 self.cloud_region is not None):
@@ -82,21 +83,6 @@ class SoElement(OnapService):
     def created(self) -> bool:
         """Determine if SoElement is created."""
         return bool(self._identifier)
-
-
-    def _exists(self, klass) -> bool:
-        """
-        Check if object created with SO already exists in AAI
-
-        Returns:
-            True if exists, False either
-
-        """
-        self._logger.debug("check if %s %s exists in SO", type(self).__name__,
-                           self.name)
-        # TODO
-        return False
-
 
     def _create(self, template_name: str, **kwargs) -> None:
         """Create the request in SO if not already existing."""
@@ -174,22 +160,6 @@ class SoElement(OnapService):
         except FileNotFoundError:
             self._logger.warning("No Cloud found")
             return {}
-
-
-    def _eq(self, klass: Type, other: Any) -> bool:
-        """
-        Check equality for SOElement and children.
-
-        Args:
-            klass (string)
-            other: another object
-
-        Returns:
-            bool: True if same object, False if not
-        """
-        if isinstance(other, klass):
-            return self.name == other.name
-        return False
 
     @classmethod
     def _base_create_url(cls) -> str:

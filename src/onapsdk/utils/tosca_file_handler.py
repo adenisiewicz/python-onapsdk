@@ -47,6 +47,7 @@ def get_parameter_from_yaml(parameter, config_file):
 def get_model_from_tosca(tosca_file):
     """
     Retrieve Model from Tosca file.
+
     Else extract service, vnf and module models from the Tosca file
 
     : param the path of the tosca file

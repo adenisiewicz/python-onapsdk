@@ -139,7 +139,7 @@ def test_add_resource_bad_result(mock_send):
     resource.version = "40"
     resource.name = "test"
     assert svc.add_resource(resource) is None
-    mock_send.assert_called_once_with('POST', 'Add SdcResource to service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/45/resourceInstance', data='{\n  "name": "test",\n  "componentVersion": "40",\n  "posY": 100,\n  "posX": 200,\n  "uniqueId": "12",\n  "originType": "SDCRESOURCE",\n  "componentUid": "12",\n  "icon": "defaulticon"\n}')
+    mock_send.assert_called_once_with('POST', 'Add SdcResource to service', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/45/resourceInstance', data='{\n  "name": "test",\n  "componentVersion": "40",\n  "posY": 100,\n  "posX": 200,\n  "uniqueId": "12",\n  "originType": "SDCRESOURCE",\n  "componentUid": "12",\n  "icon": "defaulticon"\n}')
 
 
 @mock.patch.object(Service, 'send_message')
@@ -154,7 +154,7 @@ def test_add_resource_OK(mock_send):
     resource.name = "test"
     result = svc.add_resource(resource)
     assert result['yes'] == "indeed"
-    mock_send.assert_called_once_with('POST', 'Add SdcResource to service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/45/resourceInstance', data='{\n  "name": "test",\n  "componentVersion": "40",\n  "posY": 100,\n  "posX": 200,\n  "uniqueId": "12",\n  "originType": "SDCRESOURCE",\n  "componentUid": "12",\n  "icon": "defaulticon"\n}')
+    mock_send.assert_called_once_with('POST', 'Add SdcResource to service', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/45/resourceInstance', data='{\n  "name": "test",\n  "componentVersion": "40",\n  "posY": 100,\n  "posX": 200,\n  "uniqueId": "12",\n  "originType": "SDCRESOURCE",\n  "componentUid": "12",\n  "icon": "defaulticon"\n}')
 
 @mock.patch.object(Service, '_verify_action_to_sdc')
 def test_checkin(mock_verify):
@@ -200,7 +200,7 @@ def test_get_tosca_no_result(mock_send):
     svc = Service()
     svc.identifier = "12"
     svc.get_tosca()
-    mock_send.assert_called_once_with('GET', 'Download Tosca Model for ONAP-test-Service', 'http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/services/12/toscaModel', headers={'Content-Type': 'application/json', 'Accept': 'application/octet-stream', 'USER_ID': 'cs0008', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+    mock_send.assert_called_once_with('GET', 'Download Tosca Model for ONAP-test-Service', 'https://sdc.api.be.simpledemo.onap.org:30204/sdc/v1/catalog/services/12/toscaModel', headers={'Content-Type': 'application/json', 'Accept': 'application/octet-stream', 'USER_ID': 'cs0008', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
     assert not path.exists('/tmp/tosca_files')
 
 
@@ -209,7 +209,7 @@ def test_get_tosca_bad_csart(requests_mock):
         shutil.rmtree('/tmp/tosca_files')
     with open('tests/data/bad.csar', mode='rb') as file:
         file_content = file.read()
-        requests_mock.get('http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/services/12/toscaModel', content=file_content)
+        requests_mock.get('https://sdc.api.be.simpledemo.onap.org:30204/sdc/v1/catalog/services/12/toscaModel', content=file_content)
     svc = Service()
     svc.identifier = "12"
     svc.get_tosca()
@@ -220,7 +220,7 @@ def test_get_tosca_result(requests_mock):
         shutil.rmtree('/tmp/tosca_files')
     with open('tests/data/test.csar', mode='rb') as file:
         file_content = file.read()
-        requests_mock.get('http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/services/12/toscaModel', content=file_content)
+        requests_mock.get('https://sdc.api.be.simpledemo.onap.org:30204/sdc/v1/catalog/services/12/toscaModel', content=file_content)
     svc = Service()
     svc.identifier = "12"
     svc.get_tosca()
@@ -242,7 +242,7 @@ def test_distributed_not_distributed(mock_send):
     svc = Service()
     svc.distribution_id = "12"
     assert not svc.distributed
-    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
 
 @mock.patch.object(Service, 'send_message_json')
 def test_distributed_not_distributed(mock_send):
@@ -253,7 +253,7 @@ def test_distributed_not_distributed(mock_send):
     svc = Service()
     svc.distribution_id = "12"
     assert not svc.distributed
-    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
 
 @mock.patch.object(Service, 'send_message_json')
 def test_distributed_distributed(mock_send):
@@ -265,7 +265,7 @@ def test_distributed_distributed(mock_send):
     svc = Service()
     svc.distribution_id = "12"
     assert svc.distributed
-    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+    mock_send.assert_called_once_with('GET', 'Check distribution for ONAP-test-Service', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/distribution/12', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
 
 @mock.patch.object(Service, 'send_message_json')
 def test_load_metadata_no_result(mock_send):
@@ -274,7 +274,7 @@ def test_load_metadata_no_result(mock_send):
     svc.identifier = "1"
     svc.load_metadata()
     assert svc._distribution_id is None
-    mock_send.assert_called_once_with('GET', 'Get Metadata for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/1/distribution', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+    mock_send.assert_called_once_with('GET', 'Get Metadata for ONAP-test-Service', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/1/distribution', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
 
 @mock.patch.object(Service, 'send_message_json')
 def test_load_metadata_bad_json(mock_send):
@@ -283,7 +283,7 @@ def test_load_metadata_bad_json(mock_send):
     svc.identifier = "1"
     svc.load_metadata()
     assert svc._distribution_id is None
-    mock_send.assert_called_once_with('GET', 'Get Metadata for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/1/distribution', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+    mock_send.assert_called_once_with('GET', 'Get Metadata for ONAP-test-Service', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/1/distribution', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
 
 @mock.patch.object(Service, 'send_message_json')
 def test_load_metadata_OK(mock_send):
@@ -293,10 +293,10 @@ def test_load_metadata_OK(mock_send):
     svc.identifier = "1"
     svc.load_metadata()
     assert svc._distribution_id == "12"
-    mock_send.assert_called_once_with('GET', 'Get Metadata for ONAP-test-Service', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/services/1/distribution', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+    mock_send.assert_called_once_with('GET', 'Get Metadata for ONAP-test-Service', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/1/distribution', headers={'Content-Type': 'application/json', 'Accept': 'application/json', 'USER_ID': 'op0001', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
 
 def test_get_all_url():
-    assert Service._get_all_url() == "http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/services"
+    assert Service._get_all_url() == "https://sdc.api.be.simpledemo.onap.org:30204/sdc/v1/catalog/services"
 
 @mock.patch.object(Service, '_action_to_sdc')
 @mock.patch.object(Service, 'load')

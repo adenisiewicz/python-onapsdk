@@ -17,8 +17,8 @@ def test_init():
 def test_class_variables():
     """Test the class variables."""
     assert SdcElement.server == "SDC"
-    assert SdcElement.base_front_url == "http://sdc.api.fe.simpledemo.onap.org:30206"
-    assert SdcElement.base_back_url == "http://sdc.api.be.simpledemo.onap.org:30205"
+    assert SdcElement.base_front_url == "https://sdc.api.fe.simpledemo.onap.org:30207"
+    assert SdcElement.base_back_url == "https://sdc.api.be.simpledemo.onap.org:30204"
     assert SdcElement.headers == {
             "Content-Type": "application/json",
             "Accept": "application/json"

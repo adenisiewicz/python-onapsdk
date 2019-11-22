@@ -21,8 +21,8 @@ class SDC(OnapService):
     PATH: str
     ACTION_TEMPLATE: str
     ACTION_METHOD: str
-    base_front_url = "http://sdc.api.fe.simpledemo.onap.org:30206"
-    base_back_url = "http://sdc.api.be.simpledemo.onap.org:30205"
+    base_front_url = "https://sdc.api.fe.simpledemo.onap.org:30207"
+    base_back_url = "https://sdc.api.be.simpledemo.onap.org:30204"
     _logger: logging.Logger = logging.getLogger(__name__)
 
     def __init__(self):

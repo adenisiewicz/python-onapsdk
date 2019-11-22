@@ -10,12 +10,13 @@ import requests
 from onapsdk.vendor import Vendor
 from onapsdk.vsp import Vsp
 from onapsdk.vf import Vf
+from onapsdk.service import Service
 import onapsdk.constants as const
 
 
 @pytest.mark.integration
-def test_vf_unknown():
-    """Integration tests for Vf."""
+def test_service_unknown():
+    """Integration tests for Service."""
     response = requests.post("{}/reset".format(Vendor.base_front_url))
     response.raise_for_status()
     Vf.base_back_url = Vf.base_front_url
@@ -34,12 +35,25 @@ def test_vf_unknown():
     vf = Vf(name='test')
     vf.vsp = vsp
     vf.create()
-    assert vf.identifier is not None
-    assert vf.status == const.DRAFT
-    assert vf.version == "0.1"
     vf.submit()
-    assert vsp.status == const.CERTIFIED
-    assert vf.version == "1.0"
     vf.load()
-    assert vsp.status == const.CERTIFIED
-    assert vf.version == "1.0"
+    svc = Service(name='test')
+    assert svc.identifier is None
+    assert svc.status is None
+    svc.create()
+    assert svc.identifier is not None
+    assert svc.status == const.DRAFT
+    svc.add_resource(vf)
+    svc.checkin()
+    assert svc.status == const.CHECKIN
+    svc.submit()
+    assert svc.status == const.DRAFT
+    svc.start_certification()
+    assert svc.status == const.DRAFT
+    svc.certify()
+    assert svc.status == const.CERTIFIED
+    svc.approve()
+    assert svc.status == const.DRAFT
+    svc.distribute()
+    assert svc.status == const.DRAFT
+    assert svc.distributed

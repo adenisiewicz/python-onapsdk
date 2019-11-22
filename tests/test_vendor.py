@@ -13,7 +13,7 @@ def test_get_all_no_vendors(mock_send):
     """Returns empty array if no vendors."""
     mock_send.return_value = {}
     assert Vendor.get_all() == []
-    mock_send.assert_called_once_with("GET", 'get Vendors', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/onboarding-api/v1.0/vendor-license-models')
+    mock_send.assert_called_once_with("GET", 'get Vendors', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/onboarding-api/v1.0/vendor-license-models')
 
 @mock.patch.object(Vendor, 'send_message_json')
 def test_get_all_some_vendors(mock_send):
@@ -30,7 +30,7 @@ def test_get_all_some_vendors(mock_send):
     assert vendor_2.name == "two"
     assert vendor_2.identifier == "1235"
     assert vendor_2.created()
-    mock_send.assert_called_with("GET", 'get Vendors', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/onboarding-api/v1.0/vendor-license-models')
+    mock_send.assert_called_with("GET", 'get Vendors', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/onboarding-api/v1.0/vendor-license-models')
 
 def test_init_no_name():
     """Check init with no names."""
@@ -104,7 +104,7 @@ def test_load_created(mock_send, mock_get_all):
     vendor.identifier = "1234"
     vendor.load()
     mock_get_all.assert_not_called()
-    mock_send.assert_called_once_with('GET', 'get item', 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/onboarding-api/v1.0/items/1234/versions')
+    mock_send.assert_called_once_with('GET', 'get item', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/onboarding-api/v1.0/items/1234/versions')
     assert vendor.status == "state_one"
     assert vendor.version == "5678"
 
@@ -197,7 +197,7 @@ def test_submit_certified_NOK(mock_send):
     vendor._status = "Draft"
     vendor._version = "1234"
     vendor.submit()
-    mock_send.assert_called_once_with("PUT", "Submit Vendor", 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/onboarding-api/v1.0/vendor-license-models/12345/versions/1234/actions', data=expected_data)
+    mock_send.assert_called_once_with("PUT", "Submit Vendor", 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/onboarding-api/v1.0/vendor-license-models/12345/versions/1234/actions', data=expected_data)
     assert vendor._status != const.CERTIFIED
 
 @mock.patch.object(Vendor, 'send_message')
@@ -210,7 +210,7 @@ def test_submit_certified_OK(mock_send):
     mock_send.return_value = mock.Mock()
     expected_data = '{\n\n  "action": "Submit"\n}'
     vendor.submit()
-    mock_send.assert_called_once_with("PUT", "Submit Vendor", 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/onboarding-api/v1.0/vendor-license-models/12345/versions/1234/actions', data=expected_data)
+    mock_send.assert_called_once_with("PUT", "Submit Vendor", 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/onboarding-api/v1.0/vendor-license-models/12345/versions/1234/actions', data=expected_data)
     assert vendor.status == const.CERTIFIED
 
 @mock.patch.object(Vendor, 'load')

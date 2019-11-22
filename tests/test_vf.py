@@ -16,7 +16,7 @@ def test_get_all_no_vf(mock_send):
     """Returns empty array if no vfs."""
     mock_send.return_value = {}
     assert Vf.get_all() == []
-    mock_send.assert_called_once_with("GET", 'get Vfs', 'http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/resources?resourceType=VF')
+    mock_send.assert_called_once_with("GET", 'get Vfs', 'https://sdc.api.be.simpledemo.onap.org:30204/sdc/v1/catalog/resources?resourceType=VF')
 
 
 @mock.patch.object(Vf, 'send_message_json')
@@ -41,7 +41,7 @@ def test_get_all_some_vfs(mock_send):
     assert vf_2.status == const.DRAFT
     assert vf_2.version == "1.0"
     assert vf_2.created()
-    mock_send.assert_called_once_with("GET", 'get Vfs', 'http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/resources?resourceType=VF')
+    mock_send.assert_called_once_with("GET", 'get Vfs', 'https://sdc.api.be.simpledemo.onap.org:30204/sdc/v1/catalog/resources?resourceType=VF')
 
 
 def test_init_no_name():
@@ -167,7 +167,7 @@ def test_create_issue_in_creation(mock_send, mock_exists):
     mock_exists.return_value = False
     mock_send.return_value = {}
     vf.create()
-    mock_send.assert_called_once_with("POST", "create Vf", 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/resources', data=expected_data)
+    mock_send.assert_called_once_with("POST", "create Vf", 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/resources', data=expected_data)
     assert not vf.created()
 
 
@@ -183,7 +183,7 @@ def test_create_OK(mock_send, mock_exists):
     mock_exists.return_value = False
     mock_send.return_value = {'resourceType': 'VF', 'name': 'one', 'uuid': '1234', 'invariantUUID': '5678', 'version': '1.0', 'uniqueId': '91011', 'lifecycleState': 'NOT_CERTIFIED_CHECKOUT'}
     vf.create()
-    mock_send.assert_called_once_with("POST", "create Vf", 'http://sdc.api.fe.simpledemo.onap.org:30206/sdc1/feProxy/rest/v1/catalog/resources', data=expected_data)
+    mock_send.assert_called_once_with("POST", "create Vf", 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/resources', data=expected_data)
     assert vf.created()
     assert vf._status == const.DRAFT
     assert vf.identifier == "1234"
@@ -246,4 +246,4 @@ def test_submit_OK(mock_send, mock_load):
     vf._version = "1234"
     vf._identifier = "12345"
     vf.submit()
-    mock_send.assert_called_once_with("POST", "Certify Vf", 'http://sdc.api.be.simpledemo.onap.org:30205/sdc/v1/catalog/resources/12345/lifecycleState/Certify', data=expected_data)
+    mock_send.assert_called_once_with("POST", "Certify Vf", 'https://sdc.api.be.simpledemo.onap.org:30204/sdc/v1/catalog/resources/12345/lifecycleState/Certify', data=expected_data)

@@ -16,7 +16,6 @@ from onapsdk.utils.headers_creator import (headers_sdc_creator,
                                            headers_sdc_operator,
                                            headers_sdc_tester)
 from onapsdk.utils.jinja import jinja_env
-from onapsdk.utils.yml import get_parameter_from_yaml
 
 
 class Service(SdcResource):
@@ -267,47 +266,3 @@ class Service(SdcResource):
             self._logger.warning(("Service %s in SDC is in status %s and it "
                                   "should be in  status %s"), self.name,
                                  self.status, desired_status)
-
-    @classmethod
-    def get_service_custom_config(cls, service_type: str,
-                                  restrict: str = None) -> Dict[str, Any]:
-        """
-        Get Service related configuration parameters from yaml configuration file.
-
-        Args:
-        service_type (str): type of service used on yaml(ims, vfw, ansible, mrf,
-                            freeradius)
-        restrict (str, optional): a parameter to restrict the search on the
-                                    service file
-
-
-        Returns:
-            Dict[str, Any]: the service custom config
-        """
-        parameter = service_type
-        if restrict:
-            parameter = "{}.{}".format(service_type, restrict)
-
-        yaml_file = "templates/vnf-services/{}-service.yaml".format(
-            service_type)
-        return get_parameter_from_yaml(parameter, yaml_file)
-
-
-    @classmethod
-    def get_subscription_type(cls, vnf: str) -> Dict[str, Any]:
-        """
-        Get the VNF subscription type (default: vnf).
-
-        Args:
-            vnf (str): the VNF
-
-        Returns:
-            str: the subscription type associated with the VNF. Default to vnf
-                 if not found.
-        """
-        mytype = ""
-        try:
-            mytype = cls.get_service_custom_config(vnf, "subscription_type")
-        except FileNotFoundError:
-            mytype = vnf
-        return mytype

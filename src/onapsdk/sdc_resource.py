@@ -6,8 +6,10 @@ import logging
 from typing import Any, Dict, List
 
 from onapsdk.constants import CERTIFIED, DRAFT, CHECKIN
+from onapsdk.constants import CERTIFICATION_IN_PROGRESS
 from onapsdk.sdc import SDC
-
+from onapsdk.utils.headers_creator import (headers_sdc_creator,
+                                           headers_sdc_tester)
 
 # For an unknown reason, pylint keeps seeing _unique_uuid and
 # _unique_identifier as attributes along with unique_uuid and unique_identifier
@@ -25,6 +27,7 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
         self.name: str = name
         self._unique_uuid: str = None
         self._unique_identifier: str = None
+        self._resource_type: str = "resources"
         if sdc_values:
             self.identifier = sdc_values['uuid']
             self.version = sdc_values['version']
@@ -62,8 +65,11 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
     def deep_load(self) -> None:
         """Deep load Object informations from SDC."""
         url = "{}/sdc1/feProxy/rest/v1/followed".format(self.base_front_url)
+        headers = headers_sdc_creator(SdcResource.headers)
+        if self.status == CERTIFICATION_IN_PROGRESS:
+            headers = headers_sdc_tester(SdcResource.headers)
         response = self.send_message_json("GET", "Deep Load {}".format(
-            type(self).__name__), url)
+            type(self).__name__), url, headers=headers)
         if response:
             for resource in response[self.PATH]:
                 if resource["uuid"] == self.identifier:
@@ -93,10 +99,10 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             str: the end of the path
 
         """
-        return self.identifier
+        return self.unique_identifier
 
-    @staticmethod
-    def _action_url(base: str, subpath: str, version_path: str) -> str:
+    def _action_url(self, base: str, subpath: str, version_path: str,
+                    action_type: str = None) -> str:
         """
         Generate action URL for SDC.
 
@@ -104,13 +110,21 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             base (str): base part of url
             subpath (str): subpath of url
             version_path (str): version path of the url
+            action_type (str, optional): the type of action ('distribution-state' or
+                                  'lifecycleState'). Default to
+                                  'lifecycleState').
 
         Returns:
             str: the URL to use
 
         """
-        return "{}/resources/{}/lifecycleState/{}".format(base, version_path,
-                                                          subpath)
+        if not action_type:
+            action_type = "lifecycleState"
+        return "{}/{}/{}/{}/{}".format(base,
+                                        self._resource_type,
+                                        version_path,
+                                        action_type,
+                                        subpath)
 
     @classmethod
     def _base_create_url(cls) -> str:
@@ -211,9 +225,9 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
         """
         self.identifier = obj.identifier
         self.unique_uuid = obj.unique_uuid
-        self.unique_identifier = obj.unique_identifier
         self.status = obj.status
         self.version = obj.version
+        self.unique_identifier = obj.unique_identifier
         self._specific_copy(obj)
 
     def _specific_copy(self, obj: 'SdcResource') -> None:

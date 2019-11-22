@@ -57,6 +57,7 @@ class Service(SdcResource):
         self.resources = []
         self._distribution_id: str = None
         self._distributed: bool = False
+        self._resource_type: str = "services"
 
     @property
     def distribution_id(self) -> str:
@@ -115,34 +116,36 @@ class Service(SdcResource):
 
     def checkin(self) -> None:
         """Checkin Service."""
-        self._verify_action_to_sdc(const.DRAFT, const.CHECKIN)
+        self._verify_lcm_to_sdc(const.DRAFT, const.CHECKIN)
 
     def submit(self) -> None:
         """Really submit the SDC Service."""
-        self._verify_action_to_sdc(const.CHECKIN, const.SUBMIT_FOR_TESTING)
+        self._verify_lcm_to_sdc(const.CHECKIN, const.SUBMIT_FOR_TESTING)
 
     def start_certification(self) -> None:
         """Start Certification on Service."""
         headers = headers_sdc_tester(SdcResource.headers)
-        self._verify_action_to_sdc(const.DRAFT, const.START_CERTIFICATION,
+        self._verify_lcm_to_sdc(const.READY_FOR_CERTIFICATION,
+                                   const.START_CERTIFICATION,
                                    headers=headers)
 
     def certify(self) -> None:
         """Certify Service in SDC."""
         headers = headers_sdc_tester(SdcResource.headers)
-        self._verify_action_to_sdc(const.DRAFT, const.CERTIFY,
+        self._verify_lcm_to_sdc(const.CERTIFICATION_IN_PROGRESS,
+                                   const.CERTIFY,
                                    headers=headers)
 
     def approve(self) -> None:
         """Approve Service in SDC."""
         headers = headers_sdc_governor(SdcResource.headers)
-        self._verify_action_to_sdc(const.DRAFT, const.APPROVE,
+        self._verify_distribute_to_sdc(const.CERTIFIED, const.APPROVE,
                                    headers=headers)
 
     def distribute(self) -> None:
         """Apptove Service in SDC."""
         headers = headers_sdc_operator(SdcResource.headers)
-        self._verify_action_to_sdc(const.DRAFT, const.DISTRIBUTE,
+        self._verify_distribute_to_sdc(const.APPROVED, const.DISTRIBUTE,
                                    headers=headers)
 
     def get_tosca(self) -> None:
@@ -226,7 +229,8 @@ class Service(SdcResource):
 
     def _really_submit(self) -> None:
         """Really submit the SDC Service in order to enable it."""
-        result = self._action_to_sdc(const.CERTIFY)
+        result = self._action_to_sdc(const.CERTIFY,
+                                     action_type="lifecycleState")
         if result:
             self.load()
 
@@ -240,8 +244,19 @@ class Service(SdcResource):
         """
         self._distributed = obj._distributed
 
+    def _verify_distribute_to_sdc(self, desired_status: str,
+                                  desired_action: str, **kwargs) -> None:
+        self._verify_action_to_sdc(desired_status, desired_action,
+                                   "distribution-state", **kwargs)
+
+    def _verify_lcm_to_sdc(self, desired_status: str,
+                           desired_action: str, **kwargs) -> None:
+        self._verify_action_to_sdc(desired_status, desired_action,
+                                   "lifecycleState", **kwargs)
+
     def _verify_action_to_sdc(self, desired_status: str,
-                              desired_action: str, **kwargs) -> None:
+                              desired_action: str,
+                              action_type: str, **kwargs) -> None:
         """
         Verify action to SDC.
 
@@ -251,13 +266,17 @@ class Service(SdcResource):
         Args:
             desired_status (str): the status the object should be
             desired_action (str): the action we want to perform
+            action_type (str): the type of action ('distribution-state' or
+                               'lifecycleState')
             **kwargs: any specific stuff to give to requests
 
         """
         self._logger.info("attempting to %s Service %s in SDC",
                           desired_action, self.name)
         if self.status == desired_status and self.created():
-            result = self._action_to_sdc(desired_action, **kwargs)
+            result = self._action_to_sdc(desired_action,
+                                         action_type=action_type,
+                                         **kwargs)
             if result:
                 self.load()
         elif not self.created():

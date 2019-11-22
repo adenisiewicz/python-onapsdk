@@ -158,12 +158,14 @@ class SDC(OnapService):
             self._logger.warning("%s %s is already created in SDC",
                                  type(self).__name__, self.name)
 
-    def _action_to_sdc(self, action: str, **kwargs) -> Response:
+    def _action_to_sdc(self, action: str, action_type: str = None,
+                       **kwargs) -> Response:
         """
         Really do an action in the SDC.
 
         Args:
             action (str): the action to perform
+            action_type (str, optional): the type of action
             headers (Dict[str, str], optional): headers to use if any
 
         Returns:
@@ -171,7 +173,8 @@ class SDC(OnapService):
 
         """
         subpath = self._generate_action_subpath(action)
-        url = self._action_url(self._base_url(), subpath, self._version_path())
+        url = self._action_url(self._base_create_url(), subpath,
+                               self._version_path(), action_type=action_type)
         template = jinja_env().get_template(self.ACTION_TEMPLATE)
         data = template.render(action=action, const=const)
         result = self.send_message(self.ACTION_METHOD, "{} {}".format(
@@ -382,7 +385,8 @@ class SDC(OnapService):
         raise NotImplementedError("SDC is an abstract class")
 
     @staticmethod
-    def _action_url(base: str, subpath: str, version_path: str) -> str:
+    def _action_url(base: str, subpath: str, version_path: str,
+                    action_type: str = None) -> str:
         """
         Generate action URL for SDC.
 
@@ -390,6 +394,7 @@ class SDC(OnapService):
             base (str): base part of url
             subpath (str): subpath of url
             version_path (str): version path of the url
+            action_type (str, optional): the type of action
 
         Raises:
             NotImplementedError: this is an abstract method.

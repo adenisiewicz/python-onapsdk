@@ -50,6 +50,6 @@ class Vf(SdcResource):
 
     def _really_submit(self) -> None:
         """Really submit the SDC Vf in order to enable it."""
-        result = self._action_to_sdc(const.CERTIFY)
+        result = self._action_to_sdc(const.CERTIFY, "lifecycleState")
         if result:
             self.load()

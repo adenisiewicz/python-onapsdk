@@ -124,13 +124,14 @@ class Vsp(SdcElement):
                 self.name)
 
     def _generic_action(self, action=None):
-        """Do a genric action for real."""
+        """Do a generic action for real."""
         if action:
-            self._action_to_sdc(action)
+            self._action_to_sdc(action, action_type="lifecycleState")
 
     def _create_csar_action(self):
         """Create CSAR package for real."""
-        result = self._action_to_sdc(const.CREATE_PACKAGE)
+        result = self._action_to_sdc(const.CREATE_PACKAGE,
+                                     action_type="lifecycleState")
         if result:
             self._logger.info("result: %s", result.text)
             data = result.json()

@@ -80,7 +80,8 @@ class SdcElement(SDC):
         return "{}/versions/{}".format(self.identifier, self.version)
 
     @staticmethod
-    def _action_url(base: str, subpath: str, version_path: str) -> str:
+    def _action_url(base: str, subpath: str, version_path: str,
+                    action_type: str = None) -> str:
         """
         Generate action URL for SDC.
 
@@ -88,6 +89,7 @@ class SdcElement(SDC):
             base (str): base part of url
             subpath (str): subpath of url
             version_path (str): version path of the url
+            action_type (str, optional): the type of action. UNUSED here
 
         Returns:
             str: the URL to use

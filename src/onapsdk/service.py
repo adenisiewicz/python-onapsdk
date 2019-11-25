@@ -120,27 +120,27 @@ class Service(SdcResource):
 
     def submit(self) -> None:
         """Really submit the SDC Service."""
-        self._verify_lcm_to_sdc(const.CHECKIN, const.SUBMIT_FOR_TESTING)
+        self._verify_lcm_to_sdc(const.CHECKED_IN, const.SUBMIT_FOR_TESTING)
 
     def start_certification(self) -> None:
         """Start Certification on Service."""
         headers = headers_sdc_tester(SdcResource.headers)
-        self._verify_lcm_to_sdc(const.READY_FOR_CERTIFICATION,
+        self._verify_lcm_to_sdc(const.SUBMITTED,
                                    const.START_CERTIFICATION,
                                    headers=headers)
 
     def certify(self) -> None:
         """Certify Service in SDC."""
         headers = headers_sdc_tester(SdcResource.headers)
-        self._verify_lcm_to_sdc(const.CERTIFICATION_IN_PROGRESS,
+        self._verify_lcm_to_sdc(const.UNDER_CERTIFICATION,
                                    const.CERTIFY,
                                    headers=headers)
 
     def approve(self) -> None:
         """Approve Service in SDC."""
         headers = headers_sdc_governor(SdcResource.headers)
-        self._verify_distribute_to_sdc(const.CERTIFIED, const.APPROVE,
-                                   headers=headers)
+        self._verify_approve_to_sdc(const.CERTIFIED, const.APPROVE,
+                                    headers=headers)
 
     def distribute(self) -> None:
         """Apptove Service in SDC."""
@@ -246,6 +246,11 @@ class Service(SdcResource):
 
     def _verify_distribute_to_sdc(self, desired_status: str,
                                   desired_action: str, **kwargs) -> None:
+        self._verify_action_to_sdc(desired_status, desired_action,
+                                   "distribution", **kwargs)
+
+    def _verify_approve_to_sdc(self, desired_status: str,
+                               desired_action: str, **kwargs) -> None:
         self._verify_action_to_sdc(desired_status, desired_action,
                                    "distribution-state", **kwargs)
 

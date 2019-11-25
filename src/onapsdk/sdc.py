@@ -71,6 +71,8 @@ class SDC(OnapService):
 
     def created(self) -> bool:
         """Determine if SDC is created."""
+        if self.name and not self._identifier:
+            return self.exists()
         return bool(self._identifier)
 
     @classmethod

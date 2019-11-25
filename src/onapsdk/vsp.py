@@ -41,8 +41,8 @@ class Vsp(SdcElement):
             name (optional): the name of the vsp
         """
         super().__init__()
-        self.csar_uuid: str = None
-        self.vendor: Vendor = None
+        self._csar_uuid: str = None
+        self._vendor: Vendor = None
         self.name: str = name or "ONAP-test-VSP"
 
     @property
@@ -87,6 +87,32 @@ class Vsp(SdcElement):
         """Create the CSAR package in the SDC Vsp."""
         self._action("create CSAR package", const.CERTIFIED,
                      self._create_csar_action)
+
+    @property
+    def vendor(self) -> Vendor:
+        """Return and lazy load the vendor."""
+        if self.created() and not self._vendor:
+            details = self._get_vsp_details()
+            if details:
+                self._vendor = Vendor(name=details['vendorName'])
+        return self._vendor
+
+    @vendor.setter
+    def vendor(self, vendor: Vendor) -> None:
+        """Set value for Vendor."""
+        self._vendor = vendor
+
+    @property
+    def csar_uuid(self) -> str:
+        """Return and lazy load the CSAR UUID."""
+        if self.created() and not self._csar_uuid:
+            self.create_csar()
+        return self._csar_uuid
+
+    @csar_uuid.setter
+    def csar_uuid(self, csar_uuid: str) -> None:
+        """Set value for csar uuid."""
+        self._csar_uuid = csar_uuid
 
     def _upload_action(self, file_to_upload: BinaryIO = None):
         """Do upload for real."""
@@ -229,9 +255,12 @@ class Vsp(SdcElement):
             a Vsp instance with right values
 
         """
+        cls._logger.debug("importing VSP %s from SDC", values['name'])
         vsp = Vsp(values['name'])
         vsp.identifier = values['id']
         vsp.vendor = Vendor(name=values['vendorName'])
+        vsp.load_status()
+        cls._logger.info("status of VSP %s: %s", vsp.name, vsp._status)
         return vsp
 
     def _really_submit(self) -> None:

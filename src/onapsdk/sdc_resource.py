@@ -5,8 +5,7 @@
 import logging
 from typing import Any, Dict, List
 
-from onapsdk.constants import CERTIFIED, DRAFT, CHECKIN
-from onapsdk.constants import CERTIFICATION_IN_PROGRESS
+import onapsdk.constants as const
 from onapsdk.sdc import SDC
 from onapsdk.utils.headers_creator import (headers_sdc_creator,
                                            headers_sdc_tester)
@@ -29,10 +28,18 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
         self._unique_identifier: str = None
         self._resource_type: str = "resources"
         if sdc_values:
+            self._logger.debug("SDC values given, using them")
             self.identifier = sdc_values['uuid']
             self.version = sdc_values['version']
             self.unique_uuid = sdc_values['invariantUUID']
-            self.status = self._parse_sdc_status(sdc_values['lifecycleState'])
+            distribitution_state = None
+            if 'distributionStatus' in sdc_values:
+                distribitution_state = sdc_values['distributionStatus']
+            self.status = self._parse_sdc_status(sdc_values['lifecycleState'],
+                                                 distribitution_state,
+                                                 self._logger)
+            self._logger.debug("SDC resource %s status: %s", self.name,
+                               self.status)
 
     @property
     def unique_uuid(self) -> str:
@@ -66,7 +73,7 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
         """Deep load Object informations from SDC."""
         url = "{}/sdc1/feProxy/rest/v1/followed".format(self.base_front_url)
         headers = headers_sdc_creator(SdcResource.headers)
-        if self.status == CERTIFICATION_IN_PROGRESS:
+        if self.status == const.UNDER_CERTIFICATION:
             headers = headers_sdc_tester(SdcResource.headers)
         response = self.send_message_json("GET", "Deep Load {}".format(
             type(self).__name__), url, headers=headers)
@@ -110,9 +117,10 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             base (str): base part of url
             subpath (str): subpath of url
             version_path (str): version path of the url
-            action_type (str, optional): the type of action ('distribution-state' or
-                                  'lifecycleState'). Default to
-                                  'lifecycleState').
+            action_type (str, optional): the type of action
+                                         ('distribution', 'distribution-state'
+                                         or 'lifecycleState'). Default to
+                                         'lifecycleState').
 
         Returns:
             str: the URL to use
@@ -213,7 +221,8 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             SdcResource: the created resource
 
         """
-        return cls(values['name'], sdc_values=values)
+        cls._logger.debug("importing SDC Resource %s from SDC", values['name'])
+        return cls(name=values['name'], sdc_values=values)
 
     def _copy_object(self, obj: 'SdcResource') -> None:
         """
@@ -249,28 +258,49 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             details ([type]): the details from SDC
         """
         self.unique_uuid = details['invariantUUID']
-        self.status = self._parse_sdc_status(details['lifecycleState'])
+        distribution_state = None
+        
+        if 'distributionStatus' in details:
+                distribution_state = details['distributionStatus']
+        self.status = self._parse_sdc_status(details['lifecycleState'],
+                                             distribution_state,
+                                             self._logger)
         self.version = details['version']
         self.unique_identifier = details['uniqueId']
 
     @staticmethod
-    def _parse_sdc_status(sdc_status: str) -> str:
+    def _parse_sdc_status(sdc_status: str, distribution_state: str,
+                          logger: logging.Logger) -> str:
         """
         Parse  SDC status in order to normalize it.
 
         Args:
             sdc_status (str): the status found in SDC
+            distribution_state (str): the distribution status found in SDC.
+                                        Can be None.
 
         Returns:
             str: the normalized status
 
         """
-        if sdc_status.capitalize() == CERTIFIED:
-            return CERTIFIED
-        if sdc_status == "NOT_CERTIFIED_CHECKOUT":
-            return DRAFT
-        if sdc_status == "NOT_CERTIFIED_CHECKIN":
-            return CHECKIN
+        logger.debug("Parse status for SDC Resource")
+        if sdc_status.capitalize() == const.CERTIFIED:
+            if distribution_state:
+                if distribution_state == const.DISTRIBUTION_NOT_APPROVED:
+                    return const.CERTIFIED
+                if distribution_state == const.DISTRIBUTION_APPROVED:
+                    return const.APPROVED
+                if distribution_state == const.SDC_DISTRIBUTED:
+                    return const.DISTRIBUTED
+            return const.CERTIFIED
+        if sdc_status == const.NOT_CERTIFIED_CHECKOUT:
+            return const.DRAFT
+        if sdc_status == const.NOT_CERTIFIED_CHECKIN:
+            return const.CHECKED_IN
+        if sdc_status == const.READY_FOR_CERTIFICATION:
+            return const.SUBMITTED
+        if sdc_status == const.CERTIFICATION_IN_PROGRESS:
+            return const.UNDER_CERTIFICATION
         if sdc_status != "":
             return sdc_status
         return None

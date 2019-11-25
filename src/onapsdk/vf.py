@@ -37,6 +37,7 @@ class Vf(SdcResource):
 
         Args:
             name (optional): the name of the vendor
+
         """
         super().__init__(sdc_values=sdc_values)
         self.name: str = name or "ONAP-test-VF"
@@ -45,8 +46,7 @@ class Vf(SdcResource):
     def create(self) -> None:
         """Create the Vf in SDC if not already existing."""
         if self.vsp:
-            self._create("vf_create.json.j2", name=self.name,
-                         vsp=self.vsp)
+            self._create("vf_create.json.j2", name=self.name, vsp=self.vsp)
 
     def _really_submit(self) -> None:
         """Really submit the SDC Vf in order to enable it."""

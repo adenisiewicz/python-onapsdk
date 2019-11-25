@@ -34,6 +34,7 @@ class Vendor(SdcElement):
 
         Args:
             name (optional): the name of the vendor
+
         """
         super().__init__()
         self.name: str = name or "Generic-Vendor"
@@ -50,8 +51,7 @@ class Vendor(SdcElement):
             self._really_submit()
         elif self.status == const.CERTIFIED:
             self._logger.warning(
-                "vendor %s in SDC is already submitted/certified",
-                self.name)
+                "vendor %s in SDC is already submitted/certified", self.name)
         elif not self.created():
             self._logger.warning("vendor %s in SDC is not created", self.name)
 

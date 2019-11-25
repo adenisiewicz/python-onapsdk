@@ -48,6 +48,7 @@ class Service(SdcResource):
 
         Args:
             name (optional): the name of the vendor
+
         """
         super().__init__(sdc_values=sdc_values)
         self.name: str = name or "ONAP-test-Service"
@@ -99,17 +100,20 @@ class Service(SdcResource):
                 "add_resource_to_service.json.j2")
             data = template.render(resource=resource,
                                    resource_type=type(resource).__name__)
-            result = self.send_message("POST", "Add {} to service".format(
-                type(resource).__name__), url, data=data)
+            result = self.send_message("POST",
+                                       "Add {} to service".format(
+                                           type(resource).__name__),
+                                       url,
+                                       data=data)
             if result:
                 self._logger.info("Resource %s %s has been added on serice %s",
                                   type(resource).__name__, resource.name,
                                   self.name)
                 return result
-            self._logger.error(
-                ("an error occured during adding resource %s %s"
-                 " on service %s in SDC"), type(resource).__name__,
-                resource.name, self.name)
+            self._logger.error(("an error occured during adding resource %s %s"
+                                " on service %s in SDC"),
+                               type(resource).__name__, resource.name,
+                               self.name)
             return None
         self._logger.error("Service is not in Draft mode")
         return None
@@ -126,27 +130,29 @@ class Service(SdcResource):
         """Start Certification on Service."""
         headers = headers_sdc_tester(SdcResource.headers)
         self._verify_lcm_to_sdc(const.SUBMITTED,
-                                   const.START_CERTIFICATION,
-                                   headers=headers)
+                                const.START_CERTIFICATION,
+                                headers=headers)
 
     def certify(self) -> None:
         """Certify Service in SDC."""
         headers = headers_sdc_tester(SdcResource.headers)
         self._verify_lcm_to_sdc(const.UNDER_CERTIFICATION,
-                                   const.CERTIFY,
-                                   headers=headers)
+                                const.CERTIFY,
+                                headers=headers)
 
     def approve(self) -> None:
         """Approve Service in SDC."""
         headers = headers_sdc_governor(SdcResource.headers)
-        self._verify_approve_to_sdc(const.CERTIFIED, const.APPROVE,
+        self._verify_approve_to_sdc(const.CERTIFIED,
+                                    const.APPROVE,
                                     headers=headers)
 
     def distribute(self) -> None:
         """Apptove Service in SDC."""
         headers = headers_sdc_operator(SdcResource.headers)
-        self._verify_distribute_to_sdc(const.APPROVED, const.DISTRIBUTE,
-                                   headers=headers)
+        self._verify_distribute_to_sdc(const.APPROVED,
+                                       const.DISTRIBUTE,
+                                       headers=headers)
 
     def get_tosca(self) -> None:
         """Get Service tosca files and save it."""
@@ -154,9 +160,11 @@ class Service(SdcResource):
                                                  self.identifier)
         headers = self.headers.copy()
         headers["Accept"] = "application/octet-stream"
-        result = self.send_message(
-            "GET", "Download Tosca Model for {}".format(self.name), url,
-            headers=headers)
+        result = self.send_message("GET",
+                                   "Download Tosca Model for {}".format(
+                                       self.name),
+                                   url,
+                                   headers=headers)
         if result:
             csar_filename = "service-{}-csar.csar".format(self.name)
             makedirs(tosca_path(), exist_ok=True)
@@ -166,12 +174,12 @@ class Service(SdcResource):
             try:
                 with ZipFile(tosca_path() + csar_filename) as myzip:
                     for name in myzip.namelist():
-                        if (name[-13:] == "-template.yml" and
-                                name[:20] == "Definitions/service-"):
+                        if (name[-13:] == "-template.yml"
+                                and name[:20] == "Definitions/service-"):
                             service_template = name
                     with myzip.open(service_template) as file1:
-                        with open(tosca_path() +
-                                  service_template[12:], 'wb') as file2:
+                        with open(tosca_path() + service_template[12:],
+                                  'wb') as file2:
                             file2.write(file1.read())
             except BadZipFile as exc:
                 self._logger.exception(exc)
@@ -183,7 +191,9 @@ class Service(SdcResource):
         headers = headers_sdc_operator(SdcResource.headers)
         result = self.send_message_json("GET",
                                         "Check distribution for {}".format(
-                                            self.name), url, headers=headers)
+                                            self.name),
+                                        url,
+                                        headers=headers)
         status = {}
         for component in components_needing_distribution():
             status[component] = False
@@ -193,8 +203,8 @@ class Service(SdcResource):
                                distrib_list)
             for elt in distrib_list:
                 for key in status:
-                    if ((key in elt['omfComponentID']) and
-                            (const.DOWNLOAD_OK in elt['status'])):
+                    if ((key in elt['omfComponentID'])
+                            and (const.DOWNLOAD_OK in elt['status'])):
                         status[key] = True
                         self._logger.info(("[SDC][Get Distribution] Service "
                                            "distributed in %s"), key)
@@ -211,8 +221,10 @@ class Service(SdcResource):
         headers = headers_sdc_operator(SdcResource.headers)
         result = self.send_message_json("GET",
                                         "Get Metadata for {}".format(
-                                            self.name), url, headers=headers)
-        if (result and 'distributionStatusOfServiceList'in result):
+                                            self.name),
+                                        url,
+                                        headers=headers)
+        if (result and 'distributionStatusOfServiceList' in result):
             dist_status = result['distributionStatusOfServiceList'][-1]
             self._distribution_id = dist_status['distributionID']
 
@@ -242,25 +254,24 @@ class Service(SdcResource):
             obj (Service): the object to "copy"
 
         """
-        self._distributed = obj._distributed
+        self._distributed = obj.distributed
 
     def _verify_distribute_to_sdc(self, desired_status: str,
                                   desired_action: str, **kwargs) -> None:
         self._verify_action_to_sdc(desired_status, desired_action,
                                    "distribution", **kwargs)
 
-    def _verify_approve_to_sdc(self, desired_status: str,
-                               desired_action: str, **kwargs) -> None:
+    def _verify_approve_to_sdc(self, desired_status: str, desired_action: str,
+                               **kwargs) -> None:
         self._verify_action_to_sdc(desired_status, desired_action,
                                    "distribution-state", **kwargs)
 
-    def _verify_lcm_to_sdc(self, desired_status: str,
-                           desired_action: str, **kwargs) -> None:
+    def _verify_lcm_to_sdc(self, desired_status: str, desired_action: str,
+                           **kwargs) -> None:
         self._verify_action_to_sdc(desired_status, desired_action,
                                    "lifecycleState", **kwargs)
 
-    def _verify_action_to_sdc(self, desired_status: str,
-                              desired_action: str,
+    def _verify_action_to_sdc(self, desired_status: str, desired_action: str,
                               action_type: str, **kwargs) -> None:
         """
         Verify action to SDC.
@@ -276,8 +287,8 @@ class Service(SdcResource):
             **kwargs: any specific stuff to give to requests
 
         """
-        self._logger.info("attempting to %s Service %s in SDC",
-                          desired_action, self.name)
+        self._logger.info("attempting to %s Service %s in SDC", desired_action,
+                          self.name)
         if self.status == desired_status and self.created():
             result = self._action_to_sdc(desired_action,
                                          action_type=action_type,

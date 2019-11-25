@@ -39,6 +39,7 @@ class Vsp(SdcElement):
 
         Args:
             name (optional): the name of the vsp
+
         """
         super().__init__()
         self._csar_uuid: str = None
@@ -54,7 +55,8 @@ class Vsp(SdcElement):
     def create(self) -> None:
         """Create the Vsp in SDC if not already existing."""
         if self.vendor:
-            self._create("vsp_create.json.j2", name=self.name,
+            self._create("vsp_create.json.j2",
+                         name=self.name,
                          vendor=self.vendor)
 
     def upload_files(self, file_to_upload: BinaryIO) -> None:
@@ -65,23 +67,28 @@ class Vsp(SdcElement):
             file_to_upload (file): the zip file to upload
 
         """
-        self._action("upload files", const.DRAFT,
-                     self._upload_action, file_to_upload=file_to_upload)
+        self._action("upload files",
+                     const.DRAFT,
+                     self._upload_action,
+                     file_to_upload=file_to_upload)
 
     def validate(self) -> None:
         """Validate the artifacts uploaded."""
-        self._action("validate", const.UPLOADED,
-                     self._validate_action)
+        self._action("validate", const.UPLOADED, self._validate_action)
 
     def commit(self) -> None:
         """Commit the SDC Vsp."""
-        self._action("commit", const.VALIDATED,
-                     self._generic_action, action=const.COMMIT)
+        self._action("commit",
+                     const.VALIDATED,
+                     self._generic_action,
+                     action=const.COMMIT)
 
     def submit(self) -> None:
         """Submit the SDC Vsp in order to enable it."""
-        self._action("certify/sumbit", const.COMMITED,
-                     self._generic_action, action=const.SUBMIT)
+        self._action("certify/sumbit",
+                     const.COMMITED,
+                     self._generic_action,
+                     action=const.SUBMIT)
 
     def create_csar(self) -> None:
         """Create the CSAR package in the SDC Vsp."""
@@ -123,8 +130,10 @@ class Vsp(SdcElement):
             headers.pop("Content-Type")
             headers["Accept-Encoding"] = "gzip, deflate"
             data = {'upload': file_to_upload}
-            upload_result = self.send_message('POST', 'upload ZIP for Vsp',
-                                              url, headers=headers,
+            upload_result = self.send_message('POST',
+                                              'upload ZIP for Vsp',
+                                              url,
+                                              headers=headers,
                                               files=data)
             if upload_result:
                 self._logger.info("Files for Vsp %s have been uploaded",
@@ -206,8 +215,8 @@ class Vsp(SdcElement):
 
         """
         item_details = self._get_item_details()
-        if (item_details and
-                item_details['results'][-1]['status'] == const.CERTIFIED):
+        if (item_details
+                and item_details['results'][-1]['status'] == const.CERTIFIED):
             self._status = const.CERTIFIED
         else:
             self._check_status_not_certified()
@@ -216,9 +225,9 @@ class Vsp(SdcElement):
         """Check a status when it's not certified."""
         vsp_version_details = self._get_item_version_details()
         vsp_details = self._get_vsp_details()
-        if (vsp_version_details and 'state' in vsp_version_details and
-                not vsp_version_details['state']['dirty'] and vsp_details and
-                'validationData' in vsp_details):
+        if (vsp_version_details and 'state' in vsp_version_details
+                and not vsp_version_details['state']['dirty'] and vsp_details
+                and 'validationData' in vsp_details):
             self._status = const.COMMITED
         else:
             self._check_status_not_commited()
@@ -260,7 +269,7 @@ class Vsp(SdcElement):
         vsp.identifier = values['id']
         vsp.vendor = Vendor(name=values['vendorName'])
         vsp.load_status()
-        cls._logger.info("status of VSP %s: %s", vsp.name, vsp._status)
+        cls._logger.info("status of VSP %s: %s", vsp.name, vsp.status)
         return vsp
 
     def _really_submit(self) -> None:

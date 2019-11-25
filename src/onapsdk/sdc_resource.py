@@ -10,6 +10,7 @@ from onapsdk.sdc import SDC
 from onapsdk.utils.headers_creator import (headers_sdc_creator,
                                            headers_sdc_tester)
 
+
 # For an unknown reason, pylint keeps seeing _unique_uuid and
 # _unique_identifier as attributes along with unique_uuid and unique_identifier
 class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
@@ -75,8 +76,11 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
         headers = headers_sdc_creator(SdcResource.headers)
         if self.status == const.UNDER_CERTIFICATION:
             headers = headers_sdc_tester(SdcResource.headers)
-        response = self.send_message_json("GET", "Deep Load {}".format(
-            type(self).__name__), url, headers=headers)
+        response = self.send_message_json("GET",
+                                          "Deep Load {}".format(
+                                              type(self).__name__),
+                                          url,
+                                          headers=headers)
         if response:
             for resource in response[self.PATH]:
                 if resource["uuid"] == self.identifier:
@@ -108,7 +112,10 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
         """
         return self.unique_identifier
 
-    def _action_url(self, base: str, subpath: str, version_path: str,
+    def _action_url(self,
+                    base: str,
+                    subpath: str,
+                    version_path: str,
                     action_type: str = None) -> str:
         """
         Generate action URL for SDC.
@@ -128,11 +135,8 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
         """
         if not action_type:
             action_type = "lifecycleState"
-        return "{}/{}/{}/{}/{}".format(base,
-                                        self._resource_type,
-                                        version_path,
-                                        action_type,
-                                        subpath)
+        return "{}/{}/{}/{}/{}".format(base, self._resource_type, version_path,
+                                       action_type, subpath)
 
     @classmethod
     def _base_create_url(cls) -> str:
@@ -169,8 +173,8 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
                                               cls.__name__.upper())
 
     @classmethod
-    def _get_objects_list(
-            cls, result: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _get_objects_list(cls, result: List[Dict[str, Any]]
+                          ) -> List[Dict[str, Any]]:
         """
         Import objects created in SDC.
 
@@ -247,7 +251,6 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             obj (SdcResource): the object to "copy"
 
         """
-
     def update_informations_from_sdc_creation(self,
                                               details: Dict[str, Any]) -> None:
         """
@@ -256,18 +259,20 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
 
         Args:
             details ([type]): the details from SDC
+
         """
         self.unique_uuid = details['invariantUUID']
         distribution_state = None
-        
+
         if 'distributionStatus' in details:
-                distribution_state = details['distributionStatus']
+            distribution_state = details['distributionStatus']
         self.status = self._parse_sdc_status(details['lifecycleState'],
-                                             distribution_state,
-                                             self._logger)
+                                             distribution_state, self._logger)
         self.version = details['version']
         self.unique_identifier = details['uniqueId']
 
+    # Not my fault if SDC has so many states...
+    # pylint: disable=too-many-return-statements
     @staticmethod
     def _parse_sdc_status(sdc_status: str, distribution_state: str,
                           logger: logging.Logger) -> str:

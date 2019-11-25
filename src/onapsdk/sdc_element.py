@@ -80,7 +80,9 @@ class SdcElement(SDC):
         return "{}/versions/{}".format(self.identifier, self.version)
 
     @staticmethod
-    def _action_url(base: str, subpath: str, version_path: str,
+    def _action_url(base: str,
+                    subpath: str,
+                    version_path: str,
                     action_type: str = None) -> str:
         """
         Generate action URL for SDC.
@@ -95,12 +97,11 @@ class SdcElement(SDC):
             str: the URL to use
 
         """
-        return "{}/{}/{}/actions".format(base, subpath,
-                                         version_path)
+        return "{}/{}/{}/actions".format(base, subpath, version_path)
 
     @classmethod
-    def _get_objects_list(
-            cls, result: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _get_objects_list(cls, result: List[Dict[str, Any]]
+                          ) -> List[Dict[str, Any]]:
         """
         Import objects created in SDC.
 

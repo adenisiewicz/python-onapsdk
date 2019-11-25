@@ -5,7 +5,8 @@
 from typing import Dict
 
 
-def headers_sdc_creator(base_header: Dict[str, str], user: str = "cs0008",
+def headers_sdc_creator(base_header: Dict[str, str],
+                        user: str = "cs0008",
                         authorization: str = None):
     """
     Create the right headers for SDC creator type.
@@ -23,7 +24,8 @@ def headers_sdc_creator(base_header: Dict[str, str], user: str = "cs0008",
     return headers_sdc_generic(base_header, user, authorization=authorization)
 
 
-def headers_sdc_tester(base_header: Dict[str, str], user: str = "jm0007",
+def headers_sdc_tester(base_header: Dict[str, str],
+                       user: str = "jm0007",
                        authorization: str = None):
     """
     Create the right headers for SDC tester type.
@@ -41,7 +43,8 @@ def headers_sdc_tester(base_header: Dict[str, str], user: str = "jm0007",
     return headers_sdc_generic(base_header, user, authorization=authorization)
 
 
-def headers_sdc_governor(base_header: Dict[str, str], user: str = "gv0001",
+def headers_sdc_governor(base_header: Dict[str, str],
+                         user: str = "gv0001",
                          authorization: str = None):
     """
     Create the right headers for SDC governor type.
@@ -59,7 +62,8 @@ def headers_sdc_governor(base_header: Dict[str, str], user: str = "gv0001",
     return headers_sdc_generic(base_header, user, authorization=authorization)
 
 
-def headers_sdc_operator(base_header: Dict[str, str], user: str = "op0001",
+def headers_sdc_operator(base_header: Dict[str, str],
+                         user: str = "op0001",
                          authorization: str = None):
     """
     Create the right headers for SDC operator type.
@@ -77,7 +81,8 @@ def headers_sdc_operator(base_header: Dict[str, str], user: str = "op0001",
     return headers_sdc_generic(base_header, user, authorization=authorization)
 
 
-def headers_sdc_generic(base_header: Dict[str, str], user: str,
+def headers_sdc_generic(base_header: Dict[str, str],
+                        user: str,
                         authorization: str = None):
     """
     Create the right headers for SDC generic type.

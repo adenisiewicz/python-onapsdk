@@ -27,4 +27,5 @@ for BRANCH in $(git branch --remotes --format '%(refname:lstrip=3)' | grep -Ev '
     cd ${INITIAL_FOLDER}
 done
 ln public/develop public/latest
+
 git checkout $INITIAL_BRANCH

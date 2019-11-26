@@ -1,6 +1,6 @@
 requests
 jinja2
-simplejson
+simplejson==3.17.0
 mock
 pytest
 pytest-cov

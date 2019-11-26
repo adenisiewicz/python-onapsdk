@@ -26,6 +26,9 @@ for BRANCH in $(git branch --remotes --format '%(refname:lstrip=3)' | grep -Ev '
     rm -rf _build/html/
     cd ${INITIAL_FOLDER}
 done
+
+# "Develop" is the default branch so we point it as "latest"
+# May/Will change to point master
 ln public/develop public/latest
 
 git checkout $INITIAL_BRANCH

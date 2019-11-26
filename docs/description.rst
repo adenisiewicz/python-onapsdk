@@ -3,7 +3,7 @@ Description
 
 ONAP SDK is a client library written in Pyhton for building applications to work with ONAP. The project aims to provide a consistent and complete set of interactions with ONAP’s many services, along with complete documentation, examples, and tools.
 Python.
-Using few python commands, you should be able to onboard and instantiate
+Using few python commands, you should be able to onboard, distribute models and instantiate xNFs
 (simple) services.
 
 First iteration will propose "Legacy" API onboarding and instantiation but new

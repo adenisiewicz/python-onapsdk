@@ -70,7 +70,8 @@ pages:
   stage: deploy
   image: 
     name: testthedocs/ttd-sphinx
-    entrypoint: sh
+    entrypoint: 
+      - sh
   script:
     - chmod +x scripts/build_all_branches_in.sh
     - scripts/build_all_branches_in.sh

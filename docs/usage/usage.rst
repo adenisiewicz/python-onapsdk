@@ -1,7 +1,7 @@
 Usage
 #####
 
-a knowledge of ONAP is needed, especially on the onboarding part
+A minimum knowledge of ONAP is needed, especially on the onboarding part.
 
 Onboard a Vendor
 ----------------

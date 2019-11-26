@@ -1,7 +1,7 @@
 Installation
 ############
 
-Installation via PiP
+Installing with pip
 --------------------
 
 .. code:: shell

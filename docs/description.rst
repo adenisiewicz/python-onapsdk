@@ -1,7 +1,7 @@
 Description
 ###########
 
-ONAP SDK is aimed to access to ONAP (www.onap.org) programmatically using
+ONAP SDK is a client library written in Pyhton for building applications to work with ONAP. The project aims to provide a consistent and complete set of interactions with ONAP’s many services, along with complete documentation, examples, and tools.
 Python.
 Using few python commands, you should be able to onboard and instantiate
 (simple) services.

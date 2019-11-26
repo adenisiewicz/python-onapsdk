@@ -7,4 +7,4 @@ Using few python commands, you should be able to onboard, distribute models and 
 (simple) services.
 
 First beta release will deal with ONAP "Legacy" APIs but new
-API and policy integration is planned
+APIs, CDS and policy integration is planned for next releases.

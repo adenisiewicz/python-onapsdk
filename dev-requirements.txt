@@ -4,4 +4,4 @@ simplejson
 mock
 pytest
 pytest-cov
-pytest-mock
+pytest-mock==1.12.1

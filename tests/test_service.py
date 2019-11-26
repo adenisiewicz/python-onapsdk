@@ -372,14 +372,6 @@ def test_really_submit_OK(mock_load, mock_action):
     mock_load.assert_called_once()
     mock_action.assert_called_once_with('Certify', action_type='lifecycleState')
 
-def test_specific_copy():
-    svc = Service()
-    svc2 = Service()
-    svc2._distributed = True
-    assert not svc._distributed
-    svc._specific_copy(svc2)
-    assert svc._distributed
-
 @mock.patch.object(Service, 'load')
 @mock.patch.object(Service, '_action_to_sdc')
 @mock.patch.object(Service, 'created')

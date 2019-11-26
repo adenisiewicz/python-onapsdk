@@ -57,6 +57,7 @@ integration_tests:
     - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-sdc:develop
       alias: sdc.api.fe.simpledemo.onap.org
   image: python:3.7
+  allow_failure: true
   script:
     - pip install .
     - pip install pytest mock # mock is needed as pytest parse all files before selection

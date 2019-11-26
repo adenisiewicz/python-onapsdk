@@ -1,5 +1,5 @@
 requests
-jinja2
+jinja2==2.10.3
 simplejson
 mock
 pytest

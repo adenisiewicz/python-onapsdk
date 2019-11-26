@@ -6,4 +6,4 @@ Installing with pip
 
 .. code:: shell
 
-    $ pip install python-onapsdk
+    $ pip install onapsdk

@@ -2,6 +2,6 @@ requests
 jinja2
 simplejson
 mock
-pytest
+pytest==5.3.1
 pytest-cov
 pytest-mock

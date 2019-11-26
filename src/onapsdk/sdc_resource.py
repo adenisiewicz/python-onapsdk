@@ -252,7 +252,6 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
             obj (SdcResource): the object to "copy"
 
         """
-
     def update_informations_from_sdc(self, details: Dict[str, Any]) -> None:
         """
 
@@ -262,7 +261,6 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
             details ([type]): [description]
 
         """
-
     def update_informations_from_sdc_creation(self,
                                               details: Dict[str, Any]) -> None:
         """

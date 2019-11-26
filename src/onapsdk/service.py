@@ -224,8 +224,8 @@ class Service(SdcResource):
                                             self.name),
                                         url,
                                         headers=headers)
-        if (result and 'distributionStatusOfServiceList' in result and
-            len(result['distributionStatusOfServiceList']) > 0):
+        if (result and 'distributionStatusOfServiceList' in result
+                and len(result['distributionStatusOfServiceList']) > 0):
             dist_status = result['distributionStatusOfServiceList'][-1]
             self._distribution_id = dist_status['distributionID']
 
@@ -255,7 +255,6 @@ class Service(SdcResource):
             obj (Service): the object to "copy"
 
         """
-
     def _verify_distribute_to_sdc(self, desired_status: str,
                                   desired_action: str, **kwargs) -> None:
         self._verify_action_to_sdc(desired_status, desired_action,

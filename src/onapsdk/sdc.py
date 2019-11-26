@@ -231,7 +231,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @classmethod
     @abstractmethod
     def _get_all_url(cls) -> str:
@@ -242,7 +241,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     def __eq__(self, other: Any) -> bool:
         """
         Check equality for SDC and children.
@@ -289,7 +287,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @classmethod
     @abstractmethod
     def _base_create_url(cls) -> str:
@@ -300,7 +297,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @classmethod
     @abstractmethod
     def import_from_sdc(cls, values: Dict[str, Any]) -> 'SDC':
@@ -314,7 +310,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @abstractmethod
     def load(self) -> None:
         """
@@ -324,7 +319,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @abstractmethod
     def _copy_object(self, obj: 'SDC') -> None:
         """
@@ -337,7 +331,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @abstractmethod
     def _get_version_from_sdc(self, sdc_infos: Dict[str, Any]) -> str:
         """
@@ -350,7 +343,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @abstractmethod
     def _get_identifier_from_sdc(self, sdc_infos: Dict[str, Any]) -> str:
         """
@@ -363,7 +355,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @abstractmethod
     def _generate_action_subpath(self, action: str) -> str:
         """
@@ -377,7 +368,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @abstractmethod
     def _version_path(self) -> str:
         """
@@ -387,11 +377,9 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @abstractmethod
     def _really_submit(self) -> None:
         """Really submit the SDC Vf in order to enable it."""
-
     @staticmethod
     @abstractmethod
     def _action_url(base: str,
@@ -405,7 +393,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-
     @classmethod
     @abstractmethod
     def _sdc_path(cls) -> None:

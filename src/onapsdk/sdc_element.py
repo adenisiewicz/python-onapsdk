@@ -38,7 +38,6 @@ class SdcElement(SDC, ABC):
             details ([type]): [description]
 
         """
-
     def update_informations_from_sdc_creation(self,
                                               details: Dict[str, Any]) -> None:
         """
@@ -49,7 +48,6 @@ class SdcElement(SDC, ABC):
             details ([type]): the details from SDC
 
         """
-
     @classmethod
     def _base_url(cls) -> str:
         """

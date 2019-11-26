@@ -24,7 +24,7 @@ class Vendor(SdcElement):
 
     """
 
-    PATH = "vendor-license-models"
+    VENDOR_PATH = "vendor-license-models"
     _logger: logging.Logger = logging.getLogger(__name__)
     headers = headers_sdc_creator(SdcElement.headers)
 
@@ -87,3 +87,8 @@ class Vendor(SdcElement):
         result = self._action_to_sdc(const.SUBMIT)
         if result:
             self._status = const.CERTIFIED
+
+    @classmethod
+    def _sdc_path(cls) -> None:
+        """Give back the end of SDC path."""
+        return cls.VENDOR_PATH

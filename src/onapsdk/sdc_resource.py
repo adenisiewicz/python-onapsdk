@@ -18,7 +18,7 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
     """Mother Class of all SDC resources."""
 
     _logger: logging.Logger = logging.getLogger(__name__)
-    SDC_PATH = 'resources'
+    RESOURCE_PATH = 'resources'
     ACTION_TEMPLATE = 'sdc_resource_action.json.j2'
     ACTION_METHOD = 'POST'
 
@@ -83,10 +83,10 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
                                           url,
                                           headers=headers)
         if response:
-            for resource in response[self.SDC_PATH]: # pylint: disable=no-member
+            for resource in response[self._sdc_path()]:
                 if resource["uuid"] == self.identifier:
                     self._logger.debug("Resource %s found in %s list",
-                                       resource["name"], self.SDC_PATH)  # pylint: disable=no-member
+                                       resource["name"], self._sdc_path())
                     self.unique_identifier = resource["uniqueId"]
 
     def _generate_action_subpath(self, action: str) -> str:
@@ -170,7 +170,7 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
             str: the url
 
         """
-        return "{}/{}?resourceType={}".format(cls._base_url(), cls.SDC_PATH, # pylint: disable=no-member
+        return "{}/{}?resourceType={}".format(cls._base_url(), cls._sdc_path(),
                                               cls.__name__.upper())
 
     @classmethod
@@ -325,3 +325,8 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
     def _really_submit(self) -> None:
         """Really submit the SDC Vf in order to enable it."""
         raise NotImplementedError("SDC is an abstract class")
+
+    @classmethod
+    def _sdc_path(cls) -> None:
+        """Give back the end of SDC path."""
+        return cls.RESOURCE_PATH

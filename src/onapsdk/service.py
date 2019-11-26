@@ -38,7 +38,7 @@ class Service(SdcResource):
 
     """
 
-    SDC_PATH = "services"
+    SERVICE_PATH = "services"
     _logger: logging.Logger = logging.getLogger(__name__)
     headers = headers_sdc_creator(SdcResource.headers)
 
@@ -93,7 +93,7 @@ class Service(SdcResource):
         """
         if self.status == const.DRAFT:
             url = "{}/{}/{}/resourceInstance".format(self._base_create_url(),
-                                                     self.SDC_PATH, # pylint: disable=no-member
+                                                     self._sdc_path(),
                                                      self.unique_identifier)
 
             template = jinja_env().get_template(
@@ -224,7 +224,8 @@ class Service(SdcResource):
                                             self.name),
                                         url,
                                         headers=headers)
-        if (result and 'distributionStatusOfServiceList' in result):
+        if (result and 'distributionStatusOfServiceList' in result and
+            len(result['distributionStatusOfServiceList']) > 0):
             dist_status = result['distributionStatusOfServiceList'][-1]
             self._distribution_id = dist_status['distributionID']
 
@@ -237,7 +238,7 @@ class Service(SdcResource):
             str: the url
 
         """
-        return "{}/{}".format(cls._base_url(), cls.SDC_PATH) # pylint: disable=no-member
+        return "{}/{}".format(cls._base_url(), cls._sdc_path())
 
     def _really_submit(self) -> None:
         """Really submit the SDC Service in order to enable it."""
@@ -254,7 +255,6 @@ class Service(SdcResource):
             obj (Service): the object to "copy"
 
         """
-        self._distributed = obj.distributed
 
     def _verify_distribute_to_sdc(self, desired_status: str,
                                   desired_action: str, **kwargs) -> None:
@@ -301,3 +301,8 @@ class Service(SdcResource):
             self._logger.warning(("Service %s in SDC is in status %s and it "
                                   "should be in  status %s"), self.name,
                                  self.status, desired_status)
+
+    @classmethod
+    def _sdc_path(cls) -> None:
+        """Give back the end of SDC path."""
+        return cls.SERVICE_PATH

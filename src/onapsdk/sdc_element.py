@@ -17,7 +17,6 @@ class SdcElement(SDC, ABC):
     _logger: logging.Logger = logging.getLogger(__name__)
     ACTION_TEMPLATE = 'sdc_element_action.json.j2'
     ACTION_METHOD = 'PUT'
-    SDC_PATH = ''
 
     def load(self) -> None:
         """Load Object information from SDC."""
@@ -85,7 +84,7 @@ class SdcElement(SDC, ABC):
             str: the subpath part
 
         """
-        subpath = self.SDC_PATH # pylint: disable=no-member
+        subpath = self._sdc_path()
         if action == const.COMMIT:
             subpath = "items"
         return subpath
@@ -144,7 +143,7 @@ class SdcElement(SDC, ABC):
             str: the url
 
         """
-        return "{}/{}".format(cls._base_url(), cls.SDC_PATH) # pylint: disable=no-member
+        return "{}/{}".format(cls._base_url(), cls._sdc_path())
 
     def _copy_object(self, obj: 'SdcElement') -> None:
         """

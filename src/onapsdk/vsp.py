@@ -29,7 +29,7 @@ class Vsp(SdcElement):
 
     """
 
-    SDC_PATH = "vendor-software-products"
+    VSP_PATH = "vendor-software-products"
     _logger: logging.Logger = logging.getLogger(__name__)
     headers = headers_sdc_creator(SdcElement.headers)
 
@@ -125,7 +125,7 @@ class Vsp(SdcElement):
         """Do upload for real."""
         if file_to_upload:
             url = "{}/{}/{}/orchestration-template-candidate".format(
-                self._base_url(), Vsp.SDC_PATH, self._version_path()) # pylint: disable=no-member
+                self._base_url(), Vsp._sdc_path(), self._version_path())
             headers = self.headers.copy()
             headers.pop("Content-Type")
             headers["Accept-Encoding"] = "gzip, deflate"
@@ -146,7 +146,7 @@ class Vsp(SdcElement):
     def _validate_action(self):
         """Do validate for real."""
         url = "{}/{}/{}/orchestration-template-candidate/process".format(
-            self._base_url(), Vsp.SDC_PATH, self._version_path()) # pylint: disable=no-member
+            self._base_url(), Vsp._sdc_path(), self._version_path())
         validate_result = self.send_message_json('PUT',
                                                  'Validate artifacts for Vsp',
                                                  url)
@@ -275,3 +275,8 @@ class Vsp(SdcElement):
     def _really_submit(self) -> None:
         """Really submit the SDC Vf in order to enable it."""
         raise NotImplementedError("VSP don't need _really_submit")
+
+    @classmethod
+    def _sdc_path(cls) -> None:
+        """Give back the end of SDC path."""
+        return cls.VSP_PATH

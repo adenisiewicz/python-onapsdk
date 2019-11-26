@@ -7,6 +7,7 @@ import pytest
 
 import requests
 
+from onapsdk.sdc import SDC
 from onapsdk.vendor import Vendor
 from onapsdk.vsp import Vsp
 from onapsdk.vf import Vf
@@ -17,9 +18,10 @@ import onapsdk.constants as const
 @pytest.mark.integration
 def test_service_unknown():
     """Integration tests for Service."""
-    response = requests.post("{}/reset".format(Vendor.base_front_url))
+    SDC.base_front_url = "http://sdc.api.fe.simpledemo.onap.org:30206"
+    SDC.base_back_url = Vendor.base_front_url
+    response = requests.post("{}/reset".format(SDC.base_front_url))
     response.raise_for_status()
-    Vf.base_back_url = Vf.base_front_url
     vendor = Vendor(name="test")
     vendor.create()
     vendor.submit()
@@ -37,6 +39,7 @@ def test_service_unknown():
     vf.create()
     vf.submit()
     vf.load()
+    assert vf.unique_identifier is not None
     svc = Service(name='test')
     assert svc.identifier is None
     assert svc.status is None
@@ -45,15 +48,15 @@ def test_service_unknown():
     assert svc.status == const.DRAFT
     svc.add_resource(vf)
     svc.checkin()
-    assert svc.status == const.CHECKIN
+    assert svc.status == const.CHECKED_IN
     svc.submit()
-    assert svc.status == const.DRAFT
+    assert svc.status == const.SUBMITTED
     svc.start_certification()
-    assert svc.status == const.DRAFT
+    assert svc.status == const.UNDER_CERTIFICATION
     svc.certify()
     assert svc.status == const.CERTIFIED
     svc.approve()
-    assert svc.status == const.DRAFT
+    assert svc.status == const.APPROVED
     svc.distribute()
-    assert svc.status == const.DRAFT
+    assert svc.status == const.DISTRIBUTED
     assert svc.distributed

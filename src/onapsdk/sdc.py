@@ -17,7 +17,6 @@ class SDC(OnapService, ABC):
     """Mother Class of all SDC elements."""
 
     server: str = "SDC"
-    SDC_PATH: str
     ACTION_TEMPLATE: str
     ACTION_METHOD: str
     base_front_url = "https://sdc.api.fe.simpledemo.onap.org:30207"
@@ -136,7 +135,7 @@ class SDC(OnapService, ABC):
         self._logger.info("attempting to create %s %s in SDC",
                           type(self).__name__, self.name)
         if not self.exists():
-            url = "{}/{}".format(self._base_create_url(), self.SDC_PATH)
+            url = "{}/{}".format(self._base_create_url(), self._sdc_path())
             template = jinja_env().get_template(template_name)
             data = template.render(**kwargs)
             create_result = self.send_message_json('POST',
@@ -232,7 +231,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @classmethod
     @abstractmethod
@@ -244,7 +242,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     def __eq__(self, other: Any) -> bool:
         """
@@ -292,7 +289,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @classmethod
     @abstractmethod
@@ -304,7 +300,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @classmethod
     @abstractmethod
@@ -319,7 +314,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @abstractmethod
     def load(self) -> None:
@@ -330,7 +324,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @abstractmethod
     def _copy_object(self, obj: 'SDC') -> None:
@@ -344,7 +337,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @abstractmethod
     def _get_version_from_sdc(self, sdc_infos: Dict[str, Any]) -> str:
@@ -358,7 +350,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @abstractmethod
     def _get_identifier_from_sdc(self, sdc_infos: Dict[str, Any]) -> str:
@@ -372,7 +363,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @abstractmethod
     def _generate_action_subpath(self, action: str) -> str:
@@ -387,7 +377,6 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @abstractmethod
     def _version_path(self) -> str:
@@ -398,12 +387,10 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
 
     @abstractmethod
     def _really_submit(self) -> None:
         """Really submit the SDC Vf in order to enable it."""
-        raise NotImplementedError("SDC is an abstract class")
 
     @staticmethod
     @abstractmethod
@@ -418,4 +405,8 @@ class SDC(OnapService, ABC):
             NotImplementedError: this is an abstract method.
 
         """
-        raise NotImplementedError("SDC is an abstract class")
+
+    @classmethod
+    @abstractmethod
+    def _sdc_path(cls) -> None:
+        """Give back the end of SDC path."""

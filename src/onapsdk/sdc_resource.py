@@ -4,6 +4,7 @@
 """SDC Element module."""
 import logging
 from typing import Any, Dict, List
+from abc import ABC
 
 import onapsdk.constants as const
 from onapsdk.sdc import SDC
@@ -13,11 +14,11 @@ from onapsdk.utils.headers_creator import (headers_sdc_creator,
 
 # For an unknown reason, pylint keeps seeing _unique_uuid and
 # _unique_identifier as attributes along with unique_uuid and unique_identifier
-class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
+class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
     """Mother Class of all SDC resources."""
 
     _logger: logging.Logger = logging.getLogger(__name__)
-    PATH = "resources"
+    SDC_PATH = 'resources'
     ACTION_TEMPLATE = 'sdc_resource_action.json.j2'
     ACTION_METHOD = 'POST'
 
@@ -82,10 +83,10 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
                                           url,
                                           headers=headers)
         if response:
-            for resource in response[self.PATH]:
+            for resource in response[self.SDC_PATH]: # pylint: disable=no-member
                 if resource["uuid"] == self.identifier:
                     self._logger.debug("Resource %s found in %s list",
-                                       resource["name"], self.PATH)
+                                       resource["name"], self.SDC_PATH)  # pylint: disable=no-member
                     self.unique_identifier = resource["uniqueId"]
 
     def _generate_action_subpath(self, action: str) -> str:
@@ -169,7 +170,7 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             str: the url
 
         """
-        return "{}/{}?resourceType={}".format(cls._base_url(), cls.PATH,
+        return "{}/{}?resourceType={}".format(cls._base_url(), cls.SDC_PATH, # pylint: disable=no-member
                                               cls.__name__.upper())
 
     @classmethod
@@ -251,6 +252,17 @@ class SdcResource(SDC):  # pylint: disable=too-many-instance-attributes
             obj (SdcResource): the object to "copy"
 
         """
+
+    def update_informations_from_sdc(self, details: Dict[str, Any]) -> None:
+        """
+
+        Update instance with details from SDC.
+
+        Args:
+            details ([type]): [description]
+
+        """
+
     def update_informations_from_sdc_creation(self,
                                               details: Dict[str, Any]) -> None:
         """

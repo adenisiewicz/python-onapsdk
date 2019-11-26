@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """SDC Element module."""
-from typing import Any
-from typing import Dict
-from typing import List
+from typing import Any, Dict, List
+from abc import ABC, abstractmethod
 
 import logging
 from requests import Response
@@ -14,11 +13,11 @@ import onapsdk.constants as const
 from onapsdk.utils.jinja import jinja_env
 
 
-class SDC(OnapService):
+class SDC(OnapService, ABC):
     """Mother Class of all SDC elements."""
 
     server: str = "SDC"
-    PATH: str
+    SDC_PATH: str
     ACTION_TEMPLATE: str
     ACTION_METHOD: str
     base_front_url = "https://sdc.api.fe.simpledemo.onap.org:30207"
@@ -137,7 +136,7 @@ class SDC(OnapService):
         self._logger.info("attempting to create %s %s in SDC",
                           type(self).__name__, self.name)
         if not self.exists():
-            url = "{}/{}".format(self._base_create_url(), self.PATH)
+            url = "{}/{}".format(self._base_create_url(), self.SDC_PATH)
             template = jinja_env().get_template(template_name)
             data = template.render(**kwargs)
             create_result = self.send_message_json('POST',
@@ -220,6 +219,7 @@ class SDC(OnapService):
         return {}
 
     @classmethod
+    @abstractmethod
     def _get_objects_list(cls,
                           result: List[Dict[str, Any]]) -> List['SdcResource']:
         """
@@ -235,6 +235,7 @@ class SDC(OnapService):
         raise NotImplementedError("SDC is an abstract class")
 
     @classmethod
+    @abstractmethod
     def _get_all_url(cls) -> str:
         """
         Get URL for all elements in SDC.
@@ -260,6 +261,7 @@ class SDC(OnapService):
             return self.name == other.name
         return False
 
+    @abstractmethod
     def update_informations_from_sdc(self, details: Dict[str, Any]) -> None:
         """
 
@@ -269,6 +271,7 @@ class SDC(OnapService):
             details ([type]): [description]
 
         """
+    @abstractmethod
     def update_informations_from_sdc_creation(self,
                                               details: Dict[str, Any]) -> None:
         """
@@ -280,6 +283,7 @@ class SDC(OnapService):
 
         """
     @classmethod
+    @abstractmethod
     def _base_url(cls) -> str:
         """
         Give back the base url of Sdc.
@@ -291,6 +295,7 @@ class SDC(OnapService):
         raise NotImplementedError("SDC is an abstract class")
 
     @classmethod
+    @abstractmethod
     def _base_create_url(cls) -> str:
         """
         Give back the base url of Sdc.
@@ -302,6 +307,7 @@ class SDC(OnapService):
         raise NotImplementedError("SDC is an abstract class")
 
     @classmethod
+    @abstractmethod
     def import_from_sdc(cls, values: Dict[str, Any]) -> 'SDC':
         """
         Import Sdc object from SDC.
@@ -315,6 +321,7 @@ class SDC(OnapService):
         """
         raise NotImplementedError("SDC is an abstract class")
 
+    @abstractmethod
     def load(self) -> None:
         """
         Load Object information from SDC.
@@ -325,6 +332,7 @@ class SDC(OnapService):
         """
         raise NotImplementedError("SDC is an abstract class")
 
+    @abstractmethod
     def _copy_object(self, obj: 'SDC') -> None:
         """
         Copy relevant properties from object.
@@ -338,6 +346,7 @@ class SDC(OnapService):
         """
         raise NotImplementedError("SDC is an abstract class")
 
+    @abstractmethod
     def _get_version_from_sdc(self, sdc_infos: Dict[str, Any]) -> str:
         """
         Get version from SDC results.
@@ -351,6 +360,7 @@ class SDC(OnapService):
         """
         raise NotImplementedError("SDC is an abstract class")
 
+    @abstractmethod
     def _get_identifier_from_sdc(self, sdc_infos: Dict[str, Any]) -> str:
         """
         Get identifier from SDC results.
@@ -364,6 +374,7 @@ class SDC(OnapService):
         """
         raise NotImplementedError("SDC is an abstract class")
 
+    @abstractmethod
     def _generate_action_subpath(self, action: str) -> str:
         """
 
@@ -378,6 +389,7 @@ class SDC(OnapService):
         """
         raise NotImplementedError("SDC is an abstract class")
 
+    @abstractmethod
     def _version_path(self) -> str:
         """
         Give the end of the path for a version.
@@ -388,11 +400,13 @@ class SDC(OnapService):
         """
         raise NotImplementedError("SDC is an abstract class")
 
+    @abstractmethod
     def _really_submit(self) -> None:
         """Really submit the SDC Vf in order to enable it."""
         raise NotImplementedError("SDC is an abstract class")
 
     @staticmethod
+    @abstractmethod
     def _action_url(base: str,
                     subpath: str,
                     version_path: str,

@@ -11,7 +11,7 @@ from onapsdk.vsp import Vsp
 
 def test_init():
     """Test the initialization."""
-    element = SdcElement()
+    element = Vendor()
     assert isinstance(element, OnapService)
 
 def test_class_variables():

@@ -5,6 +5,7 @@
 from typing import Dict
 from typing import Union
 from typing import Any
+from abc import ABC
 
 import logging
 import requests
@@ -16,7 +17,7 @@ import simplejson.errors
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-class OnapService():
+class OnapService(ABC):
     """
     Mother Class of all ONAP services.
 

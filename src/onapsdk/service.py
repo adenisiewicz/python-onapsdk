@@ -4,7 +4,7 @@
 """Service module."""
 from os import makedirs
 import logging
-from typing import Dict, Any
+from typing import Dict
 from zipfile import ZipFile, BadZipFile
 
 import onapsdk.constants as const
@@ -38,7 +38,7 @@ class Service(SdcResource):
 
     """
 
-    PATH = "services"
+    SDC_PATH = "services"
     _logger: logging.Logger = logging.getLogger(__name__)
     headers = headers_sdc_creator(SdcResource.headers)
 
@@ -93,7 +93,7 @@ class Service(SdcResource):
         """
         if self.status == const.DRAFT:
             url = "{}/{}/{}/resourceInstance".format(self._base_create_url(),
-                                                     self.PATH,
+                                                     self.SDC_PATH, # pylint: disable=no-member
                                                      self.unique_identifier)
 
             template = jinja_env().get_template(
@@ -237,7 +237,7 @@ class Service(SdcResource):
             str: the url
 
         """
-        return "{}/{}".format(cls._base_url(), cls.PATH)
+        return "{}/{}".format(cls._base_url(), cls.SDC_PATH) # pylint: disable=no-member
 
     def _really_submit(self) -> None:
         """Really submit the SDC Service in order to enable it."""

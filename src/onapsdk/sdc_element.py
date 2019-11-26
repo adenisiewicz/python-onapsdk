@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """SDC Element module."""
-from typing import Any
-from typing import Dict
-from typing import List
+from typing import Any, Dict, List
+from abc import ABC, abstractmethod
 
 import logging
 
@@ -12,12 +11,13 @@ from onapsdk.sdc import SDC
 import onapsdk.constants as const
 
 
-class SdcElement(SDC):
+class SdcElement(SDC, ABC):
     """Mother Class of all SDC elements."""
 
     _logger: logging.Logger = logging.getLogger(__name__)
     ACTION_TEMPLATE = 'sdc_element_action.json.j2'
     ACTION_METHOD = 'PUT'
+    SDC_PATH = ''
 
     def load(self) -> None:
         """Load Object information from SDC."""
@@ -29,6 +29,27 @@ class SdcElement(SDC):
         else:
             # exists() method check if exists AND update identifier
             self.exists()
+
+    def update_informations_from_sdc(self, details: Dict[str, Any]) -> None:
+        """
+
+        Update instance with details from SDC.
+
+        Args:
+            details ([type]): [description]
+
+        """
+
+    def update_informations_from_sdc_creation(self,
+                                              details: Dict[str, Any]) -> None:
+        """
+
+        Update instance with details from SDC after creation.
+
+        Args:
+            details ([type]): the details from SDC
+
+        """
 
     @classmethod
     def _base_url(cls) -> str:
@@ -64,7 +85,7 @@ class SdcElement(SDC):
             str: the subpath part
 
         """
-        subpath = self.PATH
+        subpath = self.SDC_PATH # pylint: disable=no-member
         if action == const.COMMIT:
             subpath = "items"
         return subpath
@@ -123,7 +144,7 @@ class SdcElement(SDC):
             str: the url
 
         """
-        return "{}/{}".format(cls._base_url(), cls.PATH)
+        return "{}/{}".format(cls._base_url(), cls.SDC_PATH) # pylint: disable=no-member
 
     def _copy_object(self, obj: 'SdcElement') -> None:
         """
@@ -162,6 +183,7 @@ class SdcElement(SDC):
         return sdc_infos['itemId']
 
     @classmethod
+    @abstractmethod
     def import_from_sdc(cls, values: Dict[str, Any]) -> 'SdcElement':
         """
         Import SdcElement from SDC.

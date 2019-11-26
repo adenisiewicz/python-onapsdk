@@ -6,5 +6,5 @@ Python.
 Using few python commands, you should be able to onboard, distribute models and instantiate xNFs
 (simple) services.
 
-First iteration will propose "Legacy" API onboarding and instantiation but new
+First beta release will deal with ONAP "Legacy" APIs but new
 API and policy integration is planned

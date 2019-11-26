@@ -16,6 +16,7 @@ then
     pip install .
 fi
 
+set -x
 # Generating documentation for each other branch in a subdirectory
 for BRANCH in $(git branch --remotes --format '%(refname:lstrip=3)' | grep -Ev '^(HEAD)$'); do
     git checkout $BRANCH

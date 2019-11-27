@@ -23,8 +23,8 @@ for BRANCH in $(git branch --remotes --format '%(refname:lstrip=3)' | grep -Ev '
     git checkout $BRANCH
     cd ${INITIAL_FOLDER}${DOC_PATH}
     make html
-    mkdir -p public/$BRANCH
-    mv _build/html/ public/$BRANCH
+    mkdir -p ${INITIAL_FOLDER}/public/$BRANCH
+    mv _build/html/ ${INITIAL_FOLDER}/public/$BRANCH
     rm -rf _build/html/
     cd ${INITIAL_FOLDER}
 done

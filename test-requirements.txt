@@ -1,4 +1,6 @@
+bandit
+pylama
 pylint
-pydocstyle
+pydocstyle==4.0.1
 doc8==0.8.0
-
+requests-mock

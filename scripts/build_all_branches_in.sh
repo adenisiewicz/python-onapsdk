@@ -4,23 +4,24 @@ INITIAL_FOLDER=${PWD}
 INITIAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 if [ -e requirements.txt ]
-then 
+then
     pip install -r requirements.txt
 fi
 if [ -e doc-requirements.txt ]
-then 
+then
     pip install -r doc-requirements.txt
 fi
 if [ -e requirements.txt ]
-then 
+then
     pip install .
 fi
 
 set -x
 # Generating documentation for each other branch in a subdirectory
 for BRANCH in $(git branch --remotes --format '%(refname:lstrip=3)' | grep -Ev '^(HEAD)$'); do
+    echo "*** Building doc for branch ${BRANCH} ***"
     git checkout $BRANCH
-    cd ${DOC_PATH}
+    cd ${INITIAL_FOLDER}${DOC_PATH}
     make html
     mkdir -p public/$BRANCH
     mv _build/html/ public/$BRANCH

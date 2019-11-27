@@ -1,7 +1,7 @@
 .. _contents:
 
 Python ONAP SDK Documentation contents
-==================================
+======================================
 
 .. toctree::
    :maxdepth: 2
@@ -9,6 +9,7 @@ Python ONAP SDK Documentation contents
    description
    usage/intro
    usage/installation
+   usage/usage
 
    architecture
    modules

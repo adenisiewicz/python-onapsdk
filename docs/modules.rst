@@ -1,5 +1,5 @@
-ONAP SDK modules
-==============================
+onapsdk
+=======
 
 .. toctree::
    :maxdepth: 4

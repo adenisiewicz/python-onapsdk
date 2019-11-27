@@ -69,8 +69,8 @@ integration_tests:
 
 pages:
   stage: deploy
-  image: 
-    name: testthedocs/ttd-sphinx
+  image:
+    name: python:3.7
   script:
     - chmod +x scripts/build_all_branches_in.sh
     - scripts/build_all_branches_in.sh

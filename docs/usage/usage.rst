@@ -39,7 +39,7 @@ Onboard a VF
 
    # We assume here that the VSP has been already onboarded
    vsp = Vsp(name="myVSP")
-   vf = VF(name="myVF")
+   vf = Vf(name="myVF")
    vf.vsp = vsp
    vf.onboard()
 
@@ -52,7 +52,7 @@ Onboard a Service
    from onapsdk.service import Service
 
    # We assume here that the VF has been already onboarded
-   vf = VF(name="myVF")
+   vf = Vf(name="myVF")
    service = Service(name="myService")
    service.add_resource(vf)
    service.onboard()

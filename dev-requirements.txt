@@ -1,8 +1,8 @@
 requests==2.22.0
-jinja2
+jinja2==2.10.3
 simplejson==3.17.0
-mock
-pytest
-pytest-cov
-pytest-mock
+mock==3.0.5
+pytest==5.3.1
+pytest-cov==2.8.1
+pytest-mock==1.12.1
 yapf

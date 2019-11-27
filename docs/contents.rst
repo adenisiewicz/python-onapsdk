@@ -1,7 +1,7 @@
 .. _contents:
 
-Python ONAP SDK Documentation contents
-======================================
+ONAP SDK Documentation contents
+===============================
 
 .. toctree::
    :maxdepth: 2

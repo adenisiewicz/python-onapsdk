@@ -9,5 +9,8 @@ examples, and tools.
 Using few python commands, you should be able to onboard, distribute models and
 instantiate xNFs.
 
-First beta release will deal with ONAP "Legacy" APIs but new
+Using a few Python commands, you should be able to onboard, distribute models
+and instantiate xNFs (simple) services.
+
+First beta release deals with ONAP "Legacy" APIs but new
 APIs, CDS and policy integration is planned for next releases.

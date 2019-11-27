@@ -1,7 +1,8 @@
-requests
+requests==2.22.0
 jinja2
 simplejson==3.17.0
 mock
 pytest
 pytest-cov
 pytest-mock
+yapf

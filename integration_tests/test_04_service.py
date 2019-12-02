@@ -24,7 +24,7 @@ def test_service_unknown():
     response.raise_for_status()
     vendor = Vendor(name="test")
     vendor.onboard()
-    vsp = Vsp(name="test", upload_file=open("{}/ubuntu16.zip".format(
+    vsp = Vsp(name="test", package=open("{}/ubuntu16.zip".format(
         os.path.dirname(os.path.abspath(__file__))), 'rb'))
     vsp.vendor = vendor
     vsp.onboard()
@@ -60,7 +60,7 @@ def test_service_onboard_unknown():
     response.raise_for_status()
     vendor = Vendor(name="test")
     vendor.onboard()
-    vsp = Vsp(name="test", upload_file=open("{}/ubuntu16.zip".format(
+    vsp = Vsp(name="test", package=open("{}/ubuntu16.zip".format(
         os.path.dirname(os.path.abspath(__file__))), 'rb'))
     vsp.vendor = vendor
     vsp.onboard()

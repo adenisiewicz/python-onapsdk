@@ -25,7 +25,7 @@ def test_vsp_unknown():
     vsp.create()
     assert vsp.identifier is not None
     assert vsp.status == const.DRAFT
-    vsp.upload_files(open("{}/ubuntu16.zip".format(
+    vsp.upload_package(open("{}/ubuntu16.zip".format(
         os.path.dirname(os.path.abspath(__file__))), 'rb'))
     assert vsp.status == const.UPLOADED
     vsp.validate()
@@ -46,7 +46,7 @@ def test_vsp_onboard_unknown():
     response.raise_for_status()
     vendor = Vendor(name="test")
     vendor.onboard()
-    vsp = Vsp(name="test", upload_file=open("{}/ubuntu16.zip".format(
+    vsp = Vsp(name="test", package=open("{}/ubuntu16.zip".format(
         os.path.dirname(os.path.abspath(__file__))), 'rb'))
     vsp.vendor = vendor
     vsp.onboard()

@@ -63,7 +63,8 @@ class Service(SdcResource):
 
     def onboard(self) -> None:
         """Onboard the Service in SDC."""
-        if not self.status:
+        # first Lines are equivalent for all onboard functions but it's more readable
+        if not self.status: # # pylint: disable=R0801
             self.create()
             self.onboard()
         elif self.status == const.DRAFT:

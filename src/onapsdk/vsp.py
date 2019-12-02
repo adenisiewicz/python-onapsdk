@@ -14,8 +14,8 @@ from onapsdk.vendor import Vendor
 import onapsdk.constants as const
 from onapsdk.utils.headers_creator import headers_sdc_creator
 
-
-class Vsp(SdcElement):
+# Hard to do fewer attributes and still mapping SDC VSP object.
+class Vsp(SdcElement): # pylint: disable=too-many-instance-attributes
     """
     ONAP VSP Object used for SDC operations.
 

@@ -46,15 +46,15 @@ class Vf(SdcResource):
 
     def onboard(self) -> None:
         """Onboard the VF in SDC."""
-        if (not self.status()):
+        if not self.status:
             if not self.vsp:
                 raise ValueError("No Vsp was given")
             self.create()
             self.onboard()
-        elif self.status() == const.DRAFT:
+        elif self.status == const.DRAFT:
             self.submit()
             self.onboard()
-        elif self.status() == const.CERTIFIED:
+        elif self.status == const.CERTIFIED:
             self.load()
 
     def create(self) -> None:

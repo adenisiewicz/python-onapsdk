@@ -41,10 +41,10 @@ class Vendor(SdcElement):
 
     def onboard(self) -> None:
         """Onboard the vendor in SDC."""
-        if (not self.status()):
+        if not self.status:
             self.create()
             self.onboard()
-        elif self.status() == const.DRAFT:
+        elif self.status == const.DRAFT:
             self.submit()
 
     def create(self) -> None:

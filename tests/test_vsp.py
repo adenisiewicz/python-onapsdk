@@ -528,3 +528,193 @@ def test_validate_OK(mock_send, mock_status):
     vsp._identifier = "12345"
     vsp.validate()
     mock_send.assert_called_once_with('PUT', 'Validate artifacts for Vsp', 'https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/onboarding-api/v1.0/vendor-software-products/12345/versions/1234/orchestration-template-candidate/process')
+
+
+@mock.patch.object(Vsp, 'create_csar')
+@mock.patch.object(Vsp, 'submit')
+@mock.patch.object(Vsp, 'commit')
+@mock.patch.object(Vsp, 'validate')
+@mock.patch.object(Vsp, 'upload_files')
+@mock.patch.object(Vsp, 'create')
+@mock.patch.object(Vsp, 'status')
+def test_onboard_new_vsp(mock_status, mock_create, mock_upload_files,
+                         mock_validate, mock_commit, mock_submit,
+                         mock_create_csar):
+    mock_status.side_effect = [None, const.APPROVED, const.APPROVED,
+                               const.APPROVED, const.APPROVED,
+                               const.APPROVED, None]
+    vsp = Vsp()
+    vsp.onboard()
+    mock_create.assert_called_once()
+    mock_upload_files.assert_not_called()
+    mock_validate.assert_not_called()
+    mock_commit.assert_not_called()
+    mock_submit.assert_not_called()
+    mock_create_csar.assert_not_called()
+
+@mock.patch.object(Vsp, 'create_csar')
+@mock.patch.object(Vsp, 'submit')
+@mock.patch.object(Vsp, 'commit')
+@mock.patch.object(Vsp, 'validate')
+@mock.patch.object(Vsp, 'upload_files')
+@mock.patch.object(Vsp, 'create')
+@mock.patch.object(Vsp, 'status')
+def test_onboard_vsp_upload_no_files(mock_status, mock_create, mock_upload_files,
+                                     mock_validate, mock_commit, mock_submit,
+                                     mock_create_csar):
+    mock_status.side_effect = [const.DRAFT, const.DRAFT, const.APPROVED,
+                               const.APPROVED, const.APPROVED, const.APPROVED,
+                               const.APPROVED, None]
+    vsp = Vsp()
+    with pytest.raises(ValueError):
+        vsp.onboard()
+        mock_create.assert_not_called()
+        mock_upload_files.assert_not_called()
+        mock_validate.assert_not_called()
+        mock_commit.assert_not_called()
+        mock_submit.assert_not_called()
+        mock_create_csar.assert_not_called()
+
+@mock.patch.object(Vsp, 'create_csar')
+@mock.patch.object(Vsp, 'submit')
+@mock.patch.object(Vsp, 'commit')
+@mock.patch.object(Vsp, 'validate')
+@mock.patch.object(Vsp, 'upload_files')
+@mock.patch.object(Vsp, 'create')
+@mock.patch.object(Vsp, 'status')
+def test_onboard_vsp_upload_files(mock_status, mock_create, mock_upload_files,
+                                  mock_validate, mock_commit, mock_submit,
+                                  mock_create_csar):
+    mock_status.side_effect = [const.DRAFT, const.DRAFT, const.APPROVED,
+                               const.APPROVED, const.APPROVED, const.APPROVED,
+                               const.APPROVED, None]
+    vsp = Vsp(upload_file="yes")
+    vsp.onboard()
+    mock_create.assert_not_called()
+    mock_upload_files.assert_called_once_with("yes")
+    mock_validate.assert_not_called()
+    mock_commit.assert_not_called()
+    mock_submit.assert_not_called()
+    mock_create_csar.assert_not_called()
+
+@mock.patch.object(Vsp, 'create_csar')
+@mock.patch.object(Vsp, 'submit')
+@mock.patch.object(Vsp, 'commit')
+@mock.patch.object(Vsp, 'validate')
+@mock.patch.object(Vsp, 'upload_files')
+@mock.patch.object(Vsp, 'create')
+@mock.patch.object(Vsp, 'status')
+def test_onboard_new_vsp_validate(mock_status, mock_create, mock_upload_files,
+                                  mock_validate, mock_commit, mock_submit,
+                                  mock_create_csar):
+    mock_status.side_effect = [const.UPLOADED, const.UPLOADED, const.UPLOADED,
+                               const.APPROVED, const.APPROVED, const.APPROVED,
+                               const.APPROVED, const.APPROVED, None]
+    vsp = Vsp()
+    vsp.onboard()
+    mock_create.assert_not_called()
+    mock_upload_files.assert_not_called()
+    mock_validate.assert_called_once()
+    mock_commit.assert_not_called()
+    mock_submit.assert_not_called()
+    mock_create_csar.assert_not_called()
+
+@mock.patch.object(Vsp, 'create_csar')
+@mock.patch.object(Vsp, 'submit')
+@mock.patch.object(Vsp, 'commit')
+@mock.patch.object(Vsp, 'validate')
+@mock.patch.object(Vsp, 'upload_files')
+@mock.patch.object(Vsp, 'create')
+@mock.patch.object(Vsp, 'status')
+def test_onboard_new_vsp_commit(mock_status, mock_create, mock_upload_files,
+                                mock_validate, mock_commit, mock_submit,
+                                mock_create_csar):
+    mock_status.side_effect = [const.VALIDATED, const.VALIDATED,
+                               const.VALIDATED, const.VALIDATED, const.APPROVED,
+                               const.APPROVED, const.APPROVED, const.APPROVED,
+                               const.APPROVED, None]
+    vsp = Vsp()
+    vsp.onboard()
+    mock_create.assert_not_called()
+    mock_upload_files.assert_not_called()
+    mock_validate.assert_not_called()
+    mock_commit.assert_called_once()
+    mock_submit.assert_not_called()
+    mock_create_csar.assert_not_called()
+
+@mock.patch.object(Vsp, 'create_csar')
+@mock.patch.object(Vsp, 'submit')
+@mock.patch.object(Vsp, 'commit')
+@mock.patch.object(Vsp, 'validate')
+@mock.patch.object(Vsp, 'upload_files')
+@mock.patch.object(Vsp, 'create')
+@mock.patch.object(Vsp, 'status')
+def test_onboard_new_vsp_submit(mock_status, mock_create, mock_upload_files,
+                                mock_validate, mock_commit, mock_submit,
+                                mock_create_csar):
+    mock_status.side_effect = [const.COMMITED, const.COMMITED, const.COMMITED,
+                               const.COMMITED, const.COMMITED, const.APPROVED,
+                               const.APPROVED, const.APPROVED, const.APPROVED,
+                               const.APPROVED, None]
+    vsp = Vsp()
+    vsp.onboard()
+    mock_create.assert_not_called()
+    mock_upload_files.assert_not_called()
+    mock_validate.assert_not_called()
+    mock_commit.assert_not_called()
+    mock_submit.assert_called_once()
+    mock_create_csar.assert_not_called()
+
+@mock.patch.object(Vsp, 'create_csar')
+@mock.patch.object(Vsp, 'submit')
+@mock.patch.object(Vsp, 'commit')
+@mock.patch.object(Vsp, 'validate')
+@mock.patch.object(Vsp, 'upload_files')
+@mock.patch.object(Vsp, 'create')
+@mock.patch.object(Vsp, 'status')
+def test_onboard_new_vsp_create_csar(mock_status, mock_create,
+                                     mock_upload_files, mock_validate,
+                                     mock_commit, mock_submit,
+                                     mock_create_csar):
+    mock_status.side_effect = [const.CERTIFIED, const.CERTIFIED,
+                               const.CERTIFIED, const.CERTIFIED,
+                               const.CERTIFIED, const.CERTIFIED, const.APPROVED,
+                               const.APPROVED, const.APPROVED, const.APPROVED,
+                               const.APPROVED, None]
+    vsp = Vsp()
+    vsp.onboard()
+    mock_create.assert_not_called()
+    mock_upload_files.assert_not_called()
+    mock_validate.assert_not_called()
+    mock_commit.assert_not_called()
+    mock_submit.assert_not_called()
+    mock_create_csar.assert_called_once()
+
+@mock.patch.object(Vsp, 'create_csar')
+@mock.patch.object(Vsp, 'submit')
+@mock.patch.object(Vsp, 'commit')
+@mock.patch.object(Vsp, 'validate')
+@mock.patch.object(Vsp, 'upload_files')
+@mock.patch.object(Vsp, 'create')
+@mock.patch.object(Vsp, 'status')
+def test_onboard_whole_vsp(mock_status, mock_create,
+                           mock_upload_files, mock_validate,
+                           mock_commit, mock_submit,
+                           mock_create_csar):
+    mock_status.side_effect = [None, const.DRAFT, const.DRAFT, const.UPLOADED,
+                               const.UPLOADED, const.UPLOADED, const.VALIDATED,
+                               const.VALIDATED, const.VALIDATED,
+                               const.VALIDATED, const.COMMITED, const.COMMITED,
+                               const.COMMITED, const.COMMITED, const.COMMITED,
+                               const.CERTIFIED, const.CERTIFIED,
+                               const.CERTIFIED, const.CERTIFIED,                             const.CERTIFIED, const.CERTIFIED, const.CERTIFIED, const.CERTIFIED,
+                               const.CERTIFIED, const.CERTIFIED,
+                               const.CERTIFIED, const.CERTIFIED, None]
+    vsp = Vsp(upload_file="yes")
+    vsp.onboard()
+    mock_create.assert_called_once()
+    mock_upload_files.assert_called_once()
+    mock_validate.assert_called_once()
+    mock_commit.assert_called_once()
+    mock_submit.assert_called_once()
+    mock_create_csar.assert_called_once()

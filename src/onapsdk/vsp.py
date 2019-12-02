@@ -33,7 +33,7 @@ class Vsp(SdcElement):
     _logger: logging.Logger = logging.getLogger(__name__)
     headers = headers_sdc_creator(SdcElement.headers)
 
-    def __init__(self, name: str = None):
+    def __init__(self, name: str = None, upload_file: BinaryIO = None):
         """
         Initialize vsp object.
 
@@ -45,12 +45,35 @@ class Vsp(SdcElement):
         self._csar_uuid: str = None
         self._vendor: Vendor = None
         self.name: str = name or "ONAP-test-VSP"
+        self.upload_file = upload_file or None
 
     @property
     def status(self):
         """Return and load the status."""
         self.load_status()
         return self._status
+
+    def onboard(self) -> None:
+        """Onboard the VSP in SDC."""
+        if (not self.status()):
+            self.create()
+            self.onboard()
+        elif self.status() == const.DRAFT:
+            if not self.upload_file:
+                raise ValueError("No file were given for upload")
+            self.upload_files(self.upload_file)
+            self.onboard()
+        elif self.status() == const.UPLOADED:
+            self.validate()
+            self.onboard()
+        elif self.status() == const.VALIDATED:
+            self.commit()
+            self.onboard()
+        elif self.status() == const.COMMITED:
+            self.submit()
+            self.onboard()
+        elif self.status() == const.CERTIFIED:
+            self.create_csar()
 
     def create(self) -> None:
         """Create the Vsp in SDC if not already existing."""

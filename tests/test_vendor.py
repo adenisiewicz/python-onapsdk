@@ -264,30 +264,36 @@ def test_status_with_load(mock_load):
 
 @mock.patch.object(Vendor, 'submit')
 @mock.patch.object(Vendor, 'create')
-@mock.patch.object(Vendor, 'status')
-def test_onboard_new_vendor(mock_status, mock_create, mock_submit):
-    mock_status.side_effect = [None, const.CERTIFIED, const.CERTIFIED]
-    vendor = Vendor()
-    vendor.onboard()
-    mock_create.assert_called_once()
-    mock_submit.assert_not_called()
+def test_onboard_new_vendor(mock_create, mock_submit):
+    getter_mock = mock.Mock(wraps=Vendor.status.fget)
+    mock_status = Vendor.status.getter(getter_mock)
+    with mock.patch.object(Vendor, 'status', mock_status):
+        getter_mock.side_effect = [None, const.CERTIFIED, const.CERTIFIED]
+        vendor = Vendor()
+        vendor.onboard()
+        mock_create.assert_called_once()
+        mock_submit.assert_not_called()
 
 @mock.patch.object(Vendor, 'submit')
 @mock.patch.object(Vendor, 'create')
-@mock.patch.object(Vendor, 'status')
-def test_onboard_created_vendor(mock_status, mock_create, mock_submit):
-    mock_status.side_effect = [const.DRAFT, const.DRAFT, None]
-    vendor = Vendor()
-    vendor.onboard()
-    mock_submit.assert_called_once()
-    mock_create.assert_not_called()
+def test_onboard_created_vendor(mock_create, mock_submit):
+    getter_mock = mock.Mock(wraps=Vendor.status.fget)
+    mock_status = Vendor.status.getter(getter_mock)
+    with mock.patch.object(Vendor, 'status', mock_status):
+        getter_mock.side_effect = [const.DRAFT, const.DRAFT, None]
+        vendor = Vendor()
+        vendor.onboard()
+        mock_submit.assert_called_once()
+        mock_create.assert_not_called()
 
 @mock.patch.object(Vendor, 'submit')
 @mock.patch.object(Vendor, 'create')
-@mock.patch.object(Vendor, 'status')
-def test_onboard_whole_vendor(mock_status, mock_create, mock_submit):
-    mock_status.side_effect = [None, const.DRAFT, const.DRAFT, None]
-    vendor = Vendor()
-    vendor.onboard()
-    mock_submit.assert_called_once()
-    mock_create.assert_called_once()
+def test_onboard_whole_vendor(mock_create, mock_submit):
+    getter_mock = mock.Mock(wraps=Vendor.status.fget)
+    mock_status = Vendor.status.getter(getter_mock)
+    with mock.patch.object(Vendor, 'status', mock_status):
+        getter_mock.side_effect = [None, const.DRAFT, const.DRAFT, None]
+        vendor = Vendor()
+        vendor.onboard()
+        mock_submit.assert_called_once()
+        mock_create.assert_called_once()

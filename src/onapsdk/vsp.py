@@ -33,7 +33,8 @@ class Vsp(SdcElement):
     _logger: logging.Logger = logging.getLogger(__name__)
     headers = headers_sdc_creator(SdcElement.headers)
 
-    def __init__(self, name: str = None, upload_file: BinaryIO = None):
+    def __init__(self, name: str = None, upload_file: BinaryIO = None,
+                 vendor: Vendor = None):
         """
         Initialize vsp object.
 
@@ -43,7 +44,7 @@ class Vsp(SdcElement):
         """
         super().__init__()
         self._csar_uuid: str = None
-        self._vendor: Vendor = None
+        self._vendor: Vendor = vendor or None
         self.name: str = name or "ONAP-test-VSP"
         self.upload_file = upload_file or None
 
@@ -55,24 +56,26 @@ class Vsp(SdcElement):
 
     def onboard(self) -> None:
         """Onboard the VSP in SDC."""
-        if (not self.status()):
+        if (not self.status):
+            if not self.vendor:
+                raise ValueError("No Vendor was given")
             self.create()
             self.onboard()
-        elif self.status() == const.DRAFT:
+        elif self.status == const.DRAFT:
             if not self.upload_file:
                 raise ValueError("No file were given for upload")
             self.upload_files(self.upload_file)
             self.onboard()
-        elif self.status() == const.UPLOADED:
+        elif self.status == const.UPLOADED:
             self.validate()
             self.onboard()
-        elif self.status() == const.VALIDATED:
+        elif self.status == const.VALIDATED:
             self.commit()
             self.onboard()
-        elif self.status() == const.COMMITED:
+        elif self.status == const.COMMITED:
             self.submit()
             self.onboard()
-        elif self.status() == const.CERTIFIED:
+        elif self.status == const.CERTIFIED:
             self.create_csar()
 
     def create(self) -> None:

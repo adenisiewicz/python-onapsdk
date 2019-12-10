@@ -10,7 +10,7 @@ import json
 from onapsdk.service import Service
 from onapsdk.vf import Vf
 from onapsdk.onap_service import OnapService
-import onapsdk.constants as const
+
 from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.tosca_file_handler import get_vf_list_from_tosca_file
 from onapsdk.aai_element import AaiElement
@@ -33,7 +33,7 @@ class SoElement(OnapService):
         self._logger.info("attempting to create %s %s in SO",
                           type(self).__name__, self.name)
 
-        url = self._base_create_url()
+        # url = self._base_create_url()
 
         # Generate VF model INFO
         service_model = self.set_service_model_info(kwargs['ns_name'])
@@ -48,11 +48,13 @@ class SoElement(OnapService):
         print(cloud_info)
 
         # Create Service Instance payloadData
-        if kwargs['ns_instantiation_mode'] is 'macro':
+        if kwargs['ns_instantiation_mode'] == 'macro':
             template = jinja_env().get_template("service_instance_macro.json.j2")
+            print(template)
 
 
     def set_service_model_info(self, service_name):
+        """Retrieve Service Model info."""
         service = Service(name=service_name)
         template_service = jinja_env().get_template(
             'service_instance_model_info.json.j2')
@@ -64,6 +66,7 @@ class SoElement(OnapService):
             model_version=service.version))
 
     def set_vf_model_info(self, vf_name):
+        """Retrieve the model info of the VFs."""
         vf = Vf(name=vf_name)
         template_service = jinja_env().get_template(
             'vf_model_info.json.j2')
@@ -75,10 +78,11 @@ class SoElement(OnapService):
             vf_model_version=vf.version))
 
     def set_cloud_info(self):
+        """Retrieve Cloud info."""
         # on pourrait imaginer de préciser le cloud ici en cas de Multicloud
         # en attendant on prendra le premier cloud venu..
         aai = AaiElement()
-        aai_info=aai.get_cloud_info()
+        aai_info = aai.get_cloud_info()
         template_cloud = jinja_env().get_template(
             'cloud_configuration.json.j2')
         return json.loads(template_cloud.render(

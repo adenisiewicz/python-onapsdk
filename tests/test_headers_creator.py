@@ -2,10 +2,15 @@
 
 from onapsdk.utils.headers_creator import headers_aai_creator
 from onapsdk.utils.headers_creator import headers_sdc_creator
+<<<<<<< HEAD
 from onapsdk.utils.headers_creator import headers_so_creator
 from onapsdk.utils.headers_creator import headers_sdc_tester
 from onapsdk.utils.headers_creator import headers_sdc_governor
 from onapsdk.utils.headers_creator import headers_sdc_operator
+=======
+from onapsdk.utils.headers_creator import headers_aai_creator
+from onapsdk.utils.headers_creator import headers_so_creator
+>>>>>>> 31e66f4b201b6fed0d5c0ca5b7752d6d3ab992f3
 
 
 def test_headers_sdc_creator():
@@ -15,6 +20,7 @@ def test_headers_sdc_creator():
     assert sdc_headers_creator["USER_ID"] == "cs0008"
     assert sdc_headers_creator["Authorization"]
 
+<<<<<<< HEAD
 def test_headers_sdc_tester():
     base_header = {}
     sdc_headers_tester = headers_sdc_tester(base_header)
@@ -36,6 +42,8 @@ def test_headers_sdc_operator():
     assert sdc_headers_operator["USER_ID"] == "op0001"
     assert sdc_headers_operator["Authorization"]
 
+=======
+>>>>>>> 31e66f4b201b6fed0d5c0ca5b7752d6d3ab992f3
 def test_headers_aai_creator():
     base_header = {}
     aai_headers_creator = headers_aai_creator(base_header)

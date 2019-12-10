@@ -13,12 +13,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from onapsdk.so_element import SoElement
-from onapsdk.utils.tosca_file_handler import get_model_from_tosca
 
 from onapsdk.utils.tosca_file_handler import random_string_generator
 
 @dataclass
-class Vnf(SoElement):
+class NetworkService(SoElement):
     """
     ONAP Vnf Object used for SO operations.
 
@@ -63,9 +62,9 @@ class Vnf(SoElement):
 
     def instantiate(self) -> None:
         """Instantiate the VNF in SO using Macro."""
-        self._instantiate("service_instance_macro.json.j2",
-                          vnf_name=self.name,
-                          vnf_model=self.model)
+        self._instantiate(ns_name=self.name,
+                          ns_instantiation_mode='macro',
+                          ns_model=self.model)
 
 
     # def _get_model(self) -> Dict[str, Any]:

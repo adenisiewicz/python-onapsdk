@@ -2,6 +2,7 @@
 
 from onapsdk.utils.headers_creator import headers_aai_creator
 from onapsdk.utils.headers_creator import headers_sdc_creator
+from onapsdk.utils.headers_creator import headers_so_creator
 from onapsdk.utils.headers_creator import headers_sdc_tester
 from onapsdk.utils.headers_creator import headers_sdc_governor
 from onapsdk.utils.headers_creator import headers_sdc_operator

@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
-"""Vnf module."""
-from typing import Any
-from typing import Dict
+"""NS module."""
+from dataclasses import dataclass
+from pathlib import Path
 
 import logging
 import json
 import yaml
 
-from dataclasses import dataclass
-from pathlib import Path
-
 from onapsdk.so_element import SoElement
-
 from onapsdk.utils.tosca_file_handler import random_string_generator
 
 @dataclass
@@ -49,9 +45,9 @@ class NetworkService(SoElement):
 
         try:
             self.tosca_file_path = tosca_file_path or None
-            with open(self.tosca_file_path) as f:
-                self.model = json.dumps(yaml.safe_load(f))
-            if self.model is 'null':
+            with open(self.tosca_file_path) as my_file:
+                self.model = json.dumps(yaml.safe_load(my_file))
+            if self.model == 'null':
                 raise ValueError
         except TypeError:
             raise NameError("Tosca file Path must be specified")

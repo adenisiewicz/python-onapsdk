@@ -11,11 +11,6 @@
 import json
 import string
 import random
-import oyaml as yaml
-from pathlib import Path
-
-from onapsdk.utils.jinja import jinja_env
-
 
 def get_parameter_from_yaml(parameter, config_file):
     """

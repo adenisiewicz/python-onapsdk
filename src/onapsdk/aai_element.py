@@ -8,7 +8,6 @@ import logging
 from onapsdk.onap_service import OnapService
 from onapsdk.utils.headers_creator import headers_aai_creator
 
-@dataclass
 class AaiElement(OnapService):
     """Mother Class of all A&AI elements."""
 
@@ -19,6 +18,10 @@ class AaiElement(OnapService):
     base_url = "https://aai.api.sparky.simpledemo.onap.org:30233"
     api_version = "/aai/v16"
     headers = headers_aai_creator(OnapService.headers)
+
+    def __init__(self):
+        """Initialize the object."""
+        super().__init__()
 
     @classmethod
     def customers(cls):
@@ -65,3 +68,13 @@ class AaiElement(OnapService):
             else:
                 raise Exception("Region not found")
         return cls.send_message_json('GET', 'get tenants', url)
+
+    @classmethod
+    def get_cloud_info(cls):
+        clouds = cls.cloud_regions()
+        cloud_info = {}
+        cloud_info['cloud_owner']=clouds['cloud-region'][0]['cloud-owner']
+        cloud_info['cloud_region_id']=clouds['cloud-region'][0]['cloud-region-id']
+        cloud_details=cls.tenants_info(cloud_info['cloud_region_id'])
+        cloud_info['tenant_id']=cloud_details['tenant'][0]['tenant-id']
+        return cloud_info

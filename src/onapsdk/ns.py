@@ -14,11 +14,8 @@ from onapsdk.utils.tosca_file_handler import random_string_generator
 
 @dataclass
 class NetworkService(SoElement):
-    """
-    ONAP Vnf Object used for SO operations.
+    """Network Service Object used for SO operations."""
 
-    Attributes:
-    """
     logger: logging.Logger = logging.getLogger(__name__)
     rand_extension: str = ""
     headers: dict = None

@@ -52,8 +52,8 @@ class SoElement(OnapService):
             template = jinja_env().get_template("service_instance_macro.json.j2")
             print(template)
 
-
-    def set_service_model_info(self, service_name):
+    @classmethod
+    def set_service_model_info(cls, service_name):
         """Retrieve Service Model info."""
         service = Service(name=service_name)
         template_service = jinja_env().get_template(
@@ -65,19 +65,21 @@ class SoElement(OnapService):
             model_name=service.name,
             model_version=service.version))
 
-    def set_vf_model_info(self, vf_name):
+    @classmethod
+    def set_vf_model_info(cls, vf_name):
         """Retrieve the model info of the VFs."""
-        vf = Vf(name=vf_name)
+        vf_object = Vf(name=vf_name)
         template_service = jinja_env().get_template(
             'vf_model_info.json.j2')
         return json.loads(template_service.render(
-            vf_model_invariant_uuid=vf.unique_uuid,
+            vf_model_invariant_uuid=vf_object.unique_uuid,
             vf_model_customization_id="????",
-            vf_model_version_id=vf.identifier,
-            vf_model_name=vf.name,
-            vf_model_version=vf.version))
+            vf_model_version_id=vf_object.identifier,
+            vf_model_name=vf_object.name,
+            vf_model_version=vf_object.version))
 
-    def set_cloud_info(self):
+    @classmethod
+    def set_cloud_info(cls):
         """Retrieve Cloud info."""
         # on pourrait imaginer de préciser le cloud ici en cas de Multicloud
         # en attendant on prendra le premier cloud venu..

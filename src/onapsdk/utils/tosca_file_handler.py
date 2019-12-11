@@ -37,9 +37,10 @@ def get_parameter_from_yaml(parameter, config_file):
 
 def get_vf_list_from_tosca_file(model):
     """
-    Get the list of Vfs of a VNF based on the tosca file
+    Get the list of Vfs of a VNF based on the tosca file.
 
     :param model: the model retrieved from the tosca file at Vnf instantiation
+
     :return: the list of Vfs
     """
     newlist = []

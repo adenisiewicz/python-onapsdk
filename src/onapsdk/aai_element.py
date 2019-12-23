@@ -47,6 +47,19 @@ class AaiElement(OnapService):
         return cls.send_message_json('GET', 'get cloud regions', url)
 
     @classmethod
+    def get_customers(cls):
+        """Get the list of subscription types in A&AI."""
+        url = cls.base_url + cls.api_version + "/business/customers"
+        return cls.send_message_json('GET', 'get customers', url)
+
+    @classmethod
+    def get_subscription_type_list(cls):
+        """Get the list of subscription types in A&AI."""
+        url = (cls.base_url + cls.api_version +
+               "/service-design-and-creation/services")
+        return cls.send_message_json('GET', 'get subscriptions', url)
+
+    @classmethod
     def tenants_info(cls, cloud_name):
         """Get the Cloud info of one cloud region."""
         cloud_regions = cls.cloud_regions()

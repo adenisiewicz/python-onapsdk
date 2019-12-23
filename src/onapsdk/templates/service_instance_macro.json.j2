@@ -7,14 +7,10 @@
         "suppressRollback": false,
         "productFamilyId": "Useless_But_Mandatory",
         "requestorId": "adt",
-        "instanceName": "{{ instance_name }}",
+        "instanceName": "{{ ns_instance_name }}",
         "source": "VID"
   },
-  "cloudConfiguration": {
-        "lcpCloudRegionId": "{{ cloud_region_id }}",
-        "tenantId": "{{ renant_id }}",
-        "cloudOwner": "{{ cloud_owner }}"
-  },
+  "cloudConfiguration": {{ cloud_configuration }},
   "requestParameters": {
         "subscriptionServiceType": "{{ subscription_service_type }}",
         "userParams": [
@@ -24,14 +20,14 @@
            {
               "service": {
                     "instanceParams": [],
-                    "instanceName": "{{ service_instance_name }}",
+                    "instanceName": "{{ ns_instance_name }}",
                     "resources": {
                        "vnfs": [
                           {
                                 "modelInfo": "{{ vnf_model_info }}",
-                                "cloudConfiguration": "{{ cloud_configuraiton }}",
+                                "cloudConfiguration": "{{ cloud_configuration }}",
                                 "platform": {
-                                   "platformName": "Useless_But_Mandatory"
+                                    "platformName": "Useless_But_Mandatory"
                                 },
                                 "productFamilyId": "Useless_But_Mandatory",
                                 "instanceName": "{{ vnf_instance_name }}",
@@ -42,8 +38,7 @@
                                    {
                                       "modelInfo": "{{ vf_model }}",
                                       "instanceName": "{{ vf_model_instance_name }}",
-                                      "instanceParams": [ "{{ vf_instance_params }}"
-                                            ]
+                                      "instanceParams": [ "{{ vf_instance_params }}"]
                                    }
                                 ]
                           }

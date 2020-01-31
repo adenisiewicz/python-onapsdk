@@ -1,5 +1,5 @@
 requests==2.22.0
-jinja2==2.10.3
+jinja2==2.11.1
 simplejson==3.17.0
 mock==3.0.5
 pytest==5.3.2

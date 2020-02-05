@@ -11,7 +11,7 @@
 
 import logging
 import json
-import yaml
+import oyaml as yaml
 import os
 import os.path
 import unittest

@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """NS module."""
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Dict, Tuple
 
 import logging
@@ -15,7 +14,7 @@ from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.tosca_file_handler import get_parameter_from_yaml, random_string_generator
 
 
-@dataclass
+@dataclass  # pylint: disable=R0902
 class NetworkService(SoElement):
     """Network Service Object used for SO operations."""
 
@@ -28,7 +27,8 @@ class NetworkService(SoElement):
     #     # self.headers = headers_so_creator(SoElement.headers)
     #     self.name = self.name + "-" + random_string_generator(6)
 
-    def __init__(self, name: str, tosca_file_path: str):
+    def __init__(self, name: str, tosca_file_path: str, service_file_path: str,
+                 instantiation_mode: str = "macro"):
         """
         Initialize vnf object.
 
@@ -54,6 +54,10 @@ class NetworkService(SoElement):
         except (FileNotFoundError, ValueError):
             raise FileNotFoundError("No Tosca file found")
 
+        self.instantiation_mode = instantiation_mode
+
+        self.service_file_path = service_file_path
+        self.get_instance_params()
         # self.cloud = Cloud or None
 
     @property
@@ -64,7 +68,7 @@ class NetworkService(SoElement):
         """
         return get_parameter_from_yaml("metadata.name", self.model)
 
-    def instantiate(self, service_file_path: Path, instantiation_mode: str = "macro") -> None:
+    def instantiate(self, **kwargs) -> None:
         """Instantiate the VNF in SO using Macro."""
         self._logger.info("attempting to create %s %s in SO", type(self).__name__, self.name)
 
@@ -79,21 +83,21 @@ class NetworkService(SoElement):
         service_model = self.get_service_model_info(self.service_name)
 
         # Get instance parameters
-        vnf_instance_params, vf_instance_params = self.get_instance_params(service_file_path)
+        vnf_instance_params, vf_instance_params = self.get_instance_params()
 
         # get vf
         vnf_instances = self.get_vnfs(
             ns_name=self.name,
             ns_model=self.model,
-            ns_vnf_instance_params=vnf_instance_params,
-            ns_vf_instance_params=vf_instance_params,
+            ns_vnf_instance_params=json.dumps(vnf_instance_params, indent=4),
+            ns_vf_instance_params=json.dumps(vf_instance_params, indent=4),
         )
 
         # Generate Cloud INFO
         cloud_info = self.get_cloud_info()
 
         # Create Service Instance payloadData
-        if instantiation_mode == "macro":
+        if self.instantiation_mode == "macro":
             template_macro = jinja_env().get_template("service_instance_macro.json.j2")
             macro_payload = template_macro.render(
                 global_subscriber_id=global_subscriber_id,
@@ -104,34 +108,41 @@ class NetworkService(SoElement):
                 service_model=service_model,
             )
             response = self.send_message_json(
-                "POST", "Instantiate service", self._base_create_url(), data=macro_payload, headers=self.headers
+                "POST",
+                "Instantiate service",
+                self._base_create_url(),
+                data=macro_payload,
+                headers=self.headers,
             )
-            # TODO: Parse response - there is an information about orchestration request, which can be useful
+            # Parse response - there is an information about orchestration request,
+            #  which can be useful
             print(response)
         else:
             raise ValueError("Not supported instantiation mode")
 
-    def get_instance_params(self, service_file_path: Path) -> Tuple[Dict, Dict]:
+    def get_instance_params(self) -> Tuple[Dict, Dict]:
         """Load instance config file and read service parameters from it.
 
         :param service_file_path: YAML file path which has to have "vnfs" section
-        :return: Two dictionaries tuple. First dictionary contains vnf_instance_params and the second one
-            is vf_instance_params dictionary.
+        :return: Two dictionaries tuple. First dictionary contains vnf_instance_params
+         and the second one is vf_instance_params dictionary.
         :raises:
-            FileNotFoundError: service_file_path doesn't exist
-            KeyError: invalid YAML file format, section from exception is missed
+        FileNotFoundError: service_file_path doesn't exist
+        KeyError: invalid YAML file format, section from exception is missed
         """
         vnf_instance_params: dict = {}
         vf_instance_params: dict = {}  # Always empty
-        with service_file_path.open() as service_file:  # type: TextIOWrapper
+        with open(self.service_file_path) as service_file:  # type: TextIOWrapper
             yaml_service_file: dict = yaml.safe_load(service_file)
             for vnf_parameter in (
-                parameter
-                for service in yaml_service_file
-                for vnf in yaml_service_file[service]["vnfs"]
-                for parameter in vnf["vnf_parameters"]
+                    parameter
+                    for service in yaml_service_file
+                    for vnf in yaml_service_file[service]["vnfs"]
+                    for parameter in vnf["vnf_parameters"]
             ):
-                vnf_instance_params.update({vnf_parameter["vnf-parameter-name"]: vnf_parameter["vnf-parameter-value"]})
+                vnf_instance_params.update(
+                    {vnf_parameter["vnf-parameter-name"]: vnf_parameter["vnf-parameter-value"]}
+                )
         return vnf_instance_params, vf_instance_params
 
     # def _get_model(self) -> Dict[str, Any]:

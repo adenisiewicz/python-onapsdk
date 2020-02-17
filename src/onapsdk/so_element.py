@@ -14,7 +14,10 @@ from onapsdk.onap_service import OnapService
 
 from onapsdk.utils.headers_creator import headers_so_creator
 from onapsdk.utils.jinja import jinja_env
-from onapsdk.utils.tosca_file_handler import get_modules_list_from_tosca_file, get_vf_list_from_tosca_file
+from onapsdk.utils.tosca_file_handler import (
+    get_modules_list_from_tosca_file,
+    get_vf_list_from_tosca_file,
+)
 from onapsdk.aai_element import AaiElement
 
 
@@ -113,7 +116,7 @@ class SoElement(OnapService):
         return json.dumps(parsed, indent=4)
 
     @classmethod
-    def get_vf_model_info(cls, vf_name: str, vf_model: str) -> str:
+    def get_vf_model_info(cls, vf_model: str) -> str:
         """Retrieve the VF model info From Tosca?."""
         modules: Dict = get_modules_list_from_tosca_file(vf_model)
         template_service = jinja_env().get_template("vf_model_info.json.j2")
@@ -135,7 +138,7 @@ class SoElement(OnapService):
             self._logger.debug("----------------------> 3")
             self._logger.debug("vnf_%s", vf_name)
             self._logger.debug("----------------------> 4")
-            self._logger.debug(self.get_vf_model_info(vf_name, kwargs["ns_model"]))
+            self._logger.debug(self.get_vf_model_info(kwargs["ns_model"]))
             self._logger.debug("----------------------> 5")
             self._logger.debug("vf_%s", vf_name)
 
@@ -145,7 +148,7 @@ class SoElement(OnapService):
                     cloud_configuration=self.get_cloud_info(),
                     vnf_instance_name="vnf_" + vf_name,
                     vnf_instance_param=kwargs["ns_vnf_instance_params"],
-                    vf_modules=self.get_vf_model_info(vf_name, kwargs["ns_model"]),
+                    vf_modules=self.get_vf_model_info(kwargs["ns_model"]),
                     vnf_model_instance_name="vnf_" + kwargs["ns_name"],
                     vnf_instance_params=kwargs["ns_vf_instance_params"],
                 )
@@ -162,4 +165,6 @@ class SoElement(OnapService):
             str: the base url
 
         """
-        return "{}/onap/so/infra/serviceInstantiation/{}/serviceInstances".format(cls._so_url, cls._so_api_version)
+        return "{}/onap/so/infra/serviceInstantiation/{}/serviceInstances".format(
+            cls._so_url, cls._so_api_version
+        )

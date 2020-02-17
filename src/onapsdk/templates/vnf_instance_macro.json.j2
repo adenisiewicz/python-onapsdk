@@ -6,11 +6,11 @@
                      },
          "productFamilyId": "Useless_But_Mandatory",
          "instanceName": "{{ vnf_instance_name }}",
-         "instanceParams": ["{{ vnf_instance_param }}"],
-         "vfModules": [
-         {
+         "instanceParams": [{{ vnf_instance_param }}],
+         "vfModules": {{ vf_modules }}
+     {#{
           "modelInfo": "{{ vf_model }}",
           "instanceName": "{{ vnf_model_instance_name }}",
           "instanceParams": [ "{{ vf_instance_params }}"]
-          }]
+      }]#}
 }

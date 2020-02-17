@@ -67,6 +67,12 @@ class ToscaFileHandlerTestingBase(unittest.TestCase):
         vf_list = tosca_file_handler.get_vf_list_from_tosca_file(model)
         self.assertEqual(vf_list[0], 'ubuntu16_VF')
 
+    def test_get_modules_list_from_tosca_file(self):
+        with open(self._foo_path) as f:
+            model = json.dumps(yaml.safe_load(f))
+        vf_modules = tosca_file_handler.get_modules_list_from_tosca_file(model)
+        self.assertEqual(len(vf_modules), 1)
+
     # def get_vf_list_from_tosca_file_wrong_model(self):
     #     with self.assertRaises(FileNotFoundError):
     #         tosca_file_handler.get_vf_list_from_tosca_file(

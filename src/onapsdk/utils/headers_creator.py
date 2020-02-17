@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Header creator package."""
 from typing import Dict
+from uuid import uuid4
 
 
 def headers_sdc_creator(base_header: Dict[str, str],
@@ -105,6 +106,7 @@ def headers_sdc_generic(base_header: Dict[str, str],
     headers["X-ECOMP-InstanceID"] = "onapsdk"
     return headers
 
+
 def headers_aai_creator(base_header: Dict[str, str]):
     """
     Create the right headers for AAI creator type.
@@ -122,6 +124,7 @@ def headers_aai_creator(base_header: Dict[str, str]):
     headers["authorization"] = "Basic QUFJOkFBSQ=="
     return headers
 
+
 def headers_so_creator(base_header: Dict[str, str]):
     """
     Create the right headers for SO creator type.
@@ -135,7 +138,7 @@ def headers_so_creator(base_header: Dict[str, str]):
     """
     headers = base_header.copy()
     headers["x-fromappid"] = "AAI"
-    headers["x-transactionid"] = "0a3f6713-ba96-4971-a6f8-c2da85a3176e"
+    headers["x-transactionid"] = str(uuid4())
     headers["authorization"] = "Basic SW5mcmFQb3J0YWxDbGllbnQ6cGFzc3dvcmQxJA=="
     headers["cache-control"] = "no-cache"
     return headers

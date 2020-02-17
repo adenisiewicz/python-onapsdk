@@ -1,6 +1,15 @@
-{   "modelName": "{{ vf_model_name }}",
-    "modelVersion": "{{ vf_model_version }}",
-    "modelVersionId": "{{ vf_model_version_id }}",
-    "modelInvariantUuid": "{{ vf_model_invariant_uuid }}",
-    "modelCustomizationId": "{{ vf_model_customization_id }}"
-}
+[
+{% for _, module in modules.items() %}
+    {
+        "modelInfo": {
+            "modelName": "{{ module["metadata"]["vfModuleModelName"] }}",
+            "modelVersion": "{{ module.metadata.vfModuleModelVersion }}",
+            "modelVersionId": "{{ module.metadata.vfModuleModelUUID }}",
+            "modelInvariantUuid": "{{ module.metadata.vfModuleInvariantUUID }}",
+            "modelCustomizationId": "{{ module.metadata.vfModuleModelCustomizationUUID }}"
+        },
+        "instanceName": "{{ module.metadata.vfModuleModelName }}",
+        "instanceParams": []
+    }{% if not loop.last %},{% endif %}
+{% endfor %}
+]

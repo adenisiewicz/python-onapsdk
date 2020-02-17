@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
 """Test AaiElement module."""
-import mock
+from unittest import mock
+
 import pytest
 
 from onapsdk.aai_element import AaiElement

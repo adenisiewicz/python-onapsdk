@@ -11,6 +11,7 @@
 import json
 import string
 import random
+from typing import Dict
 
 def get_parameter_from_yaml(parameter, config_file):
     """
@@ -57,6 +58,20 @@ def get_vf_list_from_tosca_file(model):
                 search_value = str(node).split(" ")[0]
                 newlist.append(search_value)
     return newlist
+
+def get_modules_list_from_tosca_file(model: str) -> Dict:
+    """Get the list of modules from tosca file.
+
+    Modules are stored on topology_template.groups TOSCA file section.
+
+    :param model: the model retrieved from the tosca file at Vnf instantiation
+    :return: the list of modules
+    :raises:
+        ValueError: no modules in Tosca file
+    """
+    return get_parameter_from_yaml(
+        "topology_template.groups", model
+    )
 
 def random_string_generator(size=6,
                             chars=string.ascii_uppercase + string.digits):

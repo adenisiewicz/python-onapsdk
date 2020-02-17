@@ -58,7 +58,7 @@ class NetworkService(SoElement):
 
     @property
     def service_name(self) -> str:
-        """Returns service name. It's object name without random string.
+        """Return service name. It's object name without random string.
 
         :return: Service name
         """

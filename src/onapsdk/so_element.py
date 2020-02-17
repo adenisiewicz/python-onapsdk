@@ -37,7 +37,7 @@ class SoElement(OnapService):
         """
         return headers_so_creator(OnapService.headers)
 
-    def _instantiate(self, **kwargs) -> None:
+    def instantiate(self, **kwargs) -> None:
         """Create the request in SO if not already existing.
 
         Implement that method on each subclass.

@@ -14,12 +14,11 @@ from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.tosca_file_handler import get_parameter_from_yaml, random_string_generator
 
 
-@dataclass  # pylint: disable=R0902
+@dataclass
 class NetworkService(SoElement):
     """Network Service Object used for SO operations."""
 
     logger: logging.Logger = logging.getLogger(__name__)
-    rand_extension: str = ""
     name: str
     random_string_length = 6
 

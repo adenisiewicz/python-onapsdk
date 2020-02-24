@@ -57,9 +57,9 @@ class SoElement(OnapService):
         template_cloud = jinja_env().get_template("cloud_configuration.json.j2")
         parsed = json.loads(
             template_cloud.render(
-                cloud_region_id=aai_info["cloud_region_id"],
-                tenant_id=aai_info["tenant_id"],
-                cloud_owner=aai_info["cloud_owner"],
+                cloud_region_id=aai_info.cloud_region_id,
+                tenant_id=next(aai_info.tenants).tenant_id,
+                cloud_owner=aai_info.cloud_owner,
             )
         )
         return json.dumps(parsed, indent=4)
@@ -67,9 +67,8 @@ class SoElement(OnapService):
     @classmethod
     def get_subscriber_info(cls):
         """Get subscriber Info."""
-        aai = AaiElement()
-        aai_info = aai.get_customers()
-        return aai_info["customer"][0]["global-customer-id"]
+        customer = next(AaiElement.get_customers())
+        return customer.global_customer_id
 
     @classmethod
     def get_subscription_service_type(cls, vf_name):

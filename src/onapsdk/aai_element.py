@@ -34,6 +34,7 @@ class AaiElement(OnapService):
 
         Returns:
             Dict[str, str]: Filtered dictionary
+
         """
         return dict(
             filter(lambda key_value_tuple: key_value_tuple[1] is not None, dict_to_filter.items(),)
@@ -141,6 +142,7 @@ class Complex(AaiElement):  # pylint: disable=R0902
             longitude (str, optional): complex geographical location longitude. Defaults to "".
             elevation (str, optional): complex elevation. Defaults to "".
             lata (str, optional): complex lata. Defaults to "".
+
         """
         super().__init__()
         self.name: str = name
@@ -188,6 +190,7 @@ class Complex(AaiElement):  # pylint: disable=R0902
 
         Returns:
             Complex: Created complex object
+
         """
         complex_object: Complex = Complex(
             name=name,
@@ -228,14 +231,17 @@ class Complex(AaiElement):  # pylint: disable=R0902
         Call A&AI API to get all complex objects.
 
         Args:
-            physical_location_id (str, optional): [description]. Defaults to None.
-            data_center_code (str, optional): [description]. Defaults to None.
-            complex_name (str, optional): [description]. Defaults to None.
-            identity_url (str, optional): [description]. Defaults to None.
+            physical_location_id (str, optional): Unique identifier for physical location,
+                e.g., CLLI. Defaults to None.
+            data_center_code (str, optional): Data center code which can be an alternate way
+                to identify a complex. Defaults to None.
+            complex_name (str, optional): Gamma complex name for LCP instance. Defaults to None.
+            identity_url (str, optional): URL of the keystone identity service. Defaults to None.
 
         Yields:
             Complex -- Complex object. Can not yield anything if any complex with given filter
                 parameters doesn't exist
+
         """
         filter_parameters: dict = cls.filter_none_key_values(
             {
@@ -278,9 +284,10 @@ class Service(AaiElement):
         """Service model initialization.
 
         Args:
-            service_id (str): [description]
-            service_description (str): [description]
-            resource_version (str): [description]
+            service_id (str): This gets defined by others to provide a unique ID for the service.
+            service_description (str): Description of the service.
+            resource_version (str): Used for optimistic concurrency.
+
         """
         super().__init__()
         self.service_id = service_id
@@ -293,6 +300,7 @@ class Service(AaiElement):
 
         Returns:
             str: Service object description
+
         """
         return (
             f"Service(service_id={self.service_id}, "
@@ -310,6 +318,7 @@ class Service(AaiElement):
 
         Returns:
             Iterator[Service]: Service
+
         """
         filter_parameters: dict = cls.filter_none_key_values(
             {"service-id": service_id, "service-description": service_description}
@@ -343,6 +352,7 @@ class Tenant(AaiElement):
             tenant_name (str): Tenant name
             tenant_context (str, optional): Tenant context. Defaults to None.
             resource_version (str, optional): Tenant resource version. Defaults to None.
+
         """
         super().__init__()
         self.cloud_region: "CloudRegion" = cloud_region
@@ -356,6 +366,7 @@ class Tenant(AaiElement):
 
         Returns:
             str: Human readable Tenant object description
+
         """
         return (
             f"Tenant(tenant_id={self.tenant_id}, tenant_name={self.name}, "
@@ -370,6 +381,7 @@ class Tenant(AaiElement):
 
         Returns:
             str: Url which can be used to update or delete tenant.
+
         """
         return (
             f"{self.base_url}{self.api_version}/cloud-infrastructure/cloud-regions/cloud-region/"
@@ -382,6 +394,7 @@ class Tenant(AaiElement):
         """Delete tenant.
 
         Remove tenant from cloud region.
+
         """
         return self.send_message(
             "DELETE",
@@ -426,7 +439,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                  cloud_extra_info: str = "",
                  upgrade_cycle: str = "",
                  resource_version: str = "") -> None:
-        """CloudRegion initialization.
+        """Cloud region object initialization.
 
         Args:
             cloud_owner (str): Identifies the vendor and cloud name.
@@ -450,6 +463,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                 For AIC regions upgrade cycle is designated by A,B,C etc. Defaults to "".
             resource_version (str, optional): Used for optimistic concurrency.
                 Must be empty on create, valid on update and delete. Defaults to "".
+
         """
         super().__init__()
         self.cloud_owner = cloud_owner
@@ -468,6 +482,12 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
         self.resource_version = resource_version
 
     def __repr__(self) -> str:
+        """Cloud region object representation.
+
+        Returns:
+            str: Human readable string contains most important information about cloud region.
+
+        """
         return (
             f"CloudRegion(cloud_owner={self.cloud_owner}, cloud_region_id={self.cloud_region_id})"
         )
@@ -486,6 +506,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
         Yields:
             CloudRegion -- CloudRegion object. Can not yield anything
                 if cloud region with given filter parameters doesn't exist
+
         """
         # Filter request parameters - use only these which are not None
         filter_parameters: dict = cls.filter_none_key_values(
@@ -530,6 +551,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Returns:
             CloudRegion: CloudRegion object with given cloud-region-id.
+
         """
         try:
             return next(cls.get_all(cloud_region_id=cloud_region_id))
@@ -558,6 +580,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Returns:
             CloudRegion: Created cloud region.
+
         """
         cloud_region: "CloudRegion" = CloudRegion(
             cloud_owner=cloud_owner,
@@ -596,6 +619,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Returns:
             str: CloudRegion object url
+
         """
         return (
             f"{self.base_url}{self.api_version}/cloud-infrastructure/cloud-regions/cloud-region/"
@@ -610,6 +634,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Returns:
             Iterator[Tenant]: Iterate through cloud region tenants
+
         """
         response: dict = self.send_message_json("GET", "get tenants", f"{self.url}/tenants")
         return (
@@ -631,6 +656,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Returns:
             Iterator[Relationship]: ClourRegion relationship
+
         """
         response: dict = self.send_message_json(
             "GET", "get cloud region relationships", f"{self.url}/relationship-list"
@@ -652,6 +678,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Args:
             relationship (Relationship): Relationship to add
+
         """
         self.send_message_json(
             "PUT",
@@ -670,6 +697,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             tenant_name (str): Readable name of tenant
             tenant_context (str, optional): This field will store
                 the tenant context.. Defaults to None.
+
         """
         self.send_message_json(
             "PUT",
@@ -700,6 +728,7 @@ class Customer(AaiElement):
             resource_version (str, optional): Used for optimistic concurrency.
                 Must be empty on create, valid on update
                 and delete. Defaults to None.
+
         """
         super().__init__()
         self.global_customer_id: str = global_customer_id
@@ -721,6 +750,7 @@ class Customer(AaiElement):
             global_customer_id (str): global-customer-id to filer customers by. Defaults to None.
             subscriber_name (str): subscriber-name to filter customers by. Defaults to None.
             subscriber_type (str): subscriber-type to filter customers by. Defaults to None.
+
         """
         filter_parameters: dict = cls.filter_none_key_values(
             {
@@ -756,6 +786,7 @@ class Customer(AaiElement):
 
         Returns:
             Customer: Customer object.
+
         """
         url: str = (
             f"{cls.base_url}{cls.api_version}/business/customers/"
@@ -785,12 +816,13 @@ class Customer(AaiElement):
 
     @property
     def url(self) -> str:
-        """Customer object url.
+        """Return customer object url.
 
         Unique url address to get customer's data.
 
         Returns:
             str: Customer object url
+
         """
         return (
             f"{self.base_url}{self.api_version}/business/customers/customer/"

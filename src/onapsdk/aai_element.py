@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional
 from urllib.parse import urlencode
 
+from onapsdk.msb import Multicloud
 from onapsdk.onap_service import OnapService
 from onapsdk.utils.headers_creator import headers_aai_creator
 from onapsdk.utils.jinja import jinja_env
@@ -163,6 +164,16 @@ class Complex(AaiElement):  # pylint: disable=R0902
         self.elevation: str = elevation
         self.lata: str = lata
 
+    def __repr__(self) -> str:
+        """Complex object description.
+
+        Returns:
+            str: Complex object description
+
+        """
+        return (f"Complex(name={self.name}, physical_location_id={self.physical_location_id}, "
+                f"resource_version={self.resource_version})")
+
     @classmethod
     def create(cls,  # pylint: disable=R0914
                name: str,
@@ -217,7 +228,7 @@ class Complex(AaiElement):  # pylint: disable=R0902
             f"{cls.base_url}{cls.api_version}/cloud-infrastructure/complexes/complex/"
             f"{complex_object.physical_location_id}"
         )
-        cls.send_message_json("PUT", "create complex", url, data=payload)
+        cls.send_message("PUT", "create complex", url, data=payload)
         return complex_object
 
     @classmethod
@@ -295,8 +306,7 @@ class Service(AaiElement):
         self.resource_version = resource_version
 
     def __repr__(self) -> str:
-        """
-        Service object description.
+        """Service object description.
 
         Returns:
             str: Service object description
@@ -601,7 +611,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             f"{cls.base_url}{cls.api_version}/cloud-infrastructure/cloud-regions/cloud-region/"
             f"{cloud_region.cloud_owner}/{cloud_region.cloud_region_id}"
         )
-        cls.send_message_json(
+        cls.send_message(
             "PUT",
             "Create cloud region",
             url,
@@ -680,7 +690,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             relationship (Relationship): Relationship to add
 
         """
-        self.send_message_json(
+        self.send_message(
             "PUT",
             "add relationship to cloud region",
             f"{self.url}/relationship-list/relationship",
@@ -699,7 +709,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                 the tenant context.. Defaults to None.
 
         """
-        self.send_message_json(
+        self.send_message(
             "PUT",
             "add tenant to cloud region",
             f"{self.url}/tenants/tenant/{tenant_id}",
@@ -707,6 +717,14 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             .get_template("cloud_region_add_tenant.json.j2")
             .render(tenant_id=tenant_id, tenant_name=tenant_name, tenant_context=tenant_context),
         )
+
+    def register_to_multicloud(self) -> None:
+        """Register cloud to multicloud using MSB API."""
+        Multicloud.register_vim(self.cloud_owner, self.cloud_region_id)
+
+    def unregister_from_multicloud(self) -> None:
+        """Unregister cloud from mutlicloud."""
+        Multicloud.unregister_vim(self.cloud_owner, self.cloud_region_id)
 
 
 class Customer(AaiElement):
@@ -735,6 +753,18 @@ class Customer(AaiElement):
         self.subscriber_name: str = subscriber_name
         self.subscriber_type: str = subscriber_type
         self.resource_version: str = resource_version
+
+    def __repr__(self) -> str:  # noqa
+        """Customer description.
+
+        Returns:
+            str: Customer object description
+
+        """
+        return (f"Customer(global_customer_id={self.global_customer_id}, "
+                f"subscriber_name={self.subscriber_name}, "
+                f"subscriber_type={self.subscriber_type}, "
+                f"resource_version={self.resource_version})")
 
     @classmethod
     def get_all(cls,

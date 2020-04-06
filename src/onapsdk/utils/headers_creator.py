@@ -142,3 +142,19 @@ def headers_so_creator(base_header: Dict[str, str]):
     headers["authorization"] = "Basic SW5mcmFQb3J0YWxDbGllbnQ6cGFzc3dvcmQxJA=="
     headers["cache-control"] = "no-cache"
     return headers
+
+
+def headers_msb_creator(base_header: Dict[str, str]):
+    """
+    Create the right headers for MSB.
+
+    Args:
+        base_header (Dict[str, str]): the base header to use
+
+    Returns:
+        Dict[str, str]: the needed headers
+
+    """
+    headers = base_header.copy()
+    headers["cache-control"] = "no-cache"
+    return headers

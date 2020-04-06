@@ -427,6 +427,46 @@ class Relationship:
     relationship_data: List[Dict[str, str]]
 
 
+@dataclass
+class AvailabilityZone:
+    """Availability zone.
+
+    A collection of compute hosts/pservers
+    """
+
+    name: str
+    hypervisor_type: str
+    operational_status: str = None
+    resource_version: str = None
+
+
+@dataclass
+class EsrSystemInfo:
+    """Persist common address information of external systems."""
+
+    esr_system_info_id: str
+    user_name: str
+    password: str
+    system_type: str
+    resource_version: str
+    system_name: str = None
+    esr_type: str = None
+    vendor: str = None
+    version: str = None
+    service_url: str = None
+    protocol: str = None
+    ssl_cacert: str = None
+    ssl_insecure: Optional[bool] = None
+    ip_address: str = None
+    port: str = None
+    cloud_domain: str = None
+    default_tenant: str = None
+    passive: Optional[bool] = None
+    remote_path: str = None
+    system_status: str = None
+    openstack_region_id: str = None
+
+
 class CloudRegion(AaiElement):  # pylint: disable=R0902
     """Cloud region class.
 
@@ -665,7 +705,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
         Iterate over CloudRegion relationships. Relationship list is given using A&AI API call.
 
         Returns:
-            Iterator[Relationship]: ClourRegion relationship
+            Iterator[Relationship]: CloudRegion relationship
 
         """
         response: dict = self.send_message_json(
@@ -679,6 +719,65 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                 relationship_data=relationship.get("relationship-data"),
             )
             for relationship in response.get("relationship", [])
+        )
+
+    @property
+    def availability_zones(self) -> Iterator[AvailabilityZone]:
+        """Cloud region availability zones.
+
+        Iterate over CloudRegion availability zones. Relationship list is given using A&AI API call.
+        
+        Returns:
+            Iterator[AvailabilityZone]: CloudRegion availability zone
+        """
+        response: dict = self.send_message_json(
+            "GET", "get cloud region availability zones", f"{self.url}/availability-zones"
+        )
+        return (
+            AvailabilityZone(
+                name=availability_zone.get("availability-zone-name"),
+                hypervisor_type=availability_zone.get("hypervisor-type"),
+                operational_status=availability_zone.get("operational-status"),
+                resource_version=availability_zone.get("resource-version")
+            )
+            for availability_zone in response.get("availability-zone", [])
+        )
+
+    @property
+    def esr_system_infos(self) -> Iterator[EsrSystemInfo]:
+        """Cloud region collection of persistent block-level external system auth info.
+        
+        Returns:
+            Iterator[EsrSystemInfo]: Cloud region external system address information.
+        """
+        response: dict = self.send_message_json(
+            "GET", "get cloud region external systems info list", f"{self.url}/esr-system-info-list"
+        )
+        return (
+            EsrSystemInfo(
+                esr_system_info_id = esr_system_info.get("esr-system-info-id"),
+                user_name = esr_system_info.get("user-name"),
+                password = esr_system_info.get("password"),
+                system_type = esr_system_info.get("system-type"),
+                system_name = esr_system_info.get("system-name"),
+                esr_type = esr_system_info.get("type"),
+                vendor = esr_system_info.get("vendor"),
+                version = esr_system_info.get("version"),
+                service_url = esr_system_info.get("service-url"),
+                protocol = esr_system_info.get("protocol"),
+                ssl_cacert = esr_system_info.get("ssl-cacert"),
+                ssl_insecure = esr_system_info.get("ssl-insecure"),
+                ip_address = esr_system_info.get("ip-address"),
+                port = esr_system_info.get("port"),
+                cloud_domain = esr_system_info.get("cloud-domain"),
+                default_tenant = esr_system_info.get("default-tenant"),
+                passive = esr_system_info.get("passive"),
+                remote_path = esr_system_info.get("remote-path"),
+                system_status = esr_system_info.get("system-status"),
+                openstack_region_id = esr_system_info.get("openstack-region-id"),
+                resource_version = esr_system_info.get("resource-version"),
+            )
+            for esr_system_info in response.get("esr-system-info", [])
         )
 
     def add_relationship(self, relationship: Relationship) -> None:
@@ -716,6 +815,104 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             data=jinja_env()
             .get_template("cloud_region_add_tenant.json.j2")
             .render(tenant_id=tenant_id, tenant_name=tenant_name, tenant_context=tenant_context),
+        )
+
+    def add_availability_zone(self, availability_zone_name: str, availability_zone_hypervisor_type: str, availability_zone_operational_status: str = None) -> None:
+        """Add avaiability zone to cloud region.
+        
+        Args:
+            availability_zone_name (str): Name of the availability zone. Unique across a cloud region
+            availability_zone_hypervisor_type (str): Type of hypervisor
+            availability_zone_operational_status (str, optional): State that indicates whether the availability zone should be used. Defaults to None.
+        """
+        self.send_message(
+            "PUT",
+            "Add availability zone to cloud region",
+            f"{self.url}/availability-zones/availability-zone/{availability_zone_name}",
+            data=jinja_env()
+            .get_template("cloud_region_add_availability_zone.json.j2")
+            .render(availability_zone_name=availability_zone_name,
+                    availability_zone_hypervisor_type=availability_zone_hypervisor_type,
+                    availability_zone_operational_status=availability_zone_operational_status)
+        )
+
+    def add_esr_system_info(self,
+                            esr_system_info_id: str,
+                            user_name: str,
+                            password: str,
+                            system_type: str,
+                            system_name: str = None,
+                            esr_type: str = None,
+                            vendor: str = None,
+                            version: str = None,
+                            service_url: str = None,
+                            protocol: str = None,
+                            ssl_cacert: str = None,
+                            ssl_insecure: Optional[bool] = None,
+                            ip_address: str = None,
+                            port: str = None,
+                            cloud_domain: str = None,
+                            default_tenant: str = None,
+                            passive: Optional[bool] = None,
+                            remote_path: str = None,
+                            system_status: str = None,
+                            openstack_region_id: str = None,
+                            resource_version: str = None) -> None:
+        """Add external system info to cloud region.
+        
+        Args:
+            esr_system_info_id (str): Unique ID of esr system info
+            user_name (str): username used to access external system
+            password (str): password used to access external system
+            system_type (str): it could be vim/vnfm/thirdparty-sdnc/
+                ems-resource/ems-performance/ems-alarm
+            system_name (str, optional): name of external system. Defaults to None.
+            esr_type (str, optional): type of external system. Defaults to None.
+            vendor (str, optional): vendor of external system. Defaults to None.
+            version (str, optional): version of external system. Defaults to None.
+            service_url (str, optional): url used to access external system. Defaults to None.
+            protocol (str, optional): protocol of third party SDNC,
+                for example netconf/snmp. Defaults to None.
+            ssl_cacert (str, optional): ca file content if enabled ssl on auth-url.
+                Defaults to None.
+            ssl_insecure (bool, optional): Whether to verify VIM's certificate. Defaults to True.
+            ip_address (str, optional): service IP of ftp server. Defaults to None.
+            port (str, optional): service port of ftp server. Defaults to None.
+            cloud_domain (str, optional): domain info for authentication. Defaults to None.
+            default_tenant (str, optional): default tenant of VIM. Defaults to None.
+            passive (bool, optional): ftp passive mode or not. Defaults to False.
+            remote_path (str, optional): resource or performance data file path. Defaults to None.
+            system_status (str, optional): he status of external system. Defaults to None.
+            openstack_region_id (str, optional): OpenStack region ID used by MultiCloud plugin to
+                interact with an OpenStack instance. Defaults to None.
+        """
+        self.send_message(
+            "PUT",
+            "Add external system info to cloud region",
+            f"{self.url}/esr-system-info-list/esr-system-info/{esr_system_info_id}",
+            data=jinja_env()
+            .get_template("cloud_region_add_esr_system_info.json.j2")
+            .render(esr_system_info_id=esr_system_info_id,
+                    user_name=user_name,
+                    password=password,
+                    system_type=system_type,
+                    system_name=system_name,
+                    esr_type=esr_type,
+                    vendor=vendor,
+                    version=version,
+                    service_url=service_url,
+                    protocol=protocol,
+                    ssl_cacert=ssl_cacert,
+                    ssl_insecure=ssl_insecure,
+                    ip_address=ip_address,
+                    port=port,
+                    cloud_domain=cloud_domain,
+                    default_tenant=default_tenant,
+                    passive=passive,
+                    remote_path=remote_path,
+                    system_status=system_status,
+                    openstack_region_id=openstack_region_id,
+                    resource_version=resource_version)
         )
 
     def register_to_multicloud(self) -> None:

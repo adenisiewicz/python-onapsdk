@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3  pylint: disable=C0302
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """AAI Element module."""
@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional
 from urllib.parse import urlencode
 
-from onapsdk.msb import Multicloud
 from onapsdk.onap_service import OnapService
 from onapsdk.utils.headers_creator import headers_aai_creator
 from onapsdk.utils.jinja import jinja_env
@@ -440,7 +439,7 @@ class AvailabilityZone:
     resource_version: str = None
 
 
-@dataclass
+@dataclass  # pylint: disable=R0902
 class EsrSystemInfo:
     """Persist common address information of external systems."""
 
@@ -587,7 +586,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                 upgrade_cycle=cloud_region.get("upgrade-cycle"),
                 orchestration_disabled=cloud_region["orchestration-disabled"],  # required
                 in_maint=cloud_region["in-maint"],  # required
-                resource_version=cloud_region.get("resource_version"),
+                resource_version=cloud_region.get("resource-version"),
             )
 
     @classmethod
@@ -726,7 +725,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
         """Cloud region availability zones.
 
         Iterate over CloudRegion availability zones. Relationship list is given using A&AI API call.
-        
+
         Returns:
             Iterator[AvailabilityZone]: CloudRegion availability zone
         """
@@ -746,7 +745,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
     @property
     def esr_system_infos(self) -> Iterator[EsrSystemInfo]:
         """Cloud region collection of persistent block-level external system auth info.
-        
+
         Returns:
             Iterator[EsrSystemInfo]: Cloud region external system address information.
         """
@@ -755,27 +754,27 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
         )
         return (
             EsrSystemInfo(
-                esr_system_info_id = esr_system_info.get("esr-system-info-id"),
-                user_name = esr_system_info.get("user-name"),
-                password = esr_system_info.get("password"),
-                system_type = esr_system_info.get("system-type"),
-                system_name = esr_system_info.get("system-name"),
-                esr_type = esr_system_info.get("type"),
-                vendor = esr_system_info.get("vendor"),
-                version = esr_system_info.get("version"),
-                service_url = esr_system_info.get("service-url"),
-                protocol = esr_system_info.get("protocol"),
-                ssl_cacert = esr_system_info.get("ssl-cacert"),
-                ssl_insecure = esr_system_info.get("ssl-insecure"),
-                ip_address = esr_system_info.get("ip-address"),
-                port = esr_system_info.get("port"),
-                cloud_domain = esr_system_info.get("cloud-domain"),
-                default_tenant = esr_system_info.get("default-tenant"),
-                passive = esr_system_info.get("passive"),
-                remote_path = esr_system_info.get("remote-path"),
-                system_status = esr_system_info.get("system-status"),
-                openstack_region_id = esr_system_info.get("openstack-region-id"),
-                resource_version = esr_system_info.get("resource-version"),
+                esr_system_info_id=esr_system_info.get("esr-system-info-id"),
+                user_name=esr_system_info.get("user-name"),
+                password=esr_system_info.get("password"),
+                system_type=esr_system_info.get("system-type"),
+                system_name=esr_system_info.get("system-name"),
+                esr_type=esr_system_info.get("type"),
+                vendor=esr_system_info.get("vendor"),
+                version=esr_system_info.get("version"),
+                service_url=esr_system_info.get("service-url"),
+                protocol=esr_system_info.get("protocol"),
+                ssl_cacert=esr_system_info.get("ssl-cacert"),
+                ssl_insecure=esr_system_info.get("ssl-insecure"),
+                ip_address=esr_system_info.get("ip-address"),
+                port=esr_system_info.get("port"),
+                cloud_domain=esr_system_info.get("cloud-domain"),
+                default_tenant=esr_system_info.get("default-tenant"),
+                passive=esr_system_info.get("passive"),
+                remote_path=esr_system_info.get("remote-path"),
+                system_status=esr_system_info.get("system-status"),
+                openstack_region_id=esr_system_info.get("openstack-region-id"),
+                resource_version=esr_system_info.get("resource-version"),
             )
             for esr_system_info in response.get("esr-system-info", [])
         )
@@ -817,13 +816,18 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             .render(tenant_id=tenant_id, tenant_name=tenant_name, tenant_context=tenant_context),
         )
 
-    def add_availability_zone(self, availability_zone_name: str, availability_zone_hypervisor_type: str, availability_zone_operational_status: str = None) -> None:
+    def add_availability_zone(self,
+                              availability_zone_name: str,
+                              availability_zone_hypervisor_type: str,
+                              availability_zone_operational_status: str = None) -> None:
         """Add avaiability zone to cloud region.
-        
+
         Args:
-            availability_zone_name (str): Name of the availability zone. Unique across a cloud region
+            availability_zone_name (str): Name of the availability zone.
+                Unique across a cloud region
             availability_zone_hypervisor_type (str): Type of hypervisor
-            availability_zone_operational_status (str, optional): State that indicates whether the availability zone should be used. Defaults to None.
+            availability_zone_operational_status (str, optional): State that indicates whether
+                the availability zone should be used. Defaults to None.
         """
         self.send_message(
             "PUT",
@@ -836,7 +840,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                     availability_zone_operational_status=availability_zone_operational_status)
         )
 
-    def add_esr_system_info(self,
+    def add_esr_system_info(self,  # pylint: disable=R0913, R0914
                             esr_system_info_id: str,
                             user_name: str,
                             password: str,
@@ -859,7 +863,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                             openstack_region_id: str = None,
                             resource_version: str = None) -> None:
         """Add external system info to cloud region.
-        
+
         Args:
             esr_system_info_id (str): Unique ID of esr system info
             user_name (str): username used to access external system
@@ -915,13 +919,15 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                     resource_version=resource_version)
         )
 
-    def register_to_multicloud(self) -> None:
-        """Register cloud to multicloud using MSB API."""
-        Multicloud.register_vim(self.cloud_owner, self.cloud_region_id)
+    def delete(self) -> None:
+        """Delete cloud region."""
 
-    def unregister_from_multicloud(self) -> None:
-        """Unregister cloud from mutlicloud."""
-        Multicloud.unregister_vim(self.cloud_owner, self.cloud_region_id)
+        self.send_message(
+            "DELETE",
+            f"Delete cloud region {self.cloud_region_id}",
+            self.url,
+            params={"resource-version": self.resource_version}
+        )
 
 
 class Customer(AaiElement):

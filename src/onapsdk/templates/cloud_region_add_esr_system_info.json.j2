@@ -25,7 +25,7 @@
         , "ssl-cacert": "{{ ssl_cacert }}"
     {% endif %}
     {% if ssl_insecure is not none %}
-        , "ssl-insecure": {{ ssl_insecure }}
+        , "ssl-insecure": {{ ssl_insecure | tojson }}
     {% endif %}
     {% if ip_address %}
         , "ip-address": "{{ ip_address }}"
@@ -40,7 +40,7 @@
         , "default-tenant": "{{ default_tenant }}"
     {% endif %}
     {% if passive is not none %}
-        , "passive": {{ passive }}
+        , "passive": {{ passive | tojson }}
     {% endif %}
     {% if remote_path %}
         , "remote-path": "{{ remote_path }}"

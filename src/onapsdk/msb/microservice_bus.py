@@ -14,5 +14,5 @@ class MSB(OnapService):
 
     __logger: logging.Logger = logging.getLogger(__name__)
 
-    base_url = "http://msb.api.discovery.simpledemo.onap.org:30280"
+    base_url = "https://msb.api.simpledemo.onap.org:30283"
     headers = headers_msb_creator(OnapService.headers)

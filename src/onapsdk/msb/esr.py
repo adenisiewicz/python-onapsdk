@@ -10,7 +10,7 @@ from .microservice_bus import MSB
 
 
 class ESR(MSB):
-    """External system EST module"""
+    """External system EST module."""
 
     __logger: logging.Logger = logging.getLogger(__name__)
 

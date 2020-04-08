@@ -921,7 +921,6 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
     def delete(self) -> None:
         """Delete cloud region."""
-
         self.send_message(
             "DELETE",
             f"Delete cloud region {self.cloud_region_id}",

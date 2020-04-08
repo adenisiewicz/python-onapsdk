@@ -439,8 +439,8 @@ class AvailabilityZone:
     resource_version: str = None
 
 
-@dataclass  # pylint: disable=R0902
-class EsrSystemInfo:
+@dataclass
+class EsrSystemInfo:  # pylint: disable=R0902
     """Persist common address information of external systems."""
 
     esr_system_info_id: str
@@ -728,6 +728,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Returns:
             Iterator[AvailabilityZone]: CloudRegion availability zone
+
         """
         response: dict = self.send_message_json(
             "GET", "get cloud region availability zones", f"{self.url}/availability-zones"
@@ -748,6 +749,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Returns:
             Iterator[EsrSystemInfo]: Cloud region external system address information.
+
         """
         response: dict = self.send_message_json(
             "GET", "get cloud region external systems info list", f"{self.url}/esr-system-info-list"

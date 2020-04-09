@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Optional
 from urllib.parse import urlencode
 
+from onapsdk.multicloud import Multicloud
 from onapsdk.onap_service import OnapService
 from onapsdk.utils.headers_creator import headers_aai_creator
 from onapsdk.utils.jinja import jinja_env
@@ -920,6 +921,19 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
                     openstack_region_id=openstack_region_id,
                     resource_version=resource_version)
         )
+
+    def register_to_multicloud(self, default_tenant: str = None) -> None:
+        """Register cloud to multicloud using MSB API.
+        
+        Args:
+            default_tenant (str, optional): Default tenant. Defaults to None.
+        """
+        Multicloud.register_vim(self.cloud_owner, self.cloud_region_id, default_tenant)
+
+    def unregister_from_multicloud(self) -> None:
+        """Unregister cloud from mutlicloud."""
+        Multicloud.unregister_vim(self.cloud_owner, self.cloud_region_id)
+
 
     def delete(self) -> None:
         """Delete cloud region."""

@@ -4,9 +4,8 @@
 """ESR module."""
 import logging
 
+from onapsdk.msb import MSB
 from onapsdk.utils.jinja import jinja_env
-
-from .microservice_bus import MSB
 
 
 class ESR(MSB):
@@ -14,7 +13,7 @@ class ESR(MSB):
 
     __logger: logging.Logger = logging.getLogger(__name__)
 
-    base_url = f"{MSB.base_url}//api/aai-esr-server/v1/vims"
+    base_url = f"{MSB.base_url}/api/aai-esr-server/v1/vims"
 
     @classmethod
     def register_vim(cls,  # pylint: disable=R0913

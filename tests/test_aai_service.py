@@ -5,7 +5,16 @@ from unittest import mock
 
 import pytest
 
-from onapsdk.aai_element import AaiElement, CloudRegion, Complex, Customer, Relationship, Tenant
+from onapsdk.aai_element import (
+    AaiElement,
+    CloudRegion,
+    Complex,
+    Customer,
+    EsrSystemInfo,
+    Relationship,
+    Service,
+    Tenant
+)
 from onapsdk.onap_service import OnapService
 
 
@@ -347,6 +356,21 @@ SIMPLE_CUSTOMER = {
 }
 
 
+ESR_SYSTEM_INFO = {
+    'esr-system-info': [
+        {
+            'esr-system-info-id': 'c2d5e75d-56fd-47bc-af31-95607b26fa93',
+            'service-url': 'http://keystone:5000/v3',
+            'user-name': 'test-devel',
+            'password': 'test-devel',
+            'system-type': 'openstack',
+            'cloud-domain': 'Default',
+            'resource-version': '1586436352654'
+        }
+    ]
+}
+
+
 CLOUD_REGIONS_ITERATOR = (
     cloud_region
     for cloud_region in [
@@ -411,9 +435,13 @@ def test_customers_no_resources(mock_send):
 @mock.patch.object(AaiElement, 'send_message_json')
 def test_subscription_type_list(mock_send):
     """Test the getter of subscription types in A&AI."""
-    mock_send.return_value = SUBSCRIPTION_TYPES_LIST
+    mock_send.return_value = {}
+    assert len(list(AaiElement.subscriptions())) == 0
+    assert len(list(AaiElement.get_subscription_type_list())) == 0
 
+    mock_send.return_value = SUBSCRIPTION_TYPES_LIST
     assert len(list(AaiElement.subscriptions())) == 3
+    assert len(list(AaiElement.get_subscription_type_list())) == 3
     subscriptions = AaiElement.subscriptions()
     aai_service_1 = next(subscriptions)
     aai_service_2 = next(subscriptions)
@@ -446,13 +474,48 @@ def test_cloud_regions(mock_send):
     assert cloud_region.cloud_type == "openstack"
     assert cloud_region.complex_name == "Cruguil"
 
+    cloud_region = AaiElement.get_cloud_info()
+    assert cloud_region.cloud_owner == "OPNFV"
+    assert cloud_region.cloud_type == "openstack"
+    assert cloud_region.complex_name == "Cruguil"
+
     mock_send.return_value = {}
     cloud_regions = list(CloudRegion.get_all())
     assert len(cloud_regions) == 0
 
+    with pytest.raises(StopIteration):
+        cloud_region = AaiElement.get_cloud_info()
+
     mock_send.return_value = CLOUD_REGIONS
     cloud_regions = list(CloudRegion.get_all())
     assert len(cloud_regions) == 1
+
+@mock.patch.object(CloudRegion, "send_message")
+def test_cloud_region_creation(mock_send):
+    """Test cloud region creation"""
+    cloud_region = CloudRegion.create(
+        cloud_owner="test_owner",
+        cloud_region_id="test_cloud_region",
+        orchestration_disabled=False,
+        in_maint=True,
+        owner_defined_type="Test",
+        cloud_zone="Test zone",
+        sriov_automation="Test",
+        upgrade_cycle="Test"
+    )
+    assert cloud_region.cloud_owner == "test_owner"
+    assert cloud_region.cloud_region_id == "test_cloud_region"
+    assert cloud_region.orchestration_disabled == False
+    assert cloud_region.in_maint == True
+    assert cloud_region.cloud_type == ""
+    assert cloud_region.owner_defined_type == "Test"
+    assert cloud_region.cloud_region_version == ""
+    assert cloud_region.identity_url == ""
+    assert cloud_region.cloud_zone == "Test zone"
+    assert cloud_region.complex_name == ""
+    assert cloud_region.sriov_automation == "Test"
+    assert cloud_region.cloud_extra_info == ""
+    assert cloud_region.upgrade_cycle == "Test"
 
 @mock.patch.object(AaiElement, 'send_message_json')
 def test_customer_service_tenant_relations(mock_send):
@@ -473,6 +536,16 @@ def test_tenants_info(mock_send, mock_cloud_regions):
     res = list(AaiElement.tenants_info(cloud_name))
     assert len(res) == 1
     assert isinstance(res[0], Tenant)
+    tenant = res[0]
+    assert tenant.tenant_id == "4bdc6f0f2539430f9428c852ba606808"
+    assert tenant.name == "onap-dublin-daily-vnfs"
+    assert tenant.context is None
+    assert tenant.resource_version == "1562591004273"
+    assert tenant.url == (
+        f"{tenant.base_url}{tenant.api_version}/cloud-infrastructure/cloud-regions/cloud-region/"
+        f"OPNFV/RegionOne/tenants/tenant/4bdc6f0f2539430f9428c852ba606808?"
+        f"resource-version=1562591004273"
+    )
 
 @mock.patch.object(CloudRegion, 'get_all')
 @mock.patch.object(AaiElement, 'send_message_json')
@@ -490,9 +563,9 @@ def test_tenants_info_wrong_cloud_name(mock_send, mock_cloud_regions):
 def test_cloud_regions_relationship(mock_send):
     """Test cloud region relationship property."""
     mock_send.return_value = CLOUD_REGION_RELATIONSHIP
-    clour_region = CloudRegion(cloud_owner="tester", cloud_region_id="test",
+    cloud_region = CloudRegion(cloud_owner="tester", cloud_region_id="test",
                                orchestration_disabled=True, in_maint=False)
-    relationship = next(clour_region.relationships)
+    relationship = next(cloud_region.relationships)
     assert isinstance(relationship, Relationship)
     assert relationship.relationship_label == "org.onap.relationships.inventory.LocatedIn"
     assert relationship.related_link == \
@@ -502,16 +575,75 @@ def test_cloud_regions_relationship(mock_send):
     assert relationship.relationship_data[0]["relationship-value"] == "integration_test_complex"
 
 
+@mock.patch.object(CloudRegion, "send_message_json")
+def test_cloud_regions_esr_system_infos(mock_send):
+    """Test cloud region esr system info"""
+    mock_send.return_value = ESR_SYSTEM_INFO
+    cloud_region = CloudRegion(cloud_owner="tester", cloud_region_id="test",
+                               orchestration_disabled=True, in_maint=False)
+    esr_system_info = next(cloud_region.esr_system_infos)
+    assert isinstance(esr_system_info, EsrSystemInfo)
+    assert esr_system_info.esr_system_info_id == "c2d5e75d-56fd-47bc-af31-95607b26fa93"
+    assert esr_system_info.user_name == "test-devel"
+    assert esr_system_info.password == "test-devel"
+    assert esr_system_info.system_type == "openstack"
+    assert esr_system_info.resource_version == "1586436352654"
+    assert esr_system_info.system_name is None
+    assert esr_system_info.esr_type is None
+    assert esr_system_info.vendor is None
+    assert esr_system_info.version is None
+    assert esr_system_info.service_url == "http://keystone:5000/v3"
+    assert esr_system_info.protocol is None
+    assert esr_system_info.ssl_cacert is None
+    assert esr_system_info.ssl_insecure is None
+    assert esr_system_info.ip_address is None
+    assert esr_system_info.port is None
+    assert esr_system_info.cloud_domain == "Default"
+    assert esr_system_info.default_tenant is None
+    assert esr_system_info.passive is None
+    assert esr_system_info.remote_path is None
+    assert esr_system_info.system_status is None
+    assert esr_system_info.openstack_region_id is None
+
+@mock.patch.object(Complex, "send_message")
+def test_create_complex(mock_send):
+    """Test complex creation"""
+    cmplx = Complex.create(
+        name="test complex",
+        physical_location_id="somewhere",
+        data_center_code="5555",
+        physical_location_type="test",
+        city="Test City",
+        postal_code="55555",
+        region="Test region",
+        elevation="TestElevation",
+    )
+
+    assert cmplx.name == "test complex"
+    assert cmplx.physical_location_id == "somewhere"
+    assert cmplx.identity_url == ""
+    assert cmplx.physical_location_type == "test"
+    assert cmplx.street1 == ""
+    assert cmplx.street2 == ""
+    assert cmplx.city == "Test City"
+    assert cmplx.state == ""
+    assert cmplx.postal_code == "55555"
+    assert cmplx.country == ""
+    assert cmplx.region == "Test region"
+    assert cmplx.latitude == ""
+    assert cmplx.longitude == ""
+    assert cmplx.elevation == "TestElevation"
+    assert cmplx.lata == ""
+
+
 @mock.patch.object(Complex, "send_message_json")
 def text_get_all_complexes(mock_send):
     """Test get_all Complex class method."""
     mock_send.return_value = {}
-    complexes = list(Complex.get_all())
-    assert len(complexes) == 0
+    assert len(list(Complex.get_all())) == 0
 
     mock_send.return_value = COMPLEXES
-    complexes = list(Complex.get_all())
-    assert len(complexes) == 2
+    assert len(list(Complex.get_all())) == 2
 
 
 def test_filter_none_value():
@@ -532,9 +664,13 @@ def test_customers_get_all(mock_send):
     mock_send.return_value = {}
     customers = list(Customer.get_all())
     assert len(customers) == 0
+    customers = list(AaiElement.get_customers())
+    assert len(customers) == 0
 
     mock_send.return_value = CUSTOMERS
     customers = list(Customer.get_all())
+    assert len(customers) == 1
+    customers = list(AaiElement.get_customers())
     assert len(customers) == 1
 
 

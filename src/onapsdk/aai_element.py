@@ -924,7 +924,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
     def register_to_multicloud(self, default_tenant: str = None) -> None:
         """Register cloud to multicloud using MSB API.
-        
+
         Args:
             default_tenant (str, optional): Default tenant. Defaults to None.
         """

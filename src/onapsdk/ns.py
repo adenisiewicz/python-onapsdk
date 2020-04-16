@@ -9,6 +9,8 @@ import logging
 import json
 import yaml
 
+from onapsdk.aai_element import Service as AaiService
+from onapsdk.service import Service
 from onapsdk.so_element import SoElement
 from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.tosca_file_handler import get_parameter_from_yaml, random_string_generator
@@ -72,14 +74,21 @@ class NetworkService(SoElement):
         self._logger.info("attempting to create %s %s in SO", type(self).__name__, self.name)
 
         # Get subscribed ID
-        global_subscriber_id = self.get_subscriber_info()
-        self._logger.debug("Global subscriber retrieved: %s", global_subscriber_id)
+        customer: Customer = self.get_subscriber()
+        self._logger.debug("Global subscriber retrieved: %s", customer.global_customer_id)
+
         # subscription_service_type
         subscription_service_type = self.get_subscription_service_type(self.name)
-        self._logger.debug("Subscription service type found: %s", subscription_service_type)
+        self._logger.error("Subscription service type found: %s", subscription_service_type)
+
+        service = Service(self.service_name)
+        AaiService.create(service.unique_uuid, service.name)
 
         # Get Service model
-        service_model = self.get_service_model_info(self.service_name)
+        service_model = self.get_service_model_info(service.name)
+
+        # Associate Service Model to Customer
+        customer.subscribe_service(service)
 
         # Get instance parameters
         vnf_instance_params, vf_instance_params = self.get_instance_params()
@@ -99,7 +108,7 @@ class NetworkService(SoElement):
         if self.instantiation_mode == "macro":
             template_macro = jinja_env().get_template("service_instance_macro.json.j2")
             macro_payload = template_macro.render(
-                global_subscriber_id=global_subscriber_id,
+                global_subscriber_id=customer.global_customer_id,
                 ns_instance_name=self.name,
                 cloud_configuration=cloud_info,
                 subscription_service_type=subscription_service_type,

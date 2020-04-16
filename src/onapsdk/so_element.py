@@ -65,10 +65,12 @@ class SoElement(OnapService):
         return json.dumps(parsed, indent=4)
 
     @classmethod
-    def get_subscriber_info(cls):
+    def get_subscriber(cls, global_customer_id: str = None):
         """Get subscriber Info."""
-        customer = next(AaiElement.get_customers())
-        return customer.global_customer_id
+        if not global_customer_id:
+            return next(AaiElement.get_customers())
+        # TODO: Return customer with provided global_customer_id
+        return next(AaiElement.get_gustomers())
 
     @classmethod
     def get_subscription_service_type(cls, vf_name):

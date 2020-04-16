@@ -65,28 +65,35 @@ class Service(SdcResource):
         """Onboard the Service in SDC."""
         # first Lines are equivalent for all onboard functions but it's more readable
         if not self.status: # # pylint: disable=R0801
+            self._logger.error("Line 68")
             self.create()
             self.onboard()
         elif self.status == const.DRAFT:
+            self._logger.error("Line 72")
             if not self.resources:
                 raise ValueError("No resources were given")
             for resource in self.resources:
                 self.add_resource(resource)
             self.checkin()
             self.onboard()
+        # elif self.status == const.CHECKED_IN:
+        #     self._logger.error("Line 80")
+        #     self.submit()
+        #     self.onboard()
+        # elif self.status == const.CHECKED_IN:
+        #     self._logger.error("Line 84")
+        #     self.start_certification()
+        #     self.onboard()
         elif self.status == const.CHECKED_IN:
-            self.submit()
-            self.onboard()
-        elif self.status == const.SUBMITTED:
-            self.start_certification()
-            self.onboard()
-        elif self.status == const.UNDER_CERTIFICATION:
+            self._logger.error("Line 88")
             self.certify()
             self.onboard()
+        # elif self.status == const.CERTIFIED:
+        #     self._logger.error("Line 92")
+        #     self.approve()
+        #     self.onboard()
         elif self.status == const.CERTIFIED:
-            self.approve()
-            self.onboard()
-        elif self.status == const.APPROVED:
+            self._logger.error("Line 96")
             self.distribute()
 
     @property
@@ -157,29 +164,29 @@ class Service(SdcResource):
 
     def start_certification(self) -> None:
         """Start Certification on Service."""
-        headers = headers_sdc_tester(SdcResource.headers)
-        self._verify_lcm_to_sdc(const.SUBMITTED,
+        headers = headers_sdc_creator(SdcResource.headers)
+        self._verify_lcm_to_sdc(const.CHECKED_IN,
                                 const.START_CERTIFICATION,
                                 headers=headers)
 
     def certify(self) -> None:
         """Certify Service in SDC."""
-        headers = headers_sdc_tester(SdcResource.headers)
-        self._verify_lcm_to_sdc(const.UNDER_CERTIFICATION,
+        headers = headers_sdc_creator(SdcResource.headers)
+        self._verify_lcm_to_sdc(const.CHECKED_IN,
                                 const.CERTIFY,
                                 headers=headers)
 
     def approve(self) -> None:
         """Approve Service in SDC."""
-        headers = headers_sdc_governor(SdcResource.headers)
+        headers = headers_sdc_creator(SdcResource.headers)
         self._verify_approve_to_sdc(const.CERTIFIED,
                                     const.APPROVE,
                                     headers=headers)
 
     def distribute(self) -> None:
         """Apptove Service in SDC."""
-        headers = headers_sdc_operator(SdcResource.headers)
-        self._verify_distribute_to_sdc(const.APPROVED,
+        headers = headers_sdc_creator(SdcResource.headers)
+        self._verify_distribute_to_sdc(const.CERTIFIED,
                                        const.DISTRIBUTE,
                                        headers=headers)
 
@@ -247,7 +254,7 @@ class Service(SdcResource):
         """Load Metada of Service and retrieve informations."""
         url = "{}/services/{}/distribution".format(self._base_create_url(),
                                                    self.identifier)
-        headers = headers_sdc_operator(SdcResource.headers)
+        headers = headers_sdc_creator(SdcResource.headers)
         result = self.send_message_json("GET",
                                         "Get Metadata for {}".format(
                                             self.name),

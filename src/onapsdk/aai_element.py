@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 
 from onapsdk.multicloud import Multicloud
 from onapsdk.onap_service import OnapService
+from onapsdk.service import Service
 from onapsdk.utils.headers_creator import headers_aai_creator
 from onapsdk.utils.jinja import jinja_env
 
@@ -342,6 +343,23 @@ class Service(AaiElement):
                 resource_version=service["resource-version"],
             )
 
+    @classmethod
+    def create(cls,
+               service_id: str,
+               service_description: str) -> Service:
+        cls.send_message(
+            "PUT",
+            "Create A&AI service",
+            f"{cls.base_url}{cls.api_version}/service-design-and-creation/"
+            f"services/service/{service_id}",
+            data=jinja_env()
+            .get_template("aai_service_create.json.j2")
+            .render(
+                service_id=service_id,
+                service_description=service_description
+            )
+        )
+
 
 class Tenant(AaiElement):
     """Tenant class."""
@@ -465,6 +483,13 @@ class EsrSystemInfo:  # pylint: disable=R0902
     remote_path: str = None
     system_status: str = None
     openstack_region_id: str = None
+
+
+@dataclass
+class ServiceSubscription:
+
+    service_type: str
+    resource_version: str
 
 
 class CloudRegion(AaiElement):  # pylint: disable=R0902
@@ -1075,4 +1100,33 @@ class Customer(AaiElement):
         return (
             f"{self.base_url}{self.api_version}/business/customers/customer/"
             f"{self.global_customer_id}?resource-version={self.resource_version}"
+        )
+
+    @property
+    def service_subscriptions(self):
+
+        response: dict = self.send_message_json(
+            "GET",
+            "get customer service subscriptions",
+            f"{self.base_url}{self.api_version}/business/customers/"
+            f"customer/{self.global_customer_id}/service-subscriptions"
+        )
+        for service_subscription in response.get("service-subscriptions", []):
+            yield ServiceSubscription(
+                service_type=service_subscription.get("service-type"),
+                resource_version=service_subscription.get("resource-version")
+            )
+
+    def subscribe_service(self, service: Service):
+
+        self.send_message(
+            "PUT",
+            "Create service subscription",
+            f"{self.base_url}{self.api_version}/business/customers/"
+            f"customer/{self.global_customer_id}/service-subscriptions/service-subscription/{service.unique_uuid}",
+            data=jinja_env()
+            .get_template("customer_service_subscription_create.json.j2")
+            .render(
+                service_id=service.unique_uuid,
+            ),
         )

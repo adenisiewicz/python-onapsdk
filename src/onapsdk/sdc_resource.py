@@ -73,7 +73,8 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
 
     def deep_load(self) -> None:
         """Deep load Object informations from SDC."""
-        url = "{}/sdc1/feProxy/rest/v1/followed".format(self.base_front_url)
+        url = "{}/sdc1/feProxy/rest/v1/screen?excludeTypes=VFCMT&excludeTypes=Configuration".format(self.base_front_url)
+        # url = "{}/sdc1/feProxy/rest/v1/followed".format(self.base_front_url)
         headers = headers_sdc_creator(SdcResource.headers)
         if self.status == const.UNDER_CERTIFICATION:
             headers = headers_sdc_tester(SdcResource.headers)

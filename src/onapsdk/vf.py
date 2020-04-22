@@ -5,7 +5,7 @@
 from typing import Dict
 
 import logging
-
+import time
 from onapsdk.sdc_resource import SdcResource
 from onapsdk.vsp import Vsp
 import onapsdk.constants as const
@@ -50,9 +50,11 @@ class Vf(SdcResource):
             if not self.vsp:
                 raise ValueError("No Vsp was given")
             self.create()
+            time.sleep(10)
             self.onboard()
         elif self.status == const.DRAFT:
             self.submit()
+            time.sleep(10)
             self.onboard()
         elif self.status == const.CERTIFIED:
             self.load()

@@ -4,6 +4,7 @@
 """Service module."""
 from os import makedirs
 import logging
+import time
 from typing import Dict, List
 from zipfile import ZipFile, BadZipFile
 
@@ -67,6 +68,7 @@ class Service(SdcResource):
         if not self.status: # # pylint: disable=R0801
             self._logger.error("Line 68")
             self.create()
+            time.sleep(10)
             self.onboard()
         elif self.status == const.DRAFT:
             self._logger.error("Line 72")
@@ -75,6 +77,7 @@ class Service(SdcResource):
             for resource in self.resources:
                 self.add_resource(resource)
             self.checkin()
+            time.sleep(10)
             self.onboard()
         # elif self.status == const.CHECKED_IN:
         #     self._logger.error("Line 80")
@@ -87,7 +90,9 @@ class Service(SdcResource):
         elif self.status == const.CHECKED_IN:
             self._logger.error("Line 88")
             self.certify()
+            time.sleep(10)
             self.onboard()
+            time.sleep(10)
         # elif self.status == const.CERTIFIED:
         #     self._logger.error("Line 92")
         #     self.approve()
@@ -224,7 +229,7 @@ class Service(SdcResource):
         """Check if service is distributed and update status accordingly."""
         url = "{}/services/distribution/{}".format(self._base_create_url(),
                                                    self.distribution_id)
-        headers = headers_sdc_operator(SdcResource.headers)
+        headers = headers_sdc_creator(SdcResource.headers)
         result = self.send_message_json("GET",
                                         "Check distribution for {}".format(
                                             self.name),
@@ -262,7 +267,7 @@ class Service(SdcResource):
                                         headers=headers)
         if (result and 'distributionStatusOfServiceList' in result
                 and len(result['distributionStatusOfServiceList']) > 0):
-            dist_status = result['distributionStatusOfServiceList'][-1]
+            dist_status = result['distributionStatusOfServiceList'][0]
             self._distribution_id = dist_status['distributionID']
 
     @classmethod

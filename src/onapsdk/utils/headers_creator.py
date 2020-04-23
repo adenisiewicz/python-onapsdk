@@ -158,3 +158,11 @@ def headers_msb_creator(base_header: Dict[str, str]):
     headers = base_header.copy()
     headers["cache-control"] = "no-cache"
     return headers
+
+
+def headers_sdnc_creator(base_header: Dict[str, str]):
+    headers = base_header.copy()
+    headers["authorization"] = "Basic YWRtaW46S3A4Yko0U1hzek0wV1hsaGFrM2VIbGNzZTJnQXc4NHZhb0dHbUp2VXkyVQ=="
+    headers["x-transactionid"] = str(uuid4())
+    headers["x-fromappid"] = "API client"
+    return headers

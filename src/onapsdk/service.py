@@ -2,11 +2,19 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Service module."""
+from dataclasses import dataclass, field
+from io import TextIOWrapper, BytesIO
 from os import makedirs
 import logging
+<<<<<<< HEAD
 import time
+=======
+import re
+>>>>>>> service_instance2
 from typing import Dict, List
 from zipfile import ZipFile, BadZipFile
+
+import oyaml as yaml
 
 import onapsdk.constants as const
 from onapsdk.sdc_resource import SdcResource
@@ -17,6 +25,31 @@ from onapsdk.utils.headers_creator import (headers_sdc_creator,
                                            headers_sdc_operator,
                                            headers_sdc_tester)
 from onapsdk.utils.jinja import jinja_env
+
+
+@dataclass
+class NodeTemplate:
+    name: str
+    node_template_type: str
+    metadata: dict
+    properties: dict
+    capabilities: dict
+
+
+class Vnf(NodeTemplate):
+    pass
+
+
+class Network(NodeTemplate):
+    pass
+
+
+@dataclass
+class VfModule:
+    name: str
+    group_type: str
+    metadata: dict
+    properties: dict
 
 
 class Service(SdcResource):
@@ -61,17 +94,20 @@ class Service(SdcResource):
         self._distribution_id: str = None
         self._distributed: bool = False
         self._resource_type: str = "services"
+        self._tosca_model: bytes = None
+        self._tosca_template: str = None
+        self._vnfs: list = None
+        self._networks: list = None
+        self._vf_modules: list = None
 
     def onboard(self) -> None:
         """Onboard the Service in SDC."""
         # first Lines are equivalent for all onboard functions but it's more readable
         if not self.status: # # pylint: disable=R0801
-            self._logger.error("Line 68")
             self.create()
             time.sleep(10)
             self.onboard()
         elif self.status == const.DRAFT:
-            self._logger.error("Line 72")
             if not self.resources:
                 raise ValueError("No resources were given")
             for resource in self.resources:
@@ -88,7 +124,6 @@ class Service(SdcResource):
         #     self.start_certification()
         #     self.onboard()
         elif self.status == const.CHECKED_IN:
-            self._logger.error("Line 88")
             self.certify()
             time.sleep(10)
             self.onboard()
@@ -98,7 +133,6 @@ class Service(SdcResource):
         #     self.approve()
         #     self.onboard()
         elif self.status == const.CERTIFIED:
-            self._logger.error("Line 96")
             self.distribute()
 
     @property
@@ -119,6 +153,80 @@ class Service(SdcResource):
         if not self._distributed:
             self._check_distributed()
         return self._distributed
+
+    @property
+    def tosca_template(self) -> str:
+        if not self._tosca_template and self.tosca_model:
+            with ZipFile(BytesIO(self.tosca_model)) as myzip:
+                for name in myzip.namelist():
+                    if (name[-13:] == "-template.yml"
+                            and name[:20] == "Definitions/service-"):
+                        service_template = name
+                with myzip.open(service_template) as template_file:
+                    self._tosca_template = yaml.safe_load(template_file.read())
+        return self._tosca_template
+
+    @property
+    def tosca_model(self) -> bool:
+        if not self._tosca_model:
+            url = "{}/services/{}/toscaModel".format(self._base_url(),
+                                                 self.identifier)
+            headers = self.headers.copy()
+            headers["Accept"] = "application/octet-stream"
+            self._tosca_model = self.send_message(
+                "GET",
+                "Download Tosca Model for {}".format(self.name),
+                url,
+                headers=headers).content
+        return self._tosca_model
+
+    @property
+    def vnfs(self):
+        if not self.tosca_template:
+            raise AttributeError("Service has no TOSCA template")
+        if self._vnfs is None:
+            self._vnfs = []
+            for node_template_name, values in self.tosca_template.get("topology_template", {}).get("node_templates", {}).items():
+                if re.match("org.openecomp.resource.vf.*", values["type"]):
+                    self._vnfs.append(Vnf(
+                        name=node_template_name,
+                        node_template_type=values["type"],
+                        metadata=values["metadata"],
+                        properties=values["properties"],
+                        capabilities=values["capabilities"]
+                    ))
+        return self._vnfs
+
+    @property
+    def networks(self):
+        if not self.tosca_template:
+            raise AttributeError("Service has no TOSCA template")
+        if self._networks is None:
+            self._networks = []
+            for node_template_name, values in self.tosca_template.get("topology_template", {}).get("node_templates", {}).items():
+                if re.match("org.openecomp.resource.vl.*", values["type"]):
+                    self._networks.append(Network(
+                        name=node_template_name,
+                        node_template_type=values["type"],
+                        metadata=values["metadata"],
+                        properties=values["properties"],
+                        capabilities=values["capabilities"]
+                    ))
+        return self._networks
+
+    @property
+    def vf_modules(self):
+        if self._vf_modules is None:
+            self._vf_modules = []
+            if len(self.vnfs):
+                for group_name, values in self.tosca_template.get("topology_template", {}).get("groups", {}).items():
+                    self._vf_modules.append(VfModule(
+                        name=group_name,
+                        group_type=values["type"],
+                        metadata=values["metadata"],
+                        properties=values["properties"]
+                    ))
+        return self._vf_modules
 
     def create(self) -> None:
         """Create the Service in SDC if not already existing."""

@@ -6,11 +6,8 @@ from dataclasses import dataclass, field
 from io import TextIOWrapper, BytesIO
 from os import makedirs
 import logging
-<<<<<<< HEAD
 import time
-=======
 import re
->>>>>>> service_instance2
 from typing import Dict, List
 from zipfile import ZipFile, BadZipFile
 
@@ -116,11 +113,9 @@ class Service(SdcResource):
             time.sleep(10)
             self.onboard()
         # elif self.status == const.CHECKED_IN:
-        #     self._logger.error("Line 80")
         #     self.submit()
         #     self.onboard()
         # elif self.status == const.CHECKED_IN:
-        #     self._logger.error("Line 84")
         #     self.start_certification()
         #     self.onboard()
         elif self.status == const.CHECKED_IN:
@@ -129,7 +124,6 @@ class Service(SdcResource):
             self.onboard()
             time.sleep(10)
         # elif self.status == const.CERTIFIED:
-        #     self._logger.error("Line 92")
         #     self.approve()
         #     self.onboard()
         elif self.status == const.CERTIFIED:

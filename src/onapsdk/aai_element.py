@@ -3,15 +3,31 @@
 # SPDX-License-Identifier: Apache-2.0
 """AAI Element module."""
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Iterator, List, Optional
 from urllib.parse import urlencode
+from uuid import uuid4
 
 from onapsdk.multicloud import Multicloud
 from onapsdk.onap_service import OnapService
-from onapsdk.service import Service
+from onapsdk.service import Service as SdcService
 from onapsdk.utils.headers_creator import headers_aai_creator
 from onapsdk.utils.jinja import jinja_env
+
+
+@dataclass
+class Relationship:
+    """Relationship class.
+
+    A&AI elements could have relationship with other A&AI elements.
+    Relationships are represented by this class objects.
+    """
+
+    related_to: str
+    related_link: str
+    relationship_data: List[Dict[str, str]]
+    relationship_label: str = ""
+    related_to_property: List[Dict[str, str]] = field(default_factory=list)
 
 
 class AaiElement(OnapService):
@@ -97,6 +113,24 @@ class AaiElement(OnapService):
         except StopIteration:
             cls.__logger.error("No cloud regions defined in A&AI")
             raise
+
+    def add_relationship(self, relationship: Relationship) -> None:
+        """Add relationship to aai resource.
+
+        Add relationship to resource using A&AI API
+
+        Args:
+            relationship (Relationship): Relationship to add
+
+        """
+        self.send_message(
+            "PUT",
+            "add relationship to cloud region",
+            f"{self.url}/relationship-list/relationship",
+            data=jinja_env()
+            .get_template("aai_add_relationship.json.j2")
+            .render(relationship=relationship),
+        )
 
 
 class Complex(AaiElement):  # pylint: disable=R0902
@@ -346,7 +380,7 @@ class Service(AaiElement):
     @classmethod
     def create(cls,
                service_id: str,
-               service_description: str) -> Service:
+               service_description: str) -> "Service":
         cls.send_message(
             "PUT",
             "Create A&AI service",
@@ -432,20 +466,6 @@ class Tenant(AaiElement):
 
 
 @dataclass
-class Relationship:
-    """Relationship class.
-
-    A&AI elements could have relationship with other A&AI elements.
-    Relationships are represented by this class objects.
-    """
-
-    related_to: str
-    relationship_label: str
-    related_link: str
-    relationship_data: List[Dict[str, str]]
-
-
-@dataclass
 class AvailabilityZone:
     """Availability zone.
 
@@ -486,11 +506,55 @@ class EsrSystemInfo:  # pylint: disable=R0902
 
 
 @dataclass
-class ServiceSubscription:
+class ServiceSubscription(AaiElement):
 
     service_type: str
     resource_version: str
+    customer: "Customer"
 
+    def __init__(self, customer: "Customer", service_type: str, resource_version: str) -> None:
+        self.customer: "Customer" = customer
+        self.service_type: str = service_type
+        self.resource_version: str = resource_version
+
+    @property
+    def url(self) -> str:
+        """Cloud region object url.
+
+        URL used to call CloudRegion A&AI API
+
+        Returns:
+            str: CloudRegion object url
+
+        """
+        return (
+            f"{self.base_url}{self.api_version}/business/customers/"
+            f"customer/{self.customer.global_customer_id}/service-subscriptions/"
+            f"service-subscription/{self.service_type}"
+        )
+
+    @property
+    def relationships(self) -> Iterator[Relationship]:
+        """Cloud region relationships.
+
+        Iterate over CloudRegion relationships. Relationship list is given using A&AI API call.
+
+        Returns:
+            Iterator[Relationship]: CloudRegion relationship
+
+        """
+        response: dict = self.send_message_json(
+            "GET", "get service subscription relationships", f"{self.url}/relationship-list"
+        )
+        return (
+            Relationship(
+                related_to=relationship.get("related-to"),
+                relationship_label=relationship.get("relationship-label"),
+                related_link=relationship.get("related-link"),
+                relationship_data=relationship.get("relationship-data"),
+            )
+            for relationship in response.get("relationship", [])
+        )
 
 class CloudRegion(AaiElement):  # pylint: disable=R0902
     """Cloud region class.
@@ -807,24 +871,6 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             for esr_system_info in response.get("esr-system-info", [])
         )
 
-    def add_relationship(self, relationship: Relationship) -> None:
-        """Add relationship to cloud.
-
-        Add relationship to cloud region using A&AI API
-
-        Args:
-            relationship (Relationship): Relationship to add
-
-        """
-        self.send_message(
-            "PUT",
-            "add relationship to cloud region",
-            f"{self.url}/relationship-list/relationship",
-            data=jinja_env()
-            .get_template("cloud_region_add_relationship.json.j2")
-            .render(relationship=relationship),
-        )
-
     def add_tenant(self, tenant_id: str, tenant_name: str, tenant_context: str = None) -> None:
         """Add tenant to cloud region.
 
@@ -842,6 +888,16 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             data=jinja_env()
             .get_template("cloud_region_add_tenant.json.j2")
             .render(tenant_id=tenant_id, tenant_name=tenant_name, tenant_context=tenant_context),
+        )
+
+    def get_tenant(self, tenant_id: str) -> Tenant:
+        response: dict = self.send_message_json("GET", "get tenants", f"{self.url}/tenants/tenant/{tenant_id}")
+        return Tenant(
+            cloud_region=self,
+            tenant_id=response["tenant-id"],
+            tenant_name=response["tenant-name"],
+            tenant_context=response.get("tenant-context"),
+            resource_version=response.get("resource-version"),
         )
 
     def add_availability_zone(self,
@@ -1043,6 +1099,21 @@ class Customer(AaiElement):
             )
 
     @classmethod
+    def get_by_global_customer_id(cls, global_customer_id: str) -> "Customer":
+        response: dict = cls.send_message_json(
+            "GET",
+            f"Get {global_customer_id} customer",
+            f"{cls.base_url}{cls.api_version}/business/customers/customer/{global_customer_id}",
+            exception=ValueError
+        )
+        return Customer(
+            global_customer_id=response["global-customer-id"],
+            subscriber_name=response["subscriber-name"],
+            subscriber_type=response["subscriber-type"],
+            resource_version=response["resource-version"],
+        )
+
+    @classmethod
     def create(cls,
                global_customer_id: str,
                subscriber_name: str,
@@ -1111,22 +1182,86 @@ class Customer(AaiElement):
             f"{self.base_url}{self.api_version}/business/customers/"
             f"customer/{self.global_customer_id}/service-subscriptions"
         )
-        for service_subscription in response.get("service-subscriptions", []):
+        for service_subscription in response.get("service-subscription", []):
             yield ServiceSubscription(
                 service_type=service_subscription.get("service-type"),
-                resource_version=service_subscription.get("resource-version")
+                resource_version=service_subscription.get("resource-version"),
+                customer=self
             )
 
-    def subscribe_service(self, service: Service):
+    def subscribe_service(self, service: SdcService):
 
         self.send_message(
             "PUT",
             "Create service subscription",
             f"{self.base_url}{self.api_version}/business/customers/"
-            f"customer/{self.global_customer_id}/service-subscriptions/service-subscription/{service.unique_uuid}",
+            f"customer/{self.global_customer_id}/service-subscriptions/service-subscription/{service.name}",
             data=jinja_env()
             .get_template("customer_service_subscription_create.json.j2")
             .render(
                 service_id=service.unique_uuid,
             ),
+        )
+
+
+class OwningEntity(AaiElement):
+
+    def __init__(self, name: str, owning_entity_id: str, resource_version: str) -> None:
+        self.name: str = name
+        self.owning_entity_id: str = owning_entity_id
+        self.resource_version: str = resource_version
+
+    def __repr__(self) -> str:
+        return f"OwningEntity(name={self.name}, owning_entity_id={self.owning_entity_id})"
+
+    @classmethod
+    def get_all(cls) -> Iterator["OwningEntity"]:
+        for owning_entity in cls.send_message_json(
+            "GET",
+            "Get A&AI owning entities",
+            f"{cls.base_url}{cls.api_version}/business/owning-entities"
+        ).get("owning-entity", []):
+            yield cls(
+                owning_entity.get("owning-entity-name"),
+                owning_entity.get("owning-entity-id"),
+                owning_entity.get("resource-version")
+            )
+
+    @classmethod
+    def get_by_owning_entity_id(cls, owning_entity_id: str) -> "OwningEntity":
+        response: dict = cls.send_message_json(
+            "GET",
+            "Get A&AI owning entity",
+            f"{cls.base_url}{cls.api_version}/business/owning-entities/owning-entity/{owning_entity_id}"
+        )
+        return cls(
+            response.get("owning-entity-name"),
+            response.get("owning-entity-id"),
+            response.get("resource-version")
+        )
+
+    @classmethod
+    def create(cls, name: str, owning_entity_id: str = None) -> "OwningEntity":
+        if not owning_entity_id:
+            owning_entity_id = str(uuid4())
+        cls.send_message(
+            "PUT",
+            "Declare A&AI owning entity",
+            f"{cls.base_url}{cls.api_version}/business/owning-entities/owning-entity/{owning_entity_id}",
+            data=jinja_env().get_template("aai_owning_entity_create.json.j2").render(
+                owning_entity_name=name,
+                owning_entity_id=owning_entity_id
+            )
+        )
+        return cls.get_by_owning_entity_id(owning_entity_id)
+
+
+class Model(AaiElement):
+
+    @classmethod
+    def get_all(cls):
+        return cls.send_message_json(
+            "GET",
+            "Get A&AI sdc models",
+            f"{cls.base_url}{cls.api_version}/service-design-and-creation/models"
         )

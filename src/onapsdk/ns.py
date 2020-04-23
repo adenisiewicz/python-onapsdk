@@ -9,7 +9,7 @@ import logging
 import json
 import yaml
 
-from onapsdk.aai_element import Service as AaiService
+from onapsdk.aai_element import Service as AaiService, Tenant
 from onapsdk.service import Service
 from onapsdk.so_element import SoElement
 from onapsdk.utils.jinja import jinja_env
@@ -77,6 +77,9 @@ class NetworkService(SoElement):
         customer: Customer = self.get_subscriber()
         self._logger.debug("Global subscriber retrieved: %s", customer.global_customer_id)
 
+        # Get tenant
+        # TODO: add tenant to service-subscription
+
         # subscription_service_type
         subscription_service_type = self.get_subscription_service_type(self.name)
         self._logger.error("Subscription service type found: %s", subscription_service_type)
@@ -114,6 +117,7 @@ class NetworkService(SoElement):
                 subscription_service_type=subscription_service_type,
                 vnf_instances=vnf_instances,
                 service_model=service_model,
+                service_name=service.unique_uuid
             )
             response = self.send_message_json(
                 "POST",

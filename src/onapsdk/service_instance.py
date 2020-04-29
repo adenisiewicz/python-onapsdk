@@ -231,6 +231,36 @@ class VnfInstantiation(Instantiation):
         self.vnf = vnf
 
     @classmethod
+    def create_from_request_response(cls, request_response: dict) -> "VnfInstantiation":
+        if request_response.get("request", {}).get("requestScope") == "vnf" and \
+            request_response.get("request", {}).get("requestType") == "createInstance":
+            service: SdcService = None
+            service_instantiation: "ServiceInstantiation" = None
+            for related_instance in request_response.get("request", {}).get("requestDetails", {}).get("relatedInstanceList", []):
+                if related_instance.get("relatedInstance", {}).get("modelInfo", {}).get("modelType") == "service":
+                    service = SdcService(related_instance.get("relatedInstance", {}).get("modelInfo", {}).get("modelName"))
+                    service_instantiation = ServiceInstantiation.get_by_service_instance_id(related_instance.get("relatedInstance", {}).get("instanceId")),
+            if not service:
+                raise ValueError("No related service in Vnf instance details response")
+            if not service_instantiation:
+                raise ValueError("No related service instantiation in Vnf instance details response")
+            vnf: Vnf = None
+            for service_vnf in service.vnfs:
+                if service_vnf.name == request_response.get("request", {}).get("requestDetails", {}).get("modelInfo", {}).get("modelCustomizationName"):
+                    vnf = service_vnf
+            if not vnf:
+                raise ValueError("No vnf in service vnfs list")
+            return cls(
+                name=request_response.get("request", {}).get("requestDetails", {}).get("instanceReferences", {}).get("vnfInstanceName"),
+                request_id=request_response.get("request", {}).get("requestId"),
+                instance_id=request_response.get("request", {}).get("requestDetails", {}).get("instanceReferences", {}).get("vnfInstanceId"),
+                service_instantiation=service_instantiation,
+                line_of_business=LineOfBusiness.create(request_response.get("request", {}).get("requestDetails", {}).get("lineOfBusiness", {}).get("lineOfBusinessName")),
+                platform=Platform.create(request_response.get("request", {}).get("requestDetails", {}).get("platform", {}).get("platformName")),
+                vnf=vnf
+            )
+
+    @classmethod
     def get_by_vnf_instance_name(cls, vnf_instance_name: str) -> "VnfInstantiation":
         response: dict = cls.send_message_json(
             "GET",
@@ -242,33 +272,7 @@ class VnfInstantiation(Instantiation):
         if not response.get("requestList", []):
             raise AttributeError("Vnf instance doesn't exist")
         for details in response["requestList"]:
-            if details.get("request", {}).get("requestScope") == "vnf" and \
-                details.get("request", {}).get("requestType") == "createInstance":
-                service: SdcService = None
-                service_instantiation: "ServiceInstantiation" = None
-                for related_instance in details.get("request", {}).get("requestDetails", {}).get("relatedInstanceList", []):
-                    if related_instance.get("relatedInstance", {}).get("modelInfo", {}).get("modelType") == "service":
-                        service = SdcService(related_instance.get("relatedInstance", {}).get("modelInfo", {}).get("modelName"))
-                        service_instantiation = ServiceInstantiation.get_by_service_instance_id(related_instance.get("relatedInstance", {}).get("instanceId")),
-                if not service:
-                    raise ValueError("No related service in Vnf instance details response")
-                if not service_instantiation:
-                    raise ValueError("No related service instantiation in Vnf instance details response")
-                vnf: Vnf = None
-                for service_vnf in service.vnfs:
-                    if service_vnf.name == details.get("request", {}).get("requestDetails", {}).get("modelInfo", {}).get("modelCustomizationName"):
-                        vnf = service_vnf
-                if not vnf:
-                    raise ValueError("No vnf in service vnfs list")
-                return cls(
-                    name=details.get("request", {}).get("requestDetails", {}).get("instanceReferences", {}).get("vnfInstanceName"),
-                    request_id=details.get("request", {}).get("requestId"),
-                    instance_id=details.get("request", {}).get("requestDetails", {}).get("instanceReferences", {}).get("vnfInstanceId"),
-                    service_instantiation=service_instantiation,
-                    line_of_business=LineOfBusiness.create(details.get("request", {}).get("requestDetails", {}).get("lineOfBusiness", {}).get("lineOfBusinessName")),
-                    platform=Platform.create(details.get("request", {}).get("requestDetails", {}).get("platform", {}).get("platformName")),
-                    vnf=vnf
-                )
+            return cls.create_from_request_response(details)
         raise ValueError("No createInstance request found")
 
     def instantiate_vf_module(self,
@@ -544,6 +548,20 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
             owning_entity=owning_entity,
             project=project
         )
+
+    @property
+    def vnf_instances(self) -> Iterator[VnfInstantiation]:
+        response: dict = self.send_message_json(
+            "GET",
+            f"Check {self.name} service instantiation status",
+            (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/orchestrationRequests/v7?"
+             f"filter=serviceInstanceId:EQUALS:{self.instance_id}"),
+            headers=headers_so_creator(OnapService.headers)
+        )
+        for request in response.get("requestList", []):
+            if request.get("request", {}).get("requestScope") == "vnf" \
+                and request.get("request", {}).get("requestType") == "createInstance":
+                yield VnfInstantiation.create_from_request_response(request)
 
     def instantiate_vnf(self,
                         line_of_business: LineOfBusiness,

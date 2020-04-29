@@ -7,4 +7,9 @@ from datetime import datetime
 
 
 def get_zulu_time_isoformat() -> str:
+    """Get zulu time in accepted by ONAP modules format.
+
+    Returns:
+        str: Actual Zulu time.
+    """
     return datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')

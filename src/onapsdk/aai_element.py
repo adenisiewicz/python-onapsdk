@@ -114,6 +114,15 @@ class AaiElement(OnapService):
             cls.__logger.error("No cloud regions defined in A&AI")
             raise
 
+    @property
+    def url(self) -> str:
+        """Resource's url.
+
+        Returns:
+            str: Resource's url
+        """
+        raise NotImplementedError
+
     def add_relationship(self, relationship: Relationship) -> None:
         """Add relationship to aai resource.
 
@@ -208,6 +217,16 @@ class Complex(AaiElement):  # pylint: disable=R0902
         """
         return (f"Complex(name={self.name}, physical_location_id={self.physical_location_id}, "
                 f"resource_version={self.resource_version})")
+
+    @property
+    def url(self) -> str:
+        """Complex url.
+
+        Returns:
+            str: Complex url
+        """
+        return (f"{self.base_url}{self.api_version}/cloud-infrastructure/complexes/complex/"
+                f"{self.physical_location_id}?resource-version={self.resource_version}")
 
     @classmethod
     def create(cls,  # pylint: disable=R0914
@@ -353,6 +372,16 @@ class Service(AaiElement):
             f"resource_version={self.resource_version})"
         )
 
+    @property
+    def url(self) -> str:
+        """Service object url.
+
+        Returns:
+            str: Service object url address
+        """
+        return (f"{self.base_url}{self.api_version}/service-design-and-creation/services/service/"
+                f"{self.service_id}?resource-version={self.resource_version}")
+
     @classmethod
     def get_all(cls,
                 service_id: str = None,
@@ -380,7 +409,16 @@ class Service(AaiElement):
     @classmethod
     def create(cls,
                service_id: str,
-               service_description: str) -> "Service":
+               service_description: str) -> None:
+        """Create service.
+
+        Args:
+            service_id (str): service ID
+            service_description (str): service description
+
+        Raises:
+            ValueError: Creation request returns HTTP error code
+        """
         cls.send_message(
             "PUT",
             "Create A&AI service",
@@ -391,7 +429,8 @@ class Service(AaiElement):
             .render(
                 service_id=service_id,
                 service_description=service_description
-            )
+            ),
+            exception=ValueError
         )
 
 
@@ -507,12 +546,21 @@ class EsrSystemInfo:  # pylint: disable=R0902
 
 @dataclass
 class ServiceSubscription(AaiElement):
+    """Service subscription class."""
 
     service_type: str
     resource_version: str
     customer: "Customer"
 
     def __init__(self, customer: "Customer", service_type: str, resource_version: str) -> None:
+        """Service subscription object initialization.
+
+        Args:
+            customer (Customer): Customer object
+            service_type (str): Service type
+            resource_version (str): Service subscription resource version
+        """
+        super().__init__()
         self.customer: "Customer" = customer
         self.service_type: str = service_type
         self.resource_version: str = resource_version
@@ -891,7 +939,23 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
         )
 
     def get_tenant(self, tenant_id: str) -> Tenant:
-        response: dict = self.send_message_json("GET", "get tenants", f"{self.url}/tenants/tenant/{tenant_id}")
+        """Get tenant with provided ID.
+
+        Args:
+            tenant_id (str): Tenant ID
+
+        Returns:
+            Tenant: Tenant object
+
+        Raises:
+            ValueError: Tenant with provided ID doesn't exist
+        """
+        response: dict = self.send_message_json(
+            "GET",
+            "get tenants",
+            f"{self.url}/tenants/tenant/{tenant_id}",
+            exception=ValueError
+        )
         return Tenant(
             cloud_region=self,
             tenant_id=response["tenant-id"],
@@ -1100,6 +1164,18 @@ class Customer(AaiElement):
 
     @classmethod
     def get_by_global_customer_id(cls, global_customer_id: str) -> "Customer":
+        """Get customer by it's global customer id.
+
+        Args:
+            global_customer_id (str): global customer ID
+
+        Returns:
+            Customer: Customer with given global_customer_id
+
+        Raises:
+            ValueError: Customer with given global_customer_id doesn't exist
+
+        """
         response: dict = cls.send_message_json(
             "GET",
             f"Get {global_customer_id} customer",
@@ -1174,8 +1250,12 @@ class Customer(AaiElement):
         )
 
     @property
-    def service_subscriptions(self):
+    def service_subscriptions(self) -> Iterator[ServiceSubscription]:
+        """Service subscriptions of customer resource.
 
+        Yields:
+            ServiceSubscription: ServiceSubscription object
+        """
         response: dict = self.send_message_json(
             "GET",
             "get customer service subscriptions",
@@ -1190,37 +1270,74 @@ class Customer(AaiElement):
             )
 
     def subscribe_service(self, service: SdcService):
+        """Create SDC Service subscription.
 
+        Args:
+            service (SdcService): SdcService object to subscribe.
+
+        Raises:
+            ValueError: Request response with HTTP error code
+        """
         self.send_message(
             "PUT",
             "Create service subscription",
             f"{self.base_url}{self.api_version}/business/customers/"
-            f"customer/{self.global_customer_id}/service-subscriptions/service-subscription/{service.name}",
+            (f"customer/{self.global_customer_id}/service-subscriptions/"
+             f"service-subscription/{service.name}"),
             data=jinja_env()
             .get_template("customer_service_subscription_create.json.j2")
             .render(
                 service_id=service.unique_uuid,
             ),
+            exception=ValueError
         )
 
 
 class OwningEntity(AaiElement):
+    """Owning entity class."""
 
     def __init__(self, name: str, owning_entity_id: str, resource_version: str) -> None:
+        """Owning entity object initialization.
+
+        Args:
+            name (str): Owning entity name
+            owning_entity_id (str): owning entity ID
+            resource_version (str): resource version
+        """
+        super().__init__()
         self.name: str = name
         self.owning_entity_id: str = owning_entity_id
         self.resource_version: str = resource_version
 
     def __repr__(self) -> str:
+        """Owning entity object representation.
+
+        Returns:
+            str: Owning entity object representation
+        """
         return f"OwningEntity(name={self.name}, owning_entity_id={self.owning_entity_id})"
+
+    @property
+    def url(self) -> str:
+        """Owning entity object url.
+
+        Returns:
+            str: Url
+        """
+        return (f"{self.base_url}{self.api_version}/business/owning-entities/owning-entity/"
+                f"{self.owning_entity_id}?resource-version={self.resource_version}")
 
     @classmethod
     def get_all(cls) -> Iterator["OwningEntity"]:
-        for owning_entity in cls.send_message_json(
-            "GET",
-            "Get A&AI owning entities",
-            f"{cls.base_url}{cls.api_version}/business/owning-entities"
-        ).get("owning-entity", []):
+        """Get all owning entities.
+
+        Yields:
+            OwningEntity: OwningEntity object
+        """
+        url: str = f"{cls.base_url}{cls.api_version}/business/owning-entities"
+        for owning_entity in cls.send_message_json("GET",
+                                                   "Get A&AI owning entities",
+                                                   url).get("owning-entity", []):
             yield cls(
                 owning_entity.get("owning-entity-name"),
                 owning_entity.get("owning-entity-id"),
@@ -1229,10 +1346,20 @@ class OwningEntity(AaiElement):
 
     @classmethod
     def get_by_owning_entity_id(cls, owning_entity_id: str) -> "OwningEntity":
+        """Get owning entity by it's ID.
+
+        Args:
+            owning_entity_id (str): owning entity object id
+
+        Returns:
+            OwningEntity: OwningEntity object
+        """
         response: dict = cls.send_message_json(
             "GET",
             "Get A&AI owning entity",
-            f"{cls.base_url}{cls.api_version}/business/owning-entities/owning-entity/{owning_entity_id}"
+            (f"{cls.base_url}{cls.api_version}/business/owning-entities/"
+             f"owning-entity/{owning_entity_id}"),
+            exception=ValueError
         )
         return cls(
             response.get("owning-entity-name"),
@@ -1241,27 +1368,95 @@ class OwningEntity(AaiElement):
         )
 
     @classmethod
+    def get_by_owning_entity_name(cls, owning_entity_name: str) -> "OwningEntity":
+        for owning_entity in cls.get_all():
+            if owning_entity.name == owning_entity_name:
+                return owning_entity
+        raise ValueError
+
+    @classmethod
     def create(cls, name: str, owning_entity_id: str = None) -> "OwningEntity":
+        """Create owning entity A&AI resource.
+
+        Args:
+            name (str): owning entity name
+            owning_entity_id (str): owning entity ID. Defaults to None.
+
+        Raises:
+            ValueError: request response with HTTP error code
+
+        Returns:
+            OwningEntity: Created OwningEntity object
+        """
         if not owning_entity_id:
             owning_entity_id = str(uuid4())
         cls.send_message(
             "PUT",
             "Declare A&AI owning entity",
-            f"{cls.base_url}{cls.api_version}/business/owning-entities/owning-entity/{owning_entity_id}",
+            (f"{cls.base_url}{cls.api_version}/business/owning-entities/"
+             f"owning-entity/{owning_entity_id}"),
             data=jinja_env().get_template("aai_owning_entity_create.json.j2").render(
                 owning_entity_name=name,
                 owning_entity_id=owning_entity_id
-            )
+            ),
+            exception=ValueError
         )
         return cls.get_by_owning_entity_id(owning_entity_id)
 
 
 class Model(AaiElement):
+    """Model resource class."""
+
+    def __init__(self, invariant_id: str, model_type: str, resource_version: str) -> None:
+        """Model object initialization.
+
+        Args:
+            invariant_id (str): invariant id
+            model_type (str): model type
+            resource_version (str): resource version
+
+        """
+        super().__init__()
+        self.invariant_id: str = invariant_id
+        self.model_type: str = model_type
+        self.resource_version: str = resource_version
+
+    def __repr__(self) -> str:
+        """Model object representation.
+
+        Returns:
+            str: model object representation
+
+        """
+        return (f"Model(invatiant_id={self.invariant_id}, "
+                f"model_type={self.model_type}, "
+                f"resource_version={self.resource_version}")
+
+    @property
+    def url(self) -> str:
+        """Model instance url.
+
+        Returns:
+            str: Model's url
+        """
+        return (f"{self.base_url}{self.api_version}/service-design-and-creation/models/"
+                f"model/{self.invariant_id}?resource-version={self.resource_version}")
 
     @classmethod
-    def get_all(cls):
-        return cls.send_message_json(
-            "GET",
-            "Get A&AI sdc models",
-            f"{cls.base_url}{cls.api_version}/service-design-and-creation/models"
-        )
+    def get_all(cls) -> Iterator["Model"]:
+        """Get all models.
+
+        Yields:
+            Model: Model object
+
+        """
+        for model in cls.send_message_json("GET",
+                                           "Get A&AI sdc models",
+                                           (f"{cls.base_url}{cls.api_version}/"
+                                            "service-design-and-creation/models")).get("model",
+                                                                                       []):
+            yield Model(
+                invariant_id=model.get("model-invariant-id"),
+                model_type=model.get("model-type"),
+                resource_version=model.get("resource-version")
+            )

@@ -18,7 +18,14 @@
                 "vnf-networks": [],
                 "vnf-vms": []
             },
-            "vnf-parameters": [],
+            "vnf-parameters": [
+                {% for vnf_parameter in vnf_parameters %}
+                    {
+                        "vnf-parameter-name": "{{ vnf_parameter.name }}",
+                        "vnf-parameter-value": "{{ vnf_parameter.value }}"
+                    }
+                {% endfor %}
+            ],
             "vnf-topology-identifier": {
                 "generic-vnf-name": "{{ vnf_instance.name }}",
                 "generic-vnf-type": "{{ vnf.name }}",

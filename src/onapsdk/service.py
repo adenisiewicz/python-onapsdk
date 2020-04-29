@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Service module."""
-from dataclasses import dataclass, field
-from io import TextIOWrapper, BytesIO
+from dataclasses import dataclass
+from io import BytesIO
 from os import makedirs
 import logging
 import time
@@ -17,15 +17,17 @@ import onapsdk.constants as const
 from onapsdk.sdc_resource import SdcResource
 from onapsdk.utils.configuration import (components_needing_distribution,
                                          tosca_path)
-from onapsdk.utils.headers_creator import (headers_sdc_creator,
-                                           headers_sdc_governor,
-                                           headers_sdc_operator,
-                                           headers_sdc_tester)
+from onapsdk.utils.headers_creator import headers_sdc_creator
 from onapsdk.utils.jinja import jinja_env
 
 
 @dataclass
 class NodeTemplate:
+    """Node template dataclass.
+
+    Base class for Vnf and Network classes.
+    """
+
     name: str
     node_template_type: str
     metadata: dict
@@ -33,23 +35,25 @@ class NodeTemplate:
     capabilities: dict
 
 
-class Vnf(NodeTemplate):
-    pass
+class Vnf(NodeTemplate):  # pylint: disable=R0903
+    """Vnf dataclass."""
 
 
-class Network(NodeTemplate):
-    pass
+class Network(NodeTemplate):  # pylint: disable=R0903
+    """Network dataclass."""
 
 
 @dataclass
 class VfModule:
+    """VfModule dataclass."""
+
     name: str
     group_type: str
     metadata: dict
     properties: dict
 
 
-class Service(SdcResource):
+class Service(SdcResource):  # pylint: disable=R0902
     """
     ONAP Service Object used for SDC operations.
 
@@ -100,7 +104,7 @@ class Service(SdcResource):
     def onboard(self) -> None:
         """Onboard the Service in SDC."""
         # first Lines are equivalent for all onboard functions but it's more readable
-        if not self.status: # # pylint: disable=R0801
+        if not self.status: # pylint: disable=R0801
             self.create()
             time.sleep(10)
             self.onboard()
@@ -112,22 +116,15 @@ class Service(SdcResource):
             self.checkin()
             time.sleep(10)
             self.onboard()
-        # elif self.status == const.CHECKED_IN:
-        #     self.submit()
-        #     self.onboard()
-        # elif self.status == const.CHECKED_IN:
-        #     self.start_certification()
-        #     self.onboard()
         elif self.status == const.CHECKED_IN:
             self.certify()
             time.sleep(10)
             self.onboard()
             time.sleep(10)
-        # elif self.status == const.CERTIFIED:
-        #     self.approve()
-        #     self.onboard()
         elif self.status == const.CERTIFIED:
             self.distribute()
+        else:
+            self._logger.error("Service has invalid status")
 
     @property
     def distribution_id(self) -> str:
@@ -150,6 +147,13 @@ class Service(SdcResource):
 
     @property
     def tosca_template(self) -> str:
+        """Service tosca template file.
+
+        Get tosca template from service tosca model bytes.
+
+        Returns:
+            str: Tosca template file
+        """
         if not self._tosca_template and self.tosca_model:
             with ZipFile(BytesIO(self.tosca_model)) as myzip:
                 for name in myzip.namelist():
@@ -161,10 +165,17 @@ class Service(SdcResource):
         return self._tosca_template
 
     @property
-    def tosca_model(self) -> bool:
+    def tosca_model(self) -> bytes:
+        """Service's tosca model file.
+
+        Send request to get service TOSCA model,
+
+        Returns:
+            bytes: TOSCA model file bytes
+        """
         if not self._tosca_model:
             url = "{}/services/{}/toscaModel".format(self._base_url(),
-                                                 self.identifier)
+                                                     self.identifier)
             headers = self.headers.copy()
             headers["Accept"] = "application/octet-stream"
             self._tosca_model = self.send_message(
@@ -175,12 +186,23 @@ class Service(SdcResource):
         return self._tosca_model
 
     @property
-    def vnfs(self):
+    def vnfs(self) -> List[Vnf]:
+        """Service Vnfs.
+
+        Load VNFs from service's tosca file
+
+        Raises:
+            AttributeError: Service has no TOSCA template
+
+        Returns:
+            List[Vnf]: Vnf objects list
+        """
         if not self.tosca_template:
             raise AttributeError("Service has no TOSCA template")
         if self._vnfs is None:
             self._vnfs = []
-            for node_template_name, values in self.tosca_template.get("topology_template", {}).get("node_templates", {}).items():
+            for node_template_name, values in \
+                self.tosca_template.get("topology_template", {}).get("node_templates", {}).items():
                 if re.match("org.openecomp.resource.vf.*", values["type"]):
                     self._vnfs.append(Vnf(
                         name=node_template_name,
@@ -192,12 +214,23 @@ class Service(SdcResource):
         return self._vnfs
 
     @property
-    def networks(self):
+    def networks(self) -> List[Network]:
+        """Service networks.
+
+        Load networks from service's tosca file
+
+        Raises:
+            AttributeError: Service has no TOSCA template
+
+        Returns:
+            List[Network]: Network objects list
+        """
         if not self.tosca_template:
             raise AttributeError("Service has no TOSCA template")
         if self._networks is None:
             self._networks = []
-            for node_template_name, values in self.tosca_template.get("topology_template", {}).get("node_templates", {}).items():
+            for node_template_name, values in \
+                self.tosca_template.get("topology_template", {}).get("node_templates", {}).items():
                 if re.match("org.openecomp.resource.vl.*", values["type"]):
                     self._networks.append(Network(
                         name=node_template_name,
@@ -209,11 +242,19 @@ class Service(SdcResource):
         return self._networks
 
     @property
-    def vf_modules(self):
+    def vf_modules(self) -> List[VfModule]:
+        """Service VF modules.
+
+        Load VF modules from service's tosca file
+
+        Returns:
+            List[VfModule]: VfModule objects list
+        """
         if self._vf_modules is None:
             self._vf_modules = []
-            if len(self.vnfs):
-                for group_name, values in self.tosca_template.get("topology_template", {}).get("groups", {}).items():
+            if self.vnfs:
+                groups: dict = self.tosca_template.get("topology_template", {}).get("groups", {})
+                for group_name, values in groups.items():
                     self._vf_modules.append(VfModule(
                         name=group_name,
                         group_type=values["type"],
@@ -369,6 +410,8 @@ class Service(SdcResource):
                                         headers=headers)
         if (result and 'distributionStatusOfServiceList' in result
                 and len(result['distributionStatusOfServiceList']) > 0):
+            # API changed and the latest distribution is not added to the end of
+            # distributions list but inserted as the first one.
             dist_status = result['distributionStatusOfServiceList'][0]
             self._distribution_id = dist_status['distributionID']
 

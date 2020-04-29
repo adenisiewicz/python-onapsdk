@@ -18,7 +18,7 @@ from onapsdk.utils.tosca_file_handler import (
     get_modules_list_from_tosca_file,
     get_vf_list_from_tosca_file,
 )
-from onapsdk.aai_element import AaiElement
+from onapsdk.aai_element import AaiElement, Customer
 
 
 @dataclass
@@ -68,9 +68,8 @@ class SoElement(OnapService):
     def get_subscriber(cls, global_customer_id: str = None):
         """Get subscriber Info."""
         if not global_customer_id:
-            return next(AaiElement.get_customers())
-        # TODO: Return customer with provided global_customer_id
-        return next(AaiElement.get_gustomers())
+            return next(Customer.get_all())
+        return Customer.get_by_global_customer_id(global_customer_id)
 
     @classmethod
     def get_subscription_service_type(cls, vf_name):

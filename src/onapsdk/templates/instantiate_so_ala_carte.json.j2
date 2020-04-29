@@ -20,7 +20,7 @@
         },
 		"requestParameters": {
 			"userParams": [],
-			"testApi": "VNF_API",
+			"testApi": {% if use_vnf_api %}"VNF_API"{% else %}"GR_API"{% endif %},
 			"subscriptionServiceType": "{{ sdc_service.name }}",
 			"aLaCarte": true
 		},

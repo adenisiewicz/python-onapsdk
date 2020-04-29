@@ -18,8 +18,13 @@
         },
         "requestParameters": {
             "userParams": [],
+            {% if use_vnf_api %}
             "testApi": "VNF_API",
             "usePreload": true
+            {% else %}
+            "testApi": "GR_API",
+            "usePreload": false
+            {% endif %}
         },
         "cloudConfiguration": {
             "tenantId": "{{ tenant.tenant_id }}",

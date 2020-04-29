@@ -161,8 +161,19 @@ def headers_msb_creator(base_header: Dict[str, str]):
 
 
 def headers_sdnc_creator(base_header: Dict[str, str]):
+    """
+    Create the right headers for SDNC.
+
+    Args:
+        base_header (Dict[str, str]): the base header to use
+
+    Returns:
+        Dict[str, str]: the needed headers
+
+    """
     headers = base_header.copy()
-    headers["authorization"] = "Basic YWRtaW46S3A4Yko0U1hzek0wV1hsaGFrM2VIbGNzZTJnQXc4NHZhb0dHbUp2VXkyVQ=="
+    headers["authorization"] = \
+        "Basic YWRtaW46S3A4Yko0U1hzek0wV1hsaGFrM2VIbGNzZTJnQXc4NHZhb0dHbUp2VXkyVQ=="
     headers["x-transactionid"] = str(uuid4())
     headers["x-fromappid"] = "API client"
     return headers

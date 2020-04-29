@@ -1,86 +1,107 @@
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# SPDX-License-Identifier: Apache-2.0
+"""VID module."""
 import logging
-from dataclasses import dataclass
+from abc import ABC
 
 from onapsdk.onap_service import OnapService
 from onapsdk.utils.jinja import jinja_env
 
 
-class Vid(OnapService):
+class Vid(OnapService, ABC):
+    """VID base class."""
 
     __logger: logging.Logger = logging.getLogger(__name__)
 
     base_url = "https://vid.api.simpledemo.onap.org:30200"
     api_version = "/vid"
 
+    def __init__(self, name: str) -> None:
+        """VID resource object initialization.
 
-@dataclass
+        Args:
+            name (str): Resource name
+        """
+        super().__init__()
+        self.name: str = name
+
+    @classmethod
+    def get_create_url(cls) -> str:
+        """Resource url.
+
+        Used to create resources
+
+        Returns:
+            str: Url used for resource creation
+        """
+        raise NotImplementedError
+
+    @classmethod
+    def create(cls, name: str) -> "Vid":
+        """Create VID resource.
+
+        Returns:
+            Vid: Created VID resource
+        """
+        cls.send_message(
+            "POST",
+            f"Declare VID resource with {name} name",
+            cls.get_create_url(),
+            data=jinja_env().get_template("vid_declare_resource.json.j2").render(
+                name=name
+            )
+        )
+        return cls(name)
+
+
 class OwningEntity(Vid):
-
-    name: str
+    """VID owning entity class."""
 
     @classmethod
-    def create(cls, name: str) -> "OwningEntity":
-        cls.send_message(
-            "POST",
-            "Declare owning entity in VID",
-            f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/owningEntity",
-            data=jinja_env().get_template("vid_declare_owning_entity.json.j2").render(
-                owning_entity_name=name
-            )
-        )
-        return cls(name)
+    def get_create_url(cls) -> str:
+        """Owning entity creation url.
+
+        Returns:
+            str: Url used for ownint entity creation
+        """
+        return f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/owningEntity"
 
 
-@dataclass
 class Project(Vid):
-
-    name: str
+    """VID project class."""
 
     @classmethod
-    def create(cls, name: str) -> "Project":
-        cls.send_message(
-            "POST",
-            "Declare VID project",
-            f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/project",
-            data=jinja_env().get_template("vid_declare_project.json.j2").render(
-                project=name
-            )
-        )
-        return cls(name)
+    def get_create_url(cls) -> str:
+        """Project creation url.
+
+        Returns:
+            str: Url used for project creation
+        """
+        return f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/project"
 
 
-@dataclass
 class LineOfBusiness(Vid):
-
-    name: str
+    """VID line of business class."""
 
     @classmethod
-    def create(cls, name: str) -> "LineOfBusiness":
-        cls.send_message(
-            "POST",
-            "Declare VID line of business",
-            f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/lineOfBusiness",
-            data=jinja_env().get_template("vid_declare_line_of_business.json.j2").render(
-                line_of_business=name
-            )
-        )
-        return cls(name)
+    def get_create_url(cls) -> str:
+        """Line of business creation url.
+
+        Returns:
+            str: Url used for line of business creation
+        """
+        return f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/lineOfBusiness"
 
 
-@dataclass
 class Platform(Vid):
-    
-    name: str
+    """VID platform class."""
 
     @classmethod
-    def create(cls, name: str) -> "Platform":
-        cls.send_message(
-            "POST",
-            "Declare VID platform",
-            f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/platform",
-            data=jinja_env().get_template("vid_declare_platform.json.j2").render(
-                platform=name
-            )
-        )
-        return cls(name)
+    def get_create_url(cls) -> str:
+        """Platform creation url.
+
+        Returns:
+            str: Url used for platform creation
+        """
+        return f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/platform"

@@ -232,36 +232,65 @@ class VnfInstantiation(Instantiation):
 
     @classmethod
     def create_from_request_response(cls, request_response: dict) -> "VnfInstantiation":
+        """Create VNF instantiation object based on request details.
+
+        Raises:
+            ValueError: Service related with given object doesn't exist
+            ValueError: No ServiceInstantiation related with given VNF instantiation
+            ValueError: VNF related with given object doesn't exist
+            ValueError: Invalid dictionary - couldn't create VnfInstantiation object
+
+        Returns:
+            VnfInstantiation: VnfInstantiation object
+        """
         if request_response.get("request", {}).get("requestScope") == "vnf" and \
             request_response.get("request", {}).get("requestType") == "createInstance":
             service: SdcService = None
             service_instantiation: "ServiceInstantiation" = None
-            for related_instance in request_response.get("request", {}).get("requestDetails", {}).get("relatedInstanceList", []):
-                if related_instance.get("relatedInstance", {}).get("modelInfo", {}).get("modelType") == "service":
-                    service = SdcService(related_instance.get("relatedInstance", {}).get("modelInfo", {}).get("modelName"))
-                    service_instantiation = ServiceInstantiation.get_by_service_instance_id(related_instance.get("relatedInstance", {}).get("instanceId")),
+            for related_instance in request_response.get("request", {}).get("requestDetails", {})\
+                    .get("relatedInstanceList", []):
+                if related_instance.get("relatedInstance", {}).get("modelInfo", {})\
+                        .get("modelType") == "service":
+                    service = SdcService(related_instance.get("relatedInstance", {})\
+                        .get("modelInfo", {}).get("modelName"))
+                    service_instantiation = ServiceInstantiation.get_by_service_instance_id(\
+                        related_instance.get("relatedInstance", {}).get("instanceId"))
             if not service:
                 raise ValueError("No related service in Vnf instance details response")
             if not service_instantiation:
-                raise ValueError("No related service instantiation in Vnf instance details response")
+                raise ValueError("No related service instantiation in Vnf details response")
             vnf: Vnf = None
             for service_vnf in service.vnfs:
-                if service_vnf.name == request_response.get("request", {}).get("requestDetails", {}).get("modelInfo", {}).get("modelCustomizationName"):
+                if service_vnf.name == request_response.get("request", {})\
+                    .get("requestDetails", {}).get("modelInfo", {}).get("modelCustomizationName"):
                     vnf = service_vnf
             if not vnf:
                 raise ValueError("No vnf in service vnfs list")
             return cls(
-                name=request_response.get("request", {}).get("requestDetails", {}).get("instanceReferences", {}).get("vnfInstanceName"),
+                name=request_response.get("request", {}).get("requestDetails", {})\
+                    .get("instanceReferences", {}).get("vnfInstanceName"),
                 request_id=request_response.get("request", {}).get("requestId"),
-                instance_id=request_response.get("request", {}).get("requestDetails", {}).get("instanceReferences", {}).get("vnfInstanceId"),
+                instance_id=request_response.get("request", {}).get("requestDetails", {})\
+                    .get("instanceReferences", {}).get("vnfInstanceId"),
                 service_instantiation=service_instantiation,
-                line_of_business=LineOfBusiness.create(request_response.get("request", {}).get("requestDetails", {}).get("lineOfBusiness", {}).get("lineOfBusinessName")),
-                platform=Platform.create(request_response.get("request", {}).get("requestDetails", {}).get("platform", {}).get("platformName")),
+                line_of_business=LineOfBusiness.create(request_response.get("request", {})\
+                    .get("requestDetails", {}).get("lineOfBusiness", {}).get("lineOfBusinessName")),
+                platform=Platform.create(request_response.get("request", {})\
+                    .get("requestDetails", {}).get("platform", {}).get("platformName")),
                 vnf=vnf
             )
+        raise ValueError("Invalid vnf instantions request dictionary")
 
     @classmethod
     def get_by_vnf_instance_name(cls, vnf_instance_name: str) -> "VnfInstantiation":
+        """Get VNF instantiation request by instance name.
+
+        Raises:
+            ValueError: Vnf instance with given name doesn't exist
+
+        Returns:
+            VnfInstantiation: Vnf instantiation request object
+        """
         response: dict = cls.send_message_json(
             "GET",
             f"Check {vnf_instance_name} service instantiation status",
@@ -270,7 +299,7 @@ class VnfInstantiation(Instantiation):
             headers=headers_so_creator(OnapService.headers)
         )
         if not response.get("requestList", []):
-            raise AttributeError("Vnf instance doesn't exist")
+            raise ValueError("Vnf instance doesn't exist")
         for details in response["requestList"]:
             return cls.create_from_request_response(details)
         raise ValueError("No createInstance request found")
@@ -397,6 +426,17 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
 
     @classmethod
     def get_by_service_instance_id(cls, service_instance_id: str) -> "ServiceInstantiation":
+        """Get service instancy by it's instance ID.
+
+        It uses SO API to get orchestration request for service with provided instance ID.
+
+        Raises:
+            ValueError: No service instance with given ID
+
+        Returns:
+            ServiceInstantiation: Service instantiation request
+
+        """
         response: dict = cls.send_message_json(
             "GET",
             f"Check {service_instance_id} service instantiation status",
@@ -405,7 +445,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
             headers=headers_so_creator(OnapService.headers)
         )
         if not response.get("requestList", []):
-            raise AttributeError("Service instance doesn't exist")
+            raise ValueError("Service instance doesn't exist")
         for details in response["requestList"]:
             if details.get("request", {}).get("requestScope") == "service" and \
                 details.get("request", {}).get("requestType") == "createInstance":
@@ -422,7 +462,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
                         details["request"]["requestDetails"]["cloudConfiguration"]["tenantId"]
                     ),
                     customer=Customer.get_by_global_customer_id(
-                        details["request"]["requestDetails"]["subscriberInfo"]["globalSubscriberId"]),
+                        details["request"]["requestDetails"]["subscriberInfo"]\
+                            ["globalSubscriberId"]),
                     owning_entity=OwningEntity.get_by_owning_entity_id(
                         details["request"]["requestDetails"]["owningEntity"]["owningEntityId"]
                     ),
@@ -441,7 +482,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         It uses SO API to get orchestration request for service with provided name.
 
         Raises:
-            AttributeError: No service instance with given name
+            ValueError: No service instance with given name
 
         Returns:
             ServiceInstantiation: Service instantiation request
@@ -455,7 +496,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
             headers=headers_so_creator(OnapService.headers)
         )
         if not response.get("requestList", []):
-            raise AttributeError("Service instance doesn't exist")
+            raise ValueError("Service instance doesn't exist")
         for details in response["requestList"]:
             if details.get("request", {}).get("requestScope") == "service" and \
                 details.get("request", {}).get("requestType") == "createInstance":
@@ -472,7 +513,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
                         details["request"]["requestDetails"]["cloudConfiguration"]["tenantId"]
                     ),
                     customer=Customer.get_by_global_customer_id(
-                        details["request"]["requestDetails"]["subscriberInfo"]["globalSubscriberId"]),
+                        details["request"]["requestDetails"]["subscriberInfo"]\
+                            ["globalSubscriberId"]),
                     owning_entity=OwningEntity.get_by_owning_entity_id(
                         details["request"]["requestDetails"]["owningEntity"]["owningEntityId"]
                     ),
@@ -551,6 +593,11 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
 
     @property
     def vnf_instances(self) -> Iterator[VnfInstantiation]:
+        """Vnf instances correlated with service.
+
+        Yields:
+            Iterator[VnfInstantiation]: VNF instance.
+        """
         response: dict = self.send_message_json(
             "GET",
             f"Check {self.name} service instantiation status",

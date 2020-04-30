@@ -544,6 +544,119 @@ class EsrSystemInfo:  # pylint: disable=R0902
     openstack_region_id: str = None
 
 
+class ServiceInstance(AaiElement):  # pylint: disable=R0902
+    """Service instanve class."""
+
+    def __init__(self,  # pylint: disable=R0913, R0914
+                 service_subscription: "ServiceSubscription",
+                 instance_id: str,
+                 instance_name: str = None,
+                 service_type: str = None,
+                 service_role: str = None,
+                 environment_context: str = None,
+                 workload_context: str = None,
+                 created_at: str = None,
+                 updated_at: str = None,
+                 description: str = None,
+                 model_invariant_id: str = None,
+                 model_version_id: str = None,
+                 persona_model_version: str = None,
+                 widget_model_id: str = None,
+                 widget_model_version: str = None,
+                 bandwith_total: str = None,
+                 vhn_portal_url: str = None,
+                 service_instance_location_id: str = None,
+                 resource_version: str = None,
+                 selflink: str = None,
+                 orchestration_status: str = None,
+                 input_parameters: str = None) -> None:
+        """Service instance object initialization.
+
+        Args:
+            service_subscription (ServiceSubscription): service subscription which is belongs to
+            instance_id (str): Uniquely identifies this instance of a service
+            instance_name (str, optional): This field will store a name assigned to
+                the service-instance. Defaults to None.
+            service_type (str, optional): String capturing type of service. Defaults to None.
+            service_role (str, optional): String capturing the service role. Defaults to None.
+            environment_context (str, optional): This field will store the environment context
+                assigned to the service-instance. Defaults to None.
+            workload_context (str, optional): This field will store the workload context assigned to
+                the service-instance. Defaults to None.
+            created_at (str, optional): Create time of Network Service. Defaults to None.
+            updated_at (str, optional): Last update of Network Service. Defaults to None.
+            description (str, optional): Short description for service-instance. Defaults to None.
+            model_invariant_id (str, optional): The ASDC model id for this resource or
+                service model. Defaults to None.
+            model_version_id (str, optional): The ASDC model version for this resource or
+                service model. Defaults to None.
+            persona_model_version (str, optional): The ASDC model version for this resource or
+                service model. Defaults to None.
+            widget_model_id (str, optional): he ASDC data dictionary widget model. This maps
+                directly to the A&AI widget. Defaults to None.
+            widget_model_version (str, optional): The ASDC data dictionary version of the widget
+                model. This maps directly to the A&AI version of the widget. Defaults to None.
+            bandwith_total (str, optional): Indicates the total bandwidth to be used for this
+                service. Defaults to None.
+            vhn_portal_url (str, optional): URL customers will use to access the vHN Portal.
+                Defaults to None.
+            service_instance_location_id (str, optional): An identifier that customers assign to
+                the location where this service is being used. Defaults to None.
+            resource_version (str, optional): Used for optimistic concurrency. Must be empty on
+                create, valid on update and delete. Defaults to None.
+            selflink (str, optional): Path to the controller object. Defaults to None.
+            orchestration_status (str, optional): Orchestration status of this service.
+                Defaults to None.
+            input_parameters (str, optional): String capturing request parameters from SO to
+                pass to Closed Loop. Defaults to None.
+        """
+        super().__init__()
+        self.service_subscription: "ServiceSubscription" = service_subscription
+        self.instance_id: str = instance_id
+        self.instance_name: str = instance_name
+        self.service_type: str = service_type
+        self.service_role: str = service_role
+        self.environment_context: str = environment_context
+        self.workload_context: str = workload_context
+        self.created_at: str = created_at
+        self.updated_at: str = updated_at
+        self.description: str = description
+        self.model_invariant_id: str = model_invariant_id
+        self.model_version_id: str = model_version_id
+        self.persona_model_version: str = persona_model_version
+        self.widget_model_id: str = widget_model_id
+        self.widget_model_version: str = widget_model_version
+        self.bandwith_total: str = bandwith_total
+        self.vhn_portal_url: str = vhn_portal_url
+        self.service_instance_location_id: str = service_instance_location_id
+        self.resource_version: str = resource_version
+        self.selflink: str = selflink
+        self.orchestration_status: str = orchestration_status
+        self.input_parameters: str = input_parameters
+
+    def __repr__(self) -> str:
+        """Service instance object representation.
+
+        Returns:
+            str: Human readable service instance representation
+
+        """
+        return (f"ServiceInstance(instance_id={self.instance_id}, "
+                f"instance_name={self.instance_name})")
+
+    @property
+    def url(self) -> str:
+        """Service instance resource URL.
+
+        Returns:
+            str: Service instance url
+
+        """
+        return (
+            f"{self.service_subscription.url}/service-instances/service-instance/{self.instance_id}"
+        )
+
+
 @dataclass
 class ServiceSubscription(AaiElement):
     """Service subscription class."""
@@ -564,6 +677,54 @@ class ServiceSubscription(AaiElement):
         self.customer: "Customer" = customer
         self.service_type: str = service_type
         self.resource_version: str = resource_version
+
+    def _get_service_instance_by_filter_parameter(self,
+                                                  filter_parameter_name: str,
+                                                  filter_parameter_value: str) -> ServiceInstance:
+        """Call a request to get service instance with given filter parameter and value.
+
+        Args:
+            filter_parameter_name (str): Name of parameter to filter
+            filter_parameter_value (str): Value of filter parameter
+
+        Raises:
+            ValueError: Service instance with given filter parameters
+                doesn't exist
+
+        Returns:
+            ServiceInstance: ServiceInstance object
+
+        """
+        service_instance: dict = self.send_message_json(
+            "GET",
+            f"Get service instance with {filter_parameter_value} {filter_parameter_name}",
+            f"{self.url}/service-instances?{filter_parameter_name}={filter_parameter_value}",
+            exception=ValueError
+        )["service-instance"][0]
+        return ServiceInstance(
+            service_subscription=self,
+            instance_id=service_instance.get("service-instance-id"),
+            instance_name=service_instance.get("service-instance-name"),
+            service_type=service_instance.get("service-type"),
+            service_role=service_instance.get("service-role"),
+            environment_context=service_instance.get("environment-context"),
+            workload_context=service_instance.get("workload-context"),
+            created_at=service_instance.get("created-at"),
+            updated_at=service_instance.get("updated-at"),
+            description=service_instance.get("description"),
+            model_invariant_id=service_instance.get("model-invariant-id"),
+            model_version_id=service_instance.get("model-version-id"),
+            persona_model_version=service_instance.get("persona-model-version"),
+            widget_model_id=service_instance.get("widget-model-id"),
+            widget_model_version=service_instance.get("widget-model-version"),
+            bandwith_total=service_instance.get("bandwidth-total"),
+            vhn_portal_url=service_instance.get("vhn-portal-url"),
+            service_instance_location_id=service_instance.get("service-instance-location-id"),
+            resource_version=service_instance.get("resource-version"),
+            selflink=service_instance.get("selflink"),
+            orchestration_status=service_instance.get("orchestration-status"),
+            input_parameters=service_instance.get("input-parameters")
+        )
 
     @property
     def url(self) -> str:
@@ -603,6 +764,81 @@ class ServiceSubscription(AaiElement):
             )
             for relationship in response.get("relationship", [])
         )
+
+    @property
+    def service_instances(self) -> Iterator[ServiceInstance]:
+        """Service instances.
+
+        Yields:
+            Iterator[ServiceInstance]: Service instance
+
+        """
+        for service_instance in \
+            self.send_message_json("GET",
+                                   (f"Get all service instances for {self.service_type} service "
+                                    f"subscription"),
+                                   f"{self.url}/service-instances").get("service-instance", []):
+            yield ServiceInstance(
+                service_subscription=self,
+                instance_id=service_instance.get("service-instance-id"),
+                instance_name=service_instance.get("service-instance-name"),
+                service_type=service_instance.get("service-type"),
+                service_role=service_instance.get("service-role"),
+                environment_context=service_instance.get("environment-context"),
+                workload_context=service_instance.get("workload-context"),
+                created_at=service_instance.get("created-at"),
+                updated_at=service_instance.get("updated-at"),
+                description=service_instance.get("description"),
+                model_invariant_id=service_instance.get("model-invariant-id"),
+                model_version_id=service_instance.get("model-version-id"),
+                persona_model_version=service_instance.get("persona-model-version"),
+                widget_model_id=service_instance.get("widget-model-id"),
+                widget_model_version=service_instance.get("widget-model-version"),
+                bandwith_total=service_instance.get("bandwidth-total"),
+                vhn_portal_url=service_instance.get("vhn-portal-url"),
+                service_instance_location_id=service_instance.get("service-instance-location-id"),
+                resource_version=service_instance.get("resource-version"),
+                selflink=service_instance.get("selflink"),
+                orchestration_status=service_instance.get("orchestration-status"),
+                input_parameters=service_instance.get("input-parameters")
+            )
+
+    def get_service_instance_by_id(self, service_instance_id) -> ServiceInstance:
+        """Get service instance using it's ID.
+
+        Args:
+            service_instance_id (str): ID of the service instance
+
+        Raises:
+            ValueError: service subscription has no related service instance with given ID
+
+        Returns:
+            ServiceInstance: ServiceInstance object
+
+        """
+        return self._get_service_instance_by_filter_parameter(
+            "service-instance-id",
+            service_instance_id
+        )
+
+    def get_service_instance_by_name(self, service_instance_name: str) -> ServiceInstance:
+        """Get service instance using it's name.
+
+        Args:
+            service_instance_name (str): Name of the service instance
+
+        Raises:
+            ValueError: service subscription has no related service instance with given name
+
+        Returns:
+            ServiceInstance: ServiceInstance object
+
+        """
+        return self._get_service_instance_by_filter_parameter(
+            "service-instance-name",
+            service_instance_name
+        )
+
 
 class CloudRegion(AaiElement):  # pylint: disable=R0902
     """Cloud region class.
@@ -1369,6 +1605,14 @@ class OwningEntity(AaiElement):
 
     @classmethod
     def get_by_owning_entity_name(cls, owning_entity_name: str) -> "OwningEntity":
+        """Get owning entity resource by it's name.
+
+        Raises:
+            ValueError: Owning entity with given name doesn't exist
+
+        Returns:
+            OwningEntity: Owning entity with given name
+        """
         for owning_entity in cls.get_all():
             if owning_entity.name == owning_entity_name:
                 return owning_entity

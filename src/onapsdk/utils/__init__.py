@@ -11,5 +11,6 @@ def get_zulu_time_isoformat() -> str:
 
     Returns:
         str: Actual Zulu time.
+
     """
     return datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')

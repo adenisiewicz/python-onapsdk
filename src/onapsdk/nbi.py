@@ -320,6 +320,7 @@ class ServiceOrder(Nbi):  # pylint: disable=R0902
 
         Returns:
             Iterator[ServiceOrder]: ServiceOrder object
+
         """
         for service_order in cls.send_message_json("GET",
                                                    "Get all service orders",

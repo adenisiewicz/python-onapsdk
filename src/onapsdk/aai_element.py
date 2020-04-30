@@ -120,6 +120,7 @@ class AaiElement(OnapService):
 
         Returns:
             str: Resource's url
+
         """
         raise NotImplementedError
 
@@ -224,6 +225,7 @@ class Complex(AaiElement):  # pylint: disable=R0902
 
         Returns:
             str: Complex url
+
         """
         return (f"{self.base_url}{self.api_version}/cloud-infrastructure/complexes/complex/"
                 f"{self.physical_location_id}?resource-version={self.resource_version}")
@@ -378,6 +380,7 @@ class Service(AaiElement):
 
         Returns:
             str: Service object url address
+
         """
         return (f"{self.base_url}{self.api_version}/service-design-and-creation/services/service/"
                 f"{self.service_id}?resource-version={self.resource_version}")
@@ -418,6 +421,7 @@ class Service(AaiElement):
 
         Raises:
             ValueError: Creation request returns HTTP error code
+
         """
         cls.send_message(
             "PUT",
@@ -1185,6 +1189,7 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         Raises:
             ValueError: Tenant with provided ID doesn't exist
+
         """
         response: dict = self.send_message_json(
             "GET",
@@ -1491,6 +1496,7 @@ class Customer(AaiElement):
 
         Yields:
             ServiceSubscription: ServiceSubscription object
+
         """
         response: dict = self.send_message_json(
             "GET",
@@ -1513,6 +1519,7 @@ class Customer(AaiElement):
 
         Raises:
             ValueError: Request response with HTTP error code
+
         """
         self.send_message(
             "PUT",
@@ -1550,6 +1557,7 @@ class OwningEntity(AaiElement):
 
         Returns:
             str: Owning entity object representation
+
         """
         return f"OwningEntity(name={self.name}, owning_entity_id={self.owning_entity_id})"
 
@@ -1559,6 +1567,7 @@ class OwningEntity(AaiElement):
 
         Returns:
             str: Url
+
         """
         return (f"{self.base_url}{self.api_version}/business/owning-entities/owning-entity/"
                 f"{self.owning_entity_id}?resource-version={self.resource_version}")
@@ -1569,6 +1578,7 @@ class OwningEntity(AaiElement):
 
         Yields:
             OwningEntity: OwningEntity object
+
         """
         url: str = f"{cls.base_url}{cls.api_version}/business/owning-entities"
         for owning_entity in cls.send_message_json("GET",
@@ -1589,6 +1599,7 @@ class OwningEntity(AaiElement):
 
         Returns:
             OwningEntity: OwningEntity object
+
         """
         response: dict = cls.send_message_json(
             "GET",
@@ -1612,6 +1623,7 @@ class OwningEntity(AaiElement):
 
         Returns:
             OwningEntity: Owning entity with given name
+
         """
         for owning_entity in cls.get_all():
             if owning_entity.name == owning_entity_name:
@@ -1631,6 +1643,7 @@ class OwningEntity(AaiElement):
 
         Returns:
             OwningEntity: Created OwningEntity object
+
         """
         if not owning_entity_id:
             owning_entity_id = str(uuid4())
@@ -1682,6 +1695,7 @@ class Model(AaiElement):
 
         Returns:
             str: Model's url
+
         """
         return (f"{self.base_url}{self.api_version}/service-design-and-creation/models/"
                 f"model/{self.invariant_id}?resource-version={self.resource_version}")

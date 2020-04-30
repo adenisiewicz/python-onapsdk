@@ -81,6 +81,7 @@ class ServiceSpecification(Nbi):
 
         Returns:
             str: Service specification object human readable representation
+
         """
         return (f"ServiceSpecification(unique_id={self.unique_id}, name={self.name}, "
                 f"invariant_uuid={self.invariant_uuid}, category={self.category}, "
@@ -93,6 +94,7 @@ class ServiceSpecification(Nbi):
 
         Yields:
             ServiceSpecification: Service specification object
+
         """
         for service_specification in cls.send_message_json("GET",
                                                            "Get service specifications from NBI",
@@ -117,6 +119,7 @@ class ServiceSpecification(Nbi):
 
         Returns:
             ServiceSpecification: Service specification object
+
         """
         service_specification: dict = cls.send_message_json(
             "GET",
@@ -170,6 +173,7 @@ class Service(Nbi):
 
         Returns:
             str: Human readable service object representation
+
         """
         return (f"Service(name={self.name}, service_id={self.service_id}, "
                 f"service_specification={self.service_specification}, customer={self.customer}, "
@@ -181,6 +185,7 @@ class Service(Nbi):
 
         Yields:
             Service: Service object
+
         """
         for service in cls.send_message_json("GET",
                                              "Get service instances from NBI",
@@ -199,6 +204,7 @@ class Service(Nbi):
 
         Returns:
             Customer: Customer object
+
         """
         if not self._customer_id:
             return None
@@ -210,6 +216,7 @@ class Service(Nbi):
 
         Returns:
             ServiceSpecification: Service specification object
+
         """
         if not self._service_specification_id:
             return None
@@ -268,6 +275,7 @@ class ServiceOrder(Nbi):  # pylint: disable=R0902
 
         Returns:
             str: Service order object representation.
+
         """
         return (f"ServiceOrder(unique_id={self.unique_id}, href={self.href}, "
                 f"priority={self.priority}, category={self.category}, "
@@ -281,6 +289,7 @@ class ServiceOrder(Nbi):  # pylint: disable=R0902
 
         Returns:
             Customer: Customer object
+
         """
         if not self._customer:
             if not self._customer_id:
@@ -295,6 +304,7 @@ class ServiceOrder(Nbi):  # pylint: disable=R0902
 
         Returns:
             ServiceSpecification: Service specification
+
         """
         if not self._service_specification:
             if not self._service_specification_id:
@@ -309,7 +319,7 @@ class ServiceOrder(Nbi):  # pylint: disable=R0902
         """Get all service orders.
 
         Returns:
-            Dict[str, str]: [description]
+            Iterator[ServiceOrder]: ServiceOrder object
         """
         for service_order in cls.send_message_json("GET",
                                                    "Get all service orders",
@@ -338,7 +348,8 @@ class ServiceOrder(Nbi):  # pylint: disable=R0902
         """Create service order.
 
         Returns:
-            [type]: [description]
+            ServiceOrder: ServiceOrder object
+
         """
         if external_id is None:
             external_id = str(uuid4())

@@ -153,6 +153,7 @@ class Service(SdcResource):  # pylint: disable=R0902
 
         Returns:
             str: Tosca template file
+
         """
         if not self._tosca_template and self.tosca_model:
             with ZipFile(BytesIO(self.tosca_model)) as myzip:
@@ -172,6 +173,7 @@ class Service(SdcResource):  # pylint: disable=R0902
 
         Returns:
             bytes: TOSCA model file bytes
+
         """
         if not self._tosca_model:
             url = "{}/services/{}/toscaModel".format(self._base_url(),
@@ -196,6 +198,7 @@ class Service(SdcResource):  # pylint: disable=R0902
 
         Returns:
             List[Vnf]: Vnf objects list
+
         """
         if not self.tosca_template:
             raise AttributeError("Service has no TOSCA template")
@@ -224,6 +227,7 @@ class Service(SdcResource):  # pylint: disable=R0902
 
         Returns:
             List[Network]: Network objects list
+
         """
         if not self.tosca_template:
             raise AttributeError("Service has no TOSCA template")
@@ -249,6 +253,7 @@ class Service(SdcResource):  # pylint: disable=R0902
 
         Returns:
             List[VfModule]: VfModule objects list
+
         """
         if self._vf_modules is None:
             self._vf_modules = []

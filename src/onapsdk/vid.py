@@ -34,6 +34,7 @@ class Vid(OnapService, ABC):
 
         Returns:
             str: Url used for resource creation
+
         """
         raise NotImplementedError
 
@@ -43,6 +44,7 @@ class Vid(OnapService, ABC):
 
         Returns:
             Vid: Created VID resource
+
         """
         cls.send_message(
             "POST",
@@ -64,6 +66,7 @@ class OwningEntity(Vid):
 
         Returns:
             str: Url used for ownint entity creation
+
         """
         return f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/owningEntity"
 
@@ -77,6 +80,7 @@ class Project(Vid):
 
         Returns:
             str: Url used for project creation
+
         """
         return f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/project"
 
@@ -90,6 +94,7 @@ class LineOfBusiness(Vid):
 
         Returns:
             str: Url used for line of business creation
+
         """
         return f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/lineOfBusiness"
 
@@ -103,5 +108,6 @@ class Platform(Vid):
 
         Returns:
             str: Url used for platform creation
+
         """
         return f"{cls.base_url}{cls.api_version}/maintenance/category_parameter/platform"

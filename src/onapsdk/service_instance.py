@@ -151,6 +151,7 @@ class Instantiation(OnapService, ABC):
 
         Returns:
             StatusEnum: Instantiation status.
+
         """
         response: dict = self.send_message_json(
             "GET",
@@ -242,6 +243,7 @@ class VnfInstantiation(Instantiation):
 
         Returns:
             VnfInstantiation: VnfInstantiation object
+
         """
         if request_response.get("request", {}).get("requestScope") == "vnf" and \
             request_response.get("request", {}).get("requestType") == "createInstance":
@@ -290,6 +292,7 @@ class VnfInstantiation(Instantiation):
 
         Returns:
             VnfInstantiation: Vnf instantiation request object
+
         """
         response: dict = cls.send_message_json(
             "GET",
@@ -597,6 +600,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
 
         Yields:
             Iterator[VnfInstantiation]: VNF instance.
+
         """
         response: dict = self.send_message_json(
             "GET",
@@ -636,6 +640,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
 
         Yields:
             Iterator[VnfInstantiation]: VnfInstantion class object
+
         """
         if self.status != self.StatusEnum.COMPLETED:
             raise AttributeError("Service is not instantiated")

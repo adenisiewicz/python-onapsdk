@@ -843,6 +843,38 @@ class ServiceSubscription(AaiElement):
             service_instance_name
         )
 
+    def link_to_cloud_region_and_tenant(self,
+                                        cloud_region: "CloudRegion",
+                                        tenant: "Tenant") -> None:
+        """Create relationship between object and cloud region with tenant.
+
+        Args:
+            cloud_region (CloudRegion): Cloud region to link to
+            tenant (Tenant): Cloud region tenant to link to
+        """
+        relationship: Relationship = Relationship(
+            related_to="tenant",
+            related_link=tenant.url,
+            relationship_data=[
+                {
+                    "relationship-key": "cloud-region.cloud-owner",
+                    "relationship-value": cloud_region.cloud_owner,
+                },
+                {
+                    "relationship-key": "cloud-region.cloud-region-id",
+                    "relationship-value": cloud_region.cloud_region_id,
+                },
+                {
+                    "relationship-key": "tenant.tenant-id",
+                    "relationship-value": tenant.tenant_id,
+                },
+            ],
+            related_to_property=[
+                {"property-key": "tenant.tenant-name", "property-value": tenant.name}
+            ],
+        )
+        self.add_relationship(relationship)
+
 
 class CloudRegion(AaiElement):  # pylint: disable=R0902
     """Cloud region class.
@@ -1320,7 +1352,6 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
         """Unregister cloud from mutlicloud."""
         Multicloud.unregister_vim(self.cloud_owner, self.cloud_region_id)
 
-
     def delete(self) -> None:
         """Delete cloud region."""
         self.send_message(
@@ -1329,6 +1360,23 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             self.url,
             params={"resource-version": self.resource_version}
         )
+
+    def link_to_complex(self, complex_object: Complex) -> None:
+        """Link cloud region to comples.
+
+        It creates relationhip object and add it into cloud region.
+        """
+        relationship = Relationship(
+            related_to="complex",
+            related_link=(f"aai/v13/cloud-infrastructure/complexes/"
+                          f"complex/{complex_object.physical_location_id}"),
+            relationship_data={
+                "relationship-key": "complex.physical-location-id",
+                "relationship-value": f"{complex_object.physical_location_id}",
+            },
+            relationship_label="org.onap.relationships.inventory.LocatedIn",
+        )
+        self.add_relationship(relationship)
 
 
 class Customer(AaiElement):
@@ -1524,8 +1572,8 @@ class Customer(AaiElement):
         self.send_message(
             "PUT",
             "Create service subscription",
-            f"{self.base_url}{self.api_version}/business/customers/"
-            (f"customer/{self.global_customer_id}/service-subscriptions/"
+            (f"{self.base_url}{self.api_version}/business/customers/"
+             f"customer/{self.global_customer_id}/service-subscriptions/"
              f"service-subscription/{service.name}"),
             data=jinja_env()
             .get_template("customer_service_subscription_create.json.j2")

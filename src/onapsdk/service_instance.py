@@ -452,7 +452,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         for details in response["requestList"]:
             if details.get("request", {}).get("requestScope") == "service" and \
                 details.get("request", {}).get("requestType") == "createInstance":
-                cloud_region = CloudRegion.get_by_region_id(
+                cloud_region = CloudRegion.get_by_id(
+                    details["request"]["requestDetails"]["cloudConfiguration"]["cloudOwner"],
                     details["request"]["requestDetails"]["cloudConfiguration"]["lcpCloudRegionId"]
                 )
                 return cls(
@@ -503,7 +504,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         for details in response["requestList"]:
             if details.get("request", {}).get("requestScope") == "service" and \
                 details.get("request", {}).get("requestType") == "createInstance":
-                cloud_region = CloudRegion.get_by_region_id(
+                cloud_region = CloudRegion.get_by_id(
+                    details["request"]["requestDetails"]["cloudConfiguration"]["cloudOwner"],
                     details["request"]["requestDetails"]["cloudConfiguration"]["lcpCloudRegionId"]
                 )
                 return cls(

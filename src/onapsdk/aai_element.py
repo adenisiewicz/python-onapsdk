@@ -99,7 +99,7 @@ class AaiElement(OnapService):
     def tenants_info(cls, cloud_owner, region_name):
         """Get the Cloud info of one cloud region."""
         try:
-            cloud_region: CloudRegion = CloudRegion.get_by_id(cloud_owner,region_name)
+            cloud_region: CloudRegion = CloudRegion.get_by_id(cloud_owner, region_name)
             return cloud_region.tenants
         except ValueError as exc:
             cls.__logger.exception(str(exc))
@@ -1000,10 +1000,10 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             )
 
     @classmethod
-    def get_by_id(cls, cloud_owner ,cloud_region_id: str) -> "CloudRegion":
+    def get_by_id(cls, cloud_owner, cloud_region_id: str) -> "CloudRegion":
         """Get CloudRegion object by cloud_owner and cloud-region-id field value.
 
-        This method calls A&AI cloud region API filtering them by cloud_owner and 
+        This method calls A&AI cloud region API filtering them by cloud_owner and
         cloud-region-id field value.
 
         Raises:
@@ -1016,14 +1016,14 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
         try:
             return next(cls.get_all(cloud_owner=cloud_owner, cloud_region_id=cloud_region_id))
         except StopIteration:
-            raise ValueError(f"CloudRegion with {cloud_owner} cloud_owner and {cloud_region_id} cloud-region-id not found")
+            raise ValueError(f"CloudRegion with {cloud_owner},{cloud_region_id} cloud-id not found")
 
     @classmethod
     def get_by_region_id(cls, cloud_region_id: str) -> "CloudRegion":
         """Get CloudRegion object by cloud-region-id field value.
 
         This method calls A&AI cloud region API filtering them by cloud-region-id field value.
- 
+
         Raises:
             ValueError: Cloud region with given id does not exist.
 

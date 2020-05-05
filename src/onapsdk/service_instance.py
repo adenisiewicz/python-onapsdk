@@ -269,10 +269,10 @@ class VnfInstantiation(Instantiation):
             if not vnf:
                 raise ValueError("No vnf in service vnfs list")
             return cls(
-                name=request_response.get("request", {}).get("requestDetails", {})\
+                name=request_response.get("request", {})\
                     .get("instanceReferences", {}).get("vnfInstanceName"),
                 request_id=request_response.get("request", {}).get("requestId"),
-                instance_id=request_response.get("request", {}).get("requestDetails", {})\
+                instance_id=request_response.get("request", {})\
                     .get("instanceReferences", {}).get("vnfInstanceId"),
                 service_instantiation=service_instantiation,
                 line_of_business=LineOfBusiness.create(request_response.get("request", {})\

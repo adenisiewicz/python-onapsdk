@@ -34,7 +34,7 @@
         "relatedInstanceList": [
             {
                 "relatedInstance": {
-                    "instanceId": "{{ service_instance.instance_id }}",
+                    "instanceId": "{{ vnf_instance.service_instance.instance_id }}",
                     "modelInfo": {
                         "modelType": "service",
                         "modelName": "{{ service.name }}",
@@ -46,15 +46,15 @@
             },
             {
                 "relatedInstance": {
-                    "instanceId": "{{ vnf_instance.instance_id }}",
+                    "instanceId": "{{ vnf_instance.vnf_id }}",
                     "modelInfo": {
                         "modelType": "vnf",
-                        "modelName": "{{ vnf.metadata["name"] }}",
-                        "modelInvariantId": "{{ vnf.metadata["invariantUUID"] }}",
-                        "modelVersion": "{{ vnf.metadata["version"] }}",
-                        "modelVersionId": "{{ vnf.metadata["UUID"] }}",
-                        "modelCustomizationId": "{{ vnf.metadata["customizationUUID"] }}",
-                        "modelCustomizationName": "{{ vnf.name }}"
+                        "modelName": "{{ vnf_instance.vnf.metadata["name"] }}",
+                        "modelInvariantId": "{{ vnf_instance.vnf.metadata["invariantUUID"] }}",
+                        "modelVersion": "{{ vnf_instance.vnf.metadata["version"] }}",
+                        "modelVersionId": "{{ vnf_instance.vnf.metadata["UUID"] }}",
+                        "modelCustomizationId": "{{ vnf_instance.vnf.metadata["customizationUUID"] }}",
+                        "modelCustomizationName": "{{ vnf_instance.vnf.name }}"
                     }
                 }
             }

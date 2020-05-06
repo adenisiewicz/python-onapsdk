@@ -4,7 +4,7 @@
 """AAI Element module."""
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterable, Iterator, List, Optional
 from urllib.parse import urlencode
 from uuid import uuid4
 
@@ -548,6 +548,316 @@ class EsrSystemInfo:  # pylint: disable=R0902
     openstack_region_id: str = None
 
 
+class VfModuleInstance(AaiElement):
+    """Vf module instance class."""
+
+    def __init__(self,
+                 vnf_instance: "VnfInstance",
+                 vf_module_id: str,
+                 is_base_vf_module: bool,
+                 automated_assignment: bool,
+                 vf_module_name: str = None,
+                 heat_stack_id: str = None,
+                 orchestration_status: str = None,
+                 resource_version: str = None,
+                 model_invariant_id: str = None,
+                 model_version_id: str = None,
+                 persona_model_version: str = None,
+                 model_customization_id: str = None,
+                 widget_model_id: str = None,
+                 widget_model_version: str = None,
+                 contrail_service_instance_fqdn: str = None,
+                 module_index: int = None,
+                 selflink: str = None) -> None:
+        self.vnf_instance: "VnfInstance" = vnf_instance
+        self.vf_module_id: str = vf_module_id
+        self.is_base_vf_module: bool = is_base_vf_module
+        self.automated_assignment: bool = automated_assignment
+        self.vf_module_name: str = vf_module_name
+        self.heat_stack_id: str = heat_stack_id
+        self.orchestration_status: str = orchestration_status
+        self.resource_version: str = resource_version
+        self.model_invariant_id: str = model_invariant_id
+        self.model_version_id: str = model_version_id
+        self.persona_model_version: str = persona_model_version
+        self.model_customization_id: str = model_customization_id
+        self.widget_model_id: str = widget_model_id
+        self.widget_model_version: str = widget_model_version
+        self.contrail_service_instance_fqdn: str = contrail_service_instance_fqdn
+        self.module_index: int = module_index
+        self.selflink: str = selflink
+
+    def __repr__(self) -> str:
+        return (f"VfModuleInstance(vf_module_id={self.vf_module_id}, "
+                f"is_base_vf_module={self.is_base_vf_module}, "
+                f"automated_assignment={self.automated_assignment})")
+
+    @classmethod
+    def create_from_api_response(cls,
+                                 api_response: dict,
+                                 vnf_instance: "VnfInstance") -> "VfModuleInstance":
+        return cls(
+            vnf_instance=vnf_instance,
+            vf_module_id=api_response.get("vf-module-id"),
+            is_base_vf_module=api_response.get("is-base-vf-module"),
+            automated_assignment=api_response.get("automated-assignment"),
+            vf_module_name=api_response.get("vf-module-name"),
+            heat_stack_id=api_response.get("heat-stack-id"),
+            orchestration_status=api_response.get("orchestration-status"),
+            resource_version=api_response.get("resource-version"),
+            model_invariant_id=api_response.get("model-invariant-id"),
+            model_version_id=api_response.get("model-version-id"),
+            persona_model_version=api_response.get("persona-model-version"),
+            model_customization_id=api_response.get("model-customization-id"),
+            widget_model_id=api_response.get("widget-model-id"),
+            widget_model_version=api_response.get("widget-model-version"),
+            contrail_service_instance_fqdn=api_response.get("contrail-service-instance-fqdn"),
+            module_index=api_response.get("module-index"),
+            selflink=api_response.get("selflink")
+        )
+
+
+class VnfInstance(AaiElement):
+    """VNF Instance class."""
+
+    def __init__(self,  # pylint: disable=R0913, R0914
+                 vnf_id: str,
+                 vnf_type: str,
+                 in_maint: bool,
+                 is_closed_loop_disabled: bool,
+                 vnf_name: str = None,
+                 service_id: str = None,
+                 regional_resource_zone: str = None,
+                 prov_status: str = None,
+                 operational_status: str = None,
+                 equipment_role: str = None,
+                 orchestration_status: str = None,
+                 vnf_package_name: str = None,
+                 vnf_discriptor_name: str = None,
+                 job_id: str = None,
+                 heat_stack_id: str = None,
+                 mso_catalog_key: str = None,
+                 management_option: str = None,
+                 ipv4_oam_address: str = None,
+                 ipv4_loopback0_address: str = None,
+                 nm_lan_v6_address: str = None,
+                 management_v6_address: str = None,
+                 vcpu: int = None,
+                 vcpu_units: str = None,
+                 vmemory: int = None,
+                 vmemory_units: str = None,
+                 vdisk: int = None,
+                 vdisk_units: str = None,
+                 nshd: int = None,
+                 nvm: int = None,
+                 nnet: int = None,
+                 resource_version: str = None,
+                 encrypted_access_flag: bool = None,
+                 model_invariant_id: str = None,
+                 model_version_id: str = None,
+                 persona_model_version: str = None,
+                 model_customization_id: str = None,
+                 widget_model_id: str = None,
+                 widget_model_version: str = None,
+                 as_number: str = None,
+                 regional_resource_subzone: str = None,
+                 nf_type: str = None,
+                 nf_function: str = None,
+                 nf_role: str = None,
+                 nf_naming_code: str = None,
+                 selflink: str = None,
+                 ipv4_oam_gateway_address: str = None,
+                 ipv4_oam_gateway_address_prefix_length: int = None,
+                 vlan_id_outer: int = None,
+                 nm_profile_name: str = None):
+        self.vnf_id: str = vnf_id
+        self.vnf_type: str = vnf_type
+        self.in_maint: bool = in_maint
+        self.is_closed_loop_disabled: bool = is_closed_loop_disabled
+        self.vnf_name: str = vnf_name
+        self.service_id: str = service_id
+        self.regional_resource_zone: str = regional_resource_zone
+        self.prov_status: str = prov_status
+        self.operational_status: str = operational_status
+        self.equipment_role: str = equipment_role
+        self.orchestration_status: str = orchestration_status
+        self.vnf_package_name: str = vnf_package_name
+        self.vnf_discriptor_name: str = vnf_discriptor_name
+        self.job_id: str = job_id
+        self.heat_stack_id: str = heat_stack_id
+        self.mso_catalog_key: str = mso_catalog_key
+        self.management_option: str = management_option
+        self.ipv4_oam_address: str = ipv4_oam_address
+        self.ipv4_loopback0_address: str = ipv4_loopback0_address
+        self.nm_lan_v6_address: str = nm_lan_v6_address
+        self.management_v6_address: str = management_v6_address
+        self.vcpu: int = vcpu
+        self.vcpu_units: str = vcpu_units
+        self.vmemory: int = vmemory
+        self.vmemory_units: str = vmemory_units
+        self.vdisk: int = vdisk
+        self.vdisk_units: str = vdisk_units
+        self.nshd: int = nshd
+        self.nvm: int = nvm
+        self.nnet: int = nnet
+        self.resource_version: str = resource_version
+        self.encrypted_access_flag: bool = encrypted_access_flag
+        self.model_invariant_id: str = model_invariant_id
+        self.model_version_id: str = model_version_id
+        self.persona_model_version: str = persona_model_version
+        self.model_customization_id: str = model_customization_id
+        self.widget_model_id: str = widget_model_id
+        self.widget_model_version: str = widget_model_version
+        self.as_number: str = as_number
+        self.regional_resource_subzone: str = regional_resource_subzone
+        self.nf_type: str = nf_type
+        self.nf_function: str = nf_function
+        self.nf_role: str = nf_role
+        self.nf_naming_code: str = nf_naming_code
+        self.selflink: str = selflink
+        self.ipv4_oam_gateway_address: str = ipv4_oam_gateway_address
+        self.ipv4_oam_gateway_address_prefix_length: int = ipv4_oam_gateway_address_prefix_length
+        self.vlan_id_outer: int = vlan_id_outer
+        self.nm_profile_name: str = nm_profile_name
+
+        self._vnf: "Vnf" = None
+
+    def __repr__(self) -> str:
+        """Vnf instance object representation.
+
+        Returns:
+            str: Human readable vnf instance representation
+
+        """
+        return (f"VnfInstance(vnf_id={self.vnf_id}, vnf_type={self.vnf_type}, "
+                f"in_maint={self.in_maint}, "
+                f"is_closed_loop_disabled={self.is_closed_loop_disabled})")
+
+    @property
+    def url(self) -> str:
+        return f"{self.base_url}{self.api_version}/network/generic-vnfs/generic-vnf/{self.vnf_id}"
+
+    @property
+    def vf_modules(self):
+        for vf_module in self.send_message_json(
+            "GET",
+            f"GET VNF {self.vnf_name} VF modules",
+            f"{self.url}/vf-modules"
+        ).get("vf-module", []):
+            yield VfModuleInstance.create_from_api_response(vf_module)
+
+    @property
+    def relationships(self):
+        for relationship in self.send_message_json(
+            "GET",
+            f"Get VNF {self.vnf_name} relationships",
+            f"{self.url}/relationship-list"
+        ).get("relationship", []):
+            yield Relationship(
+                related_to=relationship.get("related-to"),
+                relationship_label=relationship.get("relationship-label"),
+                related_link=relationship.get("related-link"),
+                relationship_data=relationship.get("relationship-data"),
+            )
+
+    @property
+    def service_instance(self) -> "ServiceInstance":
+        customer: "Customer" = None
+        service_subscription_type: str = None
+        service_instance_id: str = None
+        for relationship in self.relationships:
+            if relationship.related_to == "service-instance":
+                for data in relationship.relationship_data:
+                    if data["relationship-key"] == "customer.global-customer-id":
+                        customer = Customer.get_by_global_customer_id(data["relationship-value"])
+                    if data["relationship-key"] == "service-subscription.service-type":
+                        service_subscription_type = data["relationship-value"]
+                    if data["relationship-key"] == "service-instance.service-instance-id":
+                        service_instance_id = data["relationship-value"]
+        if not all([customer, service_subscription_type, service_instance_id]):
+            raise AttributeError("VnfInstance has no valid service instance relationship")
+        service_subscription: "ServiceSubscription" = \
+            customer.get_service_subscription_by_service_type(service_subscription_type)
+        return service_subscription.get_service_instance_by_id(service_instance_id)
+
+    @property
+    def vnf(self) -> "Vnf":
+        if not self._vnf:
+            for vnf in self.service_instance.service_subscription.sdc_service.vnfs:
+                if vnf.metadata["UUID"] == self.model_version_id:
+                    self._vnf = vnf
+                    return self._vnf
+            raise AttributeError("Couldn't find VNF for VNF instance")
+        return self._vnf
+
+    @classmethod
+    def create_from_api_response(cls, api_response: dict, service_instance: "ServiceInstance" = None) -> "VnfInstance":
+        return cls(vnf_id=api_response.get("vnf-id"),
+                   vnf_type=api_response.get("vnf-type"),
+                   in_maint=api_response.get("in-maint"),
+                   is_closed_loop_disabled=api_response.get("is-closed-loop-disabled"),
+                   vnf_name=api_response.get("vnf-name"),
+                   service_id=api_response.get("service-id"),
+                   regional_resource_zone=api_response.get("regional-resource-zone"),
+                   prov_status=api_response.get("prov-status"),
+                   operational_status=api_response.get("operational-status"),
+                   equipment_role=api_response.get("equipment-role"),
+                   orchestration_status=api_response.get("orchestration-status"),
+                   vnf_package_name=api_response.get("vnf-package-name"),
+                   vnf_discriptor_name=api_response.get("vnf-discriptor-name"),
+                   job_id=api_response.get("job-id"),
+                   heat_stack_id=api_response.get("heat-stack-id"),
+                   mso_catalog_key=api_response.get("mso-catalog-key"),
+                   management_option=api_response.get("management-option"),
+                   ipv4_oam_address=api_response.get("ipv4-oam-address"),
+                   ipv4_loopback0_address=api_response.get("ipv4-loopback0-address"),
+                   nm_lan_v6_address=api_response.get("nm-lan-v6-address"),
+                   management_v6_address=api_response.get("management-v6-address"),
+                   vcpu=api_response.get("vcpu"),
+                   vcpu_units=api_response.get("vcpu-units"),
+                   vmemory=api_response.get("vmemory"),
+                   vmemory_units=api_response.get("vmemory-units"),
+                   vdisk=api_response.get("vdisk"),
+                   vdisk_units=api_response.get("vdisk-units"),
+                   nshd=api_response.get("nshd"),
+                   nvm=api_response.get("nvm"),
+                   nnet=api_response.get("nnet"),
+                   resource_version=api_response.get("resource-version"),
+                   encrypted_access_flag=api_response.get("encrypted-access-flag"),
+                   model_invariant_id=api_response.get("model-invariant-id"),
+                   model_version_id=api_response.get("model-version-id"),
+                   persona_model_version=api_response.get("persona-model-version"),
+                   model_customization_id=api_response.get("model-customization-id"),
+                   widget_model_id=api_response.get("widget-model-id"),
+                   widget_model_version=api_response.get("widget-model-version"),
+                   as_number=api_response.get("as-number"),
+                   regional_resource_subzone=api_response.get("regional-resource-subzone"),
+                   nf_type=api_response.get("nf-type"),
+                   nf_function=api_response.get("nf-function"),
+                   nf_role=api_response.get("nf-role"),
+                   nf_naming_code=api_response.get("nf-naming-code"),
+                   selflink=api_response.get("selflink"),
+                   ipv4_oam_gateway_address=api_response.get("ipv4-oam-gateway-address"),
+                   ipv4_oam_gateway_address_prefix_length=\
+                       api_response.get("ipv4-oam-gateway-address-prefix-length"),
+                   vlan_id_outer=api_response.get("vlan-id-outer"),
+                   nm_profile_name=api_response.get("nm-profile-name"))
+
+    def add_vf_module(self,
+                      vf_module,
+                      vf_module_instance_name: str = None,
+                      use_vnf_api=False,
+                      vnf_parameters: Iterable["VnfParameter"] = None):
+        from onapsdk.instantiation import VfModuleInstantiation
+        return VfModuleInstantiation.instantiate_ala_carte(
+            vf_module,
+            self,
+            vf_module_instance_name,
+            use_vnf_api,
+            vnf_parameters
+        )
+
+
 class ServiceInstance(AaiElement):  # pylint: disable=R0902
     """Service instanve class."""
 
@@ -660,6 +970,48 @@ class ServiceInstance(AaiElement):  # pylint: disable=R0902
             f"{self.service_subscription.url}/service-instances/service-instance/{self.instance_id}"
         )
 
+    @property
+    def relationships(self):
+        for relationship in self.send_message_json(
+            "GET",
+            f"Get service instance {self.instance_id} relationships",
+            f"{self.url}/relationship-list"
+        ).get("relationship", []):
+            yield Relationship(
+                related_to=relationship.get("related-to"),
+                relationship_label=relationship.get("relationship-label"),
+                related_link=relationship.get("related-link"),
+                relationship_data=relationship.get("relationship-data"),
+            )
+
+    @property
+    def vnf_instances(self):
+        for relationship in self.relationships:
+            if relationship.related_to == "generic-vnf":
+                yield VnfInstance.create_from_api_response(self.send_message_json(
+                    "GET",
+                    f"Get {self.instance_id} VNF",
+                    f"{self.base_url}{relationship.related_link}",
+                    exception=ValueError
+                ))
+
+    from onapsdk.vid import LineOfBusiness, OwningEntity, Platform, Project
+    def add_vnf(self,
+                vnf,
+                line_of_business: LineOfBusiness,
+                platform: Platform,
+                vnf_service_instance_name_factory: str = None,
+                use_vnf_api: bool = False):
+        if self.orchestration_status != "Active":
+            raise AttributeError("Service has invalid orchestration status")
+        from onapsdk.instantiation import VnfInstantiation
+        return VnfInstantiation.instantiate_ala_carte(
+            self,
+            vnf,
+            line_of_business,
+            platform
+        )
+
 
 @dataclass
 class ServiceSubscription(AaiElement):
@@ -728,6 +1080,14 @@ class ServiceSubscription(AaiElement):
             selflink=service_instance.get("selflink"),
             orchestration_status=service_instance.get("orchestration-status"),
             input_parameters=service_instance.get("input-parameters")
+        )
+
+    @classmethod
+    def create_from_api_response(cls, api_response: dict, customer: "Customer") -> "ServiceSubscription":
+        return cls(
+            service_type=api_response.get("service-type"),
+            resource_version=api_response.get("resource-version"),
+            customer=customer
         )
 
     @property
@@ -806,6 +1166,35 @@ class ServiceSubscription(AaiElement):
                 orchestration_status=service_instance.get("orchestration-status"),
                 input_parameters=service_instance.get("input-parameters")
             )
+
+    @property
+    def cloud_region(self) -> "CloudRegion":
+        cloud_owner: str = None
+        cloud_region: str = None
+        for relationship in self.relationships:
+            if relationship.related_to == "tenant":
+                for data in relationship.relationship_data:
+                    if data["relationship-key"] == "cloud-region.cloud-owner":
+                        cloud_owner = data["relationship-value"]
+                    if data["relationship-key"] == "cloud-region.cloud-region-id":
+                        cloud_region = data["relationship-value"]
+        if not all([cloud_owner, cloud_region]):
+            raise AttributeError("ServiceSubscription has no CloudOwner and/or "
+                                 "CloudRegion relationship")
+        return CloudRegion.get_by_region_id(cloud_region)
+
+    @property
+    def tenant(self) -> "Tenant":
+        for relationship in self.relationships:
+            if relationship.related_to == "tenant":
+                for data in relationship.relationship_data:
+                    if data["relationship-key"] == "tenant.tenant-id":
+                        return self.cloud_region.get_tenant(data["relationship-value"])
+        raise AttributeError("ServiceSubscription has no tenant relationship")
+
+    @property
+    def sdc_service(self) -> "SdcService":
+        return SdcService(self.service_type)
 
     def get_service_instance_by_id(self, service_instance_id) -> ServiceInstance:
         """Get service instance using it's ID.
@@ -1418,6 +1807,19 @@ class Customer(AaiElement):
                 f"subscriber_type={self.subscriber_type}, "
                 f"resource_version={self.resource_version})")
 
+    def get_service_subscription_by_service_type(self, service_type: str) -> ServiceSubscription:
+        
+        response: dict = self.send_message_json(
+            "GET",
+            f"Get service subscription with {service_type} service type",
+            (f"{self.base_url}{self.api_version}/business/customers/"
+             f"customer/{self.global_customer_id}/service-subscriptions"
+             f"?service-type={service_type}"),
+            exception=ValueError
+        )
+        return ServiceSubscription.create_from_api_response(response["service-subscription"][0],
+                                                            self)
+
     @classmethod
     def get_all(cls,
                 global_customer_id: str = None,
@@ -1553,14 +1955,16 @@ class Customer(AaiElement):
             f"customer/{self.global_customer_id}/service-subscriptions"
         )
         for service_subscription in response.get("service-subscription", []):
-            yield ServiceSubscription(
-                service_type=service_subscription.get("service-type"),
-                resource_version=service_subscription.get("resource-version"),
-                customer=self
+            yield ServiceSubscription.create_from_api_response(
+                service_subscription,
+                self
             )
 
-    def subscribe_service(self, service: SdcService):
+    def subscribe_service(self, service: SdcService) -> "ServiceSubscription":
         """Create SDC Service subscription.
+
+        If service is already subscribed it won't create a new resource but use the
+            existing one.
 
         Args:
             service (SdcService): SdcService object to subscribe.
@@ -1569,6 +1973,10 @@ class Customer(AaiElement):
             ValueError: Request response with HTTP error code
 
         """
+        try:
+            return self.get_service_subscription_by_service_type(service.name)
+        except ValueError:
+            self.__logger.debug("Service subscription doesn't exists, create a new one")
         self.send_message(
             "PUT",
             "Create service subscription",
@@ -1582,6 +1990,7 @@ class Customer(AaiElement):
             ),
             exception=ValueError
         )
+        return self.get_service_subscription_by_service_type(service.name)
 
 
 class OwningEntity(AaiElement):

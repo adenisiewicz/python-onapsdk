@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  pylint: disable=C0302
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """NBI module."""
@@ -7,7 +7,7 @@ from abc import ABC
 from typing import Iterator
 from uuid import uuid4
 
-from onapsdk.aai_element import Customer
+from onapsdk.aai.instances import Customer
 from onapsdk.onap_service import OnapService
 from onapsdk.utils import get_zulu_time_isoformat
 from onapsdk.utils.jinja import jinja_env

@@ -5,7 +5,7 @@ from unittest import mock
 
 import pytest
 
-from onapsdk.aai_element import (
+from onapsdk.aai import (
     AaiElement,
     CloudRegion,
     Complex,
@@ -417,8 +417,8 @@ def test_class_variables():
 def test_customers(mock_send):
     """Test get_customer function of A&AI."""
     mock_send.return_value = SIMPLE_CUSTOMER
-    assert len(list(AaiElement.customers())) == 1
-    aai_customer_1 = next(AaiElement.customers())
+    assert len(list(Customer.get_all())) == 1
+    aai_customer_1 = next(Customer.get_all())
     assert aai_customer_1.global_customer_id == "generic"
     assert aai_customer_1.subscriber_name == "generic"
     assert aai_customer_1.subscriber_type == "INFRA"
@@ -429,20 +429,20 @@ def test_customers(mock_send):
 def test_customers_no_resources(mock_send):
     """Test get_customer function with no customer declared in A&AI."""
     mock_send.return_value = CUSTOMERS_NO_RESOURCES
-    assert len(list(AaiElement.customers())) == 0
+    assert len(list(Customer.get_all())) == 0
     mock_send.assert_called_with("GET", 'get customers', mock.ANY)
 
 @mock.patch.object(AaiElement, 'send_message_json')
 def test_subscription_type_list(mock_send):
     """Test the getter of subscription types in A&AI."""
     mock_send.return_value = {}
-    assert len(list(AaiElement.subscriptions())) == 0
-    assert len(list(AaiElement.get_subscription_type_list())) == 0
+    assert len(list(Service.get_all())) == 0
+    assert len(list(Service.get_all())) == 0
 
     mock_send.return_value = SUBSCRIPTION_TYPES_LIST
-    assert len(list(AaiElement.subscriptions())) == 3
-    assert len(list(AaiElement.get_subscription_type_list())) == 3
-    subscriptions = AaiElement.subscriptions()
+    assert len(list(Service.get_all())) == 3
+    assert len(list(Service.get_all())) == 3
+    subscriptions = Service.get_all()
     aai_service_1 = next(subscriptions)
     aai_service_2 = next(subscriptions)
     aai_service_3 = next(subscriptions)
@@ -461,20 +461,20 @@ def test_subscription_type_list(mock_send):
 def test_subscription_types_no_resources(mock_send):
     """Test get_customer function with no customer declared in A&AI."""
     mock_send.return_value = SUBSCRIPTION_TYPES_NO_RESOURCES
-    assert len(list(AaiElement.subscriptions())) == 0
+    assert len(list(Service.get_all())) == 0
     mock_send.assert_called_with("GET", 'get subscriptions', mock.ANY)
 
 @mock.patch.object(AaiElement, 'send_message_json')
 def test_cloud_regions(mock_send):
     """Test get cloud regions from A&AI."""
     mock_send.return_value = CLOUD_REGION
-    assert len(list(AaiElement.cloud_regions())) == 1
-    cloud_region = next(AaiElement.cloud_regions())
+    assert len(list(CloudRegion.get_all())) == 1
+    cloud_region = next(CloudRegion.get_all())
     assert cloud_region.cloud_owner == "OPNFV"
     assert cloud_region.cloud_type == "openstack"
     assert cloud_region.complex_name == "Cruguil"
 
-    cloud_region = AaiElement.get_cloud_info()
+    cloud_region = next(CloudRegion.get_all())
     assert cloud_region.cloud_owner == "OPNFV"
     assert cloud_region.cloud_type == "openstack"
     assert cloud_region.complex_name == "Cruguil"
@@ -484,7 +484,7 @@ def test_cloud_regions(mock_send):
     assert len(cloud_regions) == 0
 
     with pytest.raises(StopIteration):
-        cloud_region = AaiElement.get_cloud_info()
+        cloud_region = next(CloudRegion.get_all())
 
     mock_send.return_value = CLOUD_REGIONS
     cloud_regions = list(CloudRegion.get_all())
@@ -520,11 +520,12 @@ def test_cloud_region_creation(mock_send):
 @mock.patch.object(AaiElement, 'send_message_json')
 def test_customer_service_tenant_relations(mock_send):
     """Test the retrieval of service/tenant relations in A&AI."""
+    mock_send.return_value = SIMPLE_CUSTOMER
+    customer = next(Customer.get_all())
     mock_send.return_value = SERVICE_SUBSCRIPTION
-    customer_name = "OPNFV"
-    res = AaiElement.customer_service_tenant_relations(customer_name)
-    assert len(res) == 1
-    assert res['service-subscription'][0]['service-type'] == "freeradius"
+    res = list(customer.service_subscriptions)
+    assert len(res) == 2
+    assert res[0].service_type == "freeradius"
 
 @mock.patch.object(CloudRegion, 'get_all')
 @mock.patch.object(AaiElement, 'send_message_json')
@@ -533,7 +534,8 @@ def test_tenants_info(mock_send, mock_cloud_regions):
     mock_cloud_regions.return_value = CLOUD_REGIONS_ITERATOR
     mock_send.return_value = TENANT
     cloud_name = "RegionOne"
-    res = list(AaiElement.tenants_info(cloud_name))
+    cloud_region = CloudRegion.get_by_id("DT", cloud_name)
+    res = list(cloud_region.tenants)
     assert len(res) == 1
     assert isinstance(res[0], Tenant)
     tenant = res[0]
@@ -555,8 +557,8 @@ def test_tenants_info_wrong_cloud_name(mock_send, mock_cloud_regions):
     mock_send.return_value = TENANT
     cloud_name = "Wrong_cloud_name"
     with pytest.raises(Exception) as excinfo:
-        AaiElement.tenants_info(cloud_name)
-    assert "Region not found" in str(excinfo.value)
+        CloudRegion.get_by_id("DT", cloud_name)
+    assert "not found" in str(excinfo.value)
 
 
 @mock.patch.object(CloudRegion, "send_message_json")
@@ -664,13 +666,9 @@ def test_customers_get_all(mock_send):
     mock_send.return_value = {}
     customers = list(Customer.get_all())
     assert len(customers) == 0
-    customers = list(AaiElement.get_customers())
-    assert len(customers) == 0
 
     mock_send.return_value = CUSTOMERS
     customers = list(Customer.get_all())
-    assert len(customers) == 1
-    customers = list(AaiElement.get_customers())
     assert len(customers) == 1
 
 

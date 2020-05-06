@@ -8,7 +8,7 @@ from enum import Enum
 from typing import Dict, Iterable, Iterator
 from uuid import uuid4
 
-from onapsdk.aai_element import (
+from onapsdk.aai import (
     CloudRegion,
     Customer,
     OwningEntity,
@@ -21,6 +21,8 @@ from onapsdk.service import Service as SdcService, Vnf, VfModule
 from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.headers_creator import headers_so_creator, headers_sdnc_creator
 from onapsdk.vid import LineOfBusiness, Platform, Project
+
+from .so_element import SoElement
 
 
 @dataclass
@@ -40,12 +42,23 @@ class VfModulePreload(OnapService):
     headers: Dict[str, str] = headers_sdnc_creator(OnapService.headers)
 
     @classmethod
-    def upload_vf_module_preload(cls,
+    def upload_vf_module_preload(cls,  # pylint: disable=R0913
                                  vnf_instance: "VnfInstance",
                                  vf_module_instance_name: str,
                                  vf_module: VfModule,
                                  vnf_parameters: Iterable[VnfParameter] = None,
                                  use_vnf_api=False):
+        """Upload vf module preload.
+
+        Args:
+            vnf_instance: VnfInstance object
+            vf_module_instance_name (str): VF module instance name
+            vf_module (VfModule): VF module
+            vnf_parameters (Iterable[VnfParameter], optional): Iterable object of VnfParameters.
+                Defaults to None.
+            use_vnf_api (bool, optional): Flague which determines if VNF_API should be used.
+                Set to False to use GR_API. Defaults to False.
+        """
         if use_vnf_api:
             url: str = ("https://sdnc.api.simpledemo.onap.org:30267/restconf/operations/"
                         "VNF-API:preload-vnf-topology-operation")
@@ -66,76 +79,8 @@ class VfModulePreload(OnapService):
             exception=ValueError
         )
 
-    # @classmethod
-    # def upload_vf_module_vnf_api_preload(cls,
-    #                                      vnf_instance: "VnfInstance",
-    #                                      vf_module_instance_name: str,
-    #                                      vf_module: VfModule,
-    #                                      vnf_parameters: Iterable[VnfParameter] = None):
-    #     """Upload VF module preload using VNF API.
 
-    #     Args:
-    #         vnf_instantiation ([type]): VnfInstantiation class object
-    #         vf_module_instance_name (str): Name of VF module to upload preload
-    #         vf_module (VfModule): VfModule object class
-    #         vnf_parameters (Iterable[VnfParameter], optional): VnfParameter iterator to upload.
-    #             Defaults to None.
-
-    #     Raises:
-    #         ValueError: upload request returns error HTTP code
-
-    #     """
-    #     cls.send_message_json(
-    #         "POST",
-    #         "Upload VF module preload using VNF-API",
-    #         ("https://sdnc.api.simpledemo.onap.org:30267/restconf/operations/"
-    #          "VNF-API:preload-vnf-topology-operation"),
-    #         data=jinja_env().get_template("instantiate_vf_module_ala_carte_upload_preload.json.j2").
-    #         render(
-    #             vnf_instance=vnf_instance,
-    #             vf_module_instance_name=vf_module_instance_name,
-    #             vf_module=vf_module,
-    #             vnf_parameters=vnf_parameters if vnf_parameters else []
-    #         ),
-    #         exception=ValueError
-    #     )
-
-    # @classmethod
-    # def upload_vf_module_gr_api_preload(cls,
-    #                                      vnf_instance: "VnfInstance",
-    #                                      vf_module_instance_name: str,
-    #                                      vf_module: VfModule,
-    #                                      vnf_parameters: Iterable[VnfParameter] = None):
-    #     """Upload VF module preload using GR API.
-
-    #     Args:
-    #         vnf_instantiation ([type]): VnfInstantiation class object
-    #         vf_module_instance_name (str): Name of VF module to upload preload
-    #         vf_module (VfModule): VfModule object class
-    #         vnf_parameters (Iterable[VnfParameter], optional): VnfParameter iterator to upload.
-    #             Defaults to None.
-
-    #     Raises:
-    #         ValueError: upload request returns error HTTP code
-
-    #     """
-    #     cls.send_message_json(
-    #         "POST",
-    #         "Upload VF module preload using GR-API",
-    #         ("https://sdnc.api.simpledemo.onap.org:30267/restconf/operations/"
-    #          "GENERIC_RESOURCE_API:preload-vnf-topology-operation"),
-    #         data=jinja_env().get_template("instantiate_vf_module_ala_carte_upload_preload.json.j2").
-    #         render(
-    #             vnf_instance=vnf_instance,
-    #             vf_module_instance_name=vf_module_instance_name,
-    #             vf_module=vf_module,
-    #             vnf_parameters=vnf_parameters if vnf_parameters else []
-    #         ),
-    #         exception=ValueError
-    #     )
-
-
-class Instantiation(OnapService, ABC):
+class Instantiation(SoElement, ABC):
     """Abstract class used for instantiation."""
 
     def __init__(self,  # pylint: disable=R0913
@@ -186,8 +131,8 @@ class Instantiation(OnapService, ABC):
         response: dict = self.send_message_json(
             "GET",
             f"Check {self.name} service instantiation status",
-            ("http://so.api.simpledemo.onap.org:30277/onap/so/infra/"
-             f"orchestrationRequests/v7/{self.request_id}"),
+            (f"{self.base_url}/onap/so/infra/"
+             f"orchestrationRequests/{self.api_version}/{self.request_id}"),
             headers=headers_so_creator(OnapService.headers)
         )
         try:
@@ -211,8 +156,6 @@ class Instantiation(OnapService, ABC):
 class VfModuleInstantiation(Instantiation):
     """VF module instantiation class."""
 
-    headers = headers_so_creator(OnapService.headers)
-
     def __init__(self,  # pylint: disable=R0913
                  name: str,
                  request_id: str,
@@ -231,7 +174,7 @@ class VfModuleInstantiation(Instantiation):
         self.vf_module: VfModule = vf_module
 
     @classmethod
-    def instantiate_ala_carte(cls,
+    def instantiate_ala_carte(cls,  # pylint: disable=R0913
                               vf_module,
                               vnf_instance,
                               vf_module_instance_name: str = None,
@@ -277,10 +220,10 @@ class VfModuleInstantiation(Instantiation):
         response: dict = cls.send_message_json(
             "POST",
             (f"Instantiate {sdc_service.name} "
-                f"service vf module {vf_module.name}"),
-            (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/serviceInstantiation/v7/"
-                f"serviceInstances/{vnf_instance.service_instance.instance_id}/vnfs/"
-                f"{vnf_instance.vnf_id}/vfModules"),
+             f"service vf module {vf_module.name}"),
+            (f"{cls.base_url}/onap/so/infra/serviceInstantiation/{cls.api_version}/"
+             f"serviceInstances/{vnf_instance.service_instance.instance_id}/vnfs/"
+             f"{vnf_instance.vnf_id}/vfModules"),
             data=jinja_env().get_template("instantiate_vf_module_ala_carte.json.j2").
             render(
                 vf_module_instance_name=vf_module_instance_name,
@@ -303,8 +246,6 @@ class VfModuleInstantiation(Instantiation):
 
 class VnfInstantiation(Instantiation):
     """VNF instantiation class."""
-
-    headers = headers_so_creator(OnapService.headers)
 
     def __init__(self,  # pylint: disable=R0913
                  name: str,
@@ -394,7 +335,7 @@ class VnfInstantiation(Instantiation):
         response: dict = cls.send_message_json(
             "GET",
             f"Check {vnf_instance_name} service instantiation status",
-            (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/orchestrationRequests/v7?"
+            (f"{cls.base_url}/onap/so/infra/orchestrationRequests/{cls.api_version}?"
              f"filter=vnfInstanceName:EQUALS:{vnf_instance_name}"),
             headers=headers_so_creator(OnapService.headers)
         )
@@ -404,107 +345,41 @@ class VnfInstantiation(Instantiation):
             return cls.create_from_request_response(details)
         raise ValueError("No createInstance request found")
 
-    # def instantiate_vf_module(self,
-    #                           vf_module_instance_name_factory: str = None,
-    #                           use_vnf_api=True,
-    #                           vnf_parameters: Iterable[VnfParameter] = None
-    #                           ) -> Iterator[VfModuleInstantiation]:
-    #     """Instantiate VF modules.
-
-    #     Iterate throught vf modules from service Tosca file and instantiate vf modules.
-
-    #     Args:
-    #         vf_module_instance_name_factory (str, optional): Factory to create VF module names.
-    #             It's going to be a prefix of name. Index of vf module in Tosca file will be
-    #             added to it.
-    #             If no value is provided it's going to be
-    #             "Python_ONAP_SDK_vf_module_service_instance_{str(uuid4())}".
-    #             Defaults to None.
-    #         use_vnf_api (bool, optional): Flague which determines if VNF_API or
-    #             GR_API should be used.
-    #             Defaults to True.
-    #         vnf_parameters (Iterable[VnfParameter], optional): Parameters which are
-    #             going to be used in preload upload for vf modules. Defaults to None.
-
-    #     Raises:
-    #         AttributeError: VNF is not successfully instantiated.
-    #         ValueError: VF module instnatiation request returns HTTP error code.
-
-    #     Yields:
-    #         Iterator[VfModuleInstantiation]: VfModuleInstantiation class object.
-
-    #     """
-    #     if self.status != self.StatusEnum.COMPLETED:
-    #         raise AttributeError("VNF is successfully instantiated")
-    #     if not self.service_instantiation.sdc_service.vf_modules:
-    #         self._logger.info("No vf modules to instantiate")
-    #         return
-    #     if vf_module_instance_name_factory is None:
-    #         vf_module_instance_name_factory = \
-    #             f"Python_ONAP_SDK_vf_module_service_instance_{str(uuid4())}_"
-    #     for index, vf_module in enumerate(self.service_instantiation.sdc_service.vf_modules):
-    #         vf_module_instance_name: str = f"{vf_module_instance_name_factory}{index}"
-    #         if use_vnf_api:
-    #             VfModulePreload.upload_vf_module_vnf_api_preload(
-    #                 self,
-    #                 vf_module_instance_name,
-    #                 vf_module,
-    #                 vnf_parameters
-    #             )
-    #         else:
-    #             VfModulePreload.upload_vf_module_gr_api_preload(
-    #                 self,
-    #                 vf_module_instance_name,
-    #                 vf_module,
-    #                 vnf_parameters
-    #             )
-    #         response: dict = self.send_message_json(
-    #             "POST",
-    #             (f"Instantiate {self.service_instantiation.sdc_service.name} "
-    #              f"service vf module {vf_module.name}"),
-    #             (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/serviceInstantiation/v7/"
-    #              f"serviceInstances/{self.service_instantiation.instance_id}/vnfs/"
-    #              f"{self.instance_id}/vfModules"),
-    #             data=jinja_env().get_template("instantiate_vf_module_ala_carte.json.j2").
-    #             render(
-    #                 vf_module_instance_name=vf_module_instance_name,
-    #                 vf_module=vf_module,
-    #                 service=self.service_instantiation.sdc_service,
-    #                 cloud_region=self.service_instantiation.cloud_region,
-    #                 tenant=self.service_instantiation.tenant,
-    #                 customer=self.service_instantiation.customer,
-    #                 service_instance=self.service_instantiation,
-    #                 vnf=self.vnf,
-    #                 vnf_instance=self,
-    #                 use_vnf_api=use_vnf_api
-    #             ),
-    #             exception=ValueError
-    #         )
-    #         yield VfModuleInstantiation(
-    #             name=vf_module_instance_name,
-    #             request_id=response["requestReferences"].get("requestId"),
-    #             instance_id=response["requestReferences"].get("instanceId"),
-    #             vnf_instantiation=self,
-    #             vf_module=vf_module
-    #         )
-
     @classmethod
-    def instantiate_ala_carte(cls,
+    def instantiate_ala_carte(cls,  # pylint: disable=R0913
                               aai_service_instance: AaiServiceInstance,
                               vnf: Vnf,
                               line_of_business: LineOfBusiness,
                               platform: Platform,
                               vnf_instance_name: str = None,
-                              use_vnf_api: bool = True):
+                              use_vnf_api: bool = False) -> "VnfInstantiation":
+        """Instantiate Vnf using a'la carte method.
+
+        Args:
+            vnf (Vnf): Vnf to instantiate
+            line_of_business (LineOfBusiness): LineOfBusiness to use in instantiation request
+            platform (Platform): Platform to use in instantiation request
+            vnf_instance_name (str, optional): Vnf instance name. Defaults to None.
+            use_vnf_api (bool, optional): Flague which determines if VF_API should be used.
+                Set False if you want to use GR_API. Defaults to False.
+
+        Raises:
+            ValueError: Instantiate request returns response with HTTP error code
+
+        Returns:
+            VnfInstantiation: VnfInstantiation object
+
+        """
         sdc_service: SdcService = aai_service_instance.service_subscription.sdc_service
         if vnf_instance_name is None:
             vnf_instance_name = \
                 f"Python_ONAP_SDK_vnf_instance_{str(uuid4())}"
         response: dict = cls.send_message_json(
             "POST",
-            f"Instantiate {aai_service_instance.service_subscription.sdc_service.name} service vnf {vnf.name}",
-            (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/serviceInstantiation/v7/"
-                f"serviceInstances/{aai_service_instance.instance_id}/vnfs"),
+            (f"Instantiate {aai_service_instance.service_subscription.sdc_service.name} "
+             f"service vnf {vnf.name}"),
+            (f"{cls.base_url}/onap/so/infra/serviceInstantiation/{cls.api_version}/"
+             f"serviceInstances/{aai_service_instance.instance_id}/vnfs"),
             data=jinja_env().get_template("instantiate_vnf_ala_carte.json.j2").
             render(
                 vnf_service_instance_name=vnf_instance_name,
@@ -580,7 +455,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         response: dict = cls.send_message_json(
             "GET",
             f"Check {service_instance_id} service instantiation status",
-            (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/orchestrationRequests/v7?"
+            (f"{cls.base_url}/onap/so/infra/orchestrationRequests/{cls.api_version}?"
              f"filter=serviceInstanceId:EQUALS:{service_instance_id}"),
             headers=headers_so_creator(OnapService.headers)
         )
@@ -632,7 +507,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         response: dict = cls.send_message_json(
             "GET",
             f"Check {service_instance_name} service instantiation status",
-            (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/orchestrationRequests/v7?"
+            (f"{cls.base_url}/onap/so/infra/orchestrationRequests/{cls.api_version}?"
              f"filter=serviceInstanceName:EQUALS:{service_instance_name}"),
             headers=headers_so_creator(OnapService.headers)
         )
@@ -705,8 +580,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         response: dict = cls.send_message_json(
             "POST",
             f"Instantiate {sdc_service.name} service a'la carte",
-            ("http://so.api.simpledemo.onap.org:30277/onap/so/infra/"
-             "serviceInstantiation/v7/serviceInstances"),
+            (f"{cls.base_url}/onap/so/infra/"
+             f"serviceInstantiation/{cls.api_version}/serviceInstances"),
             data=jinja_env().get_template("instantiate_so_ala_carte.json.j2").
             render(
                 sdc_service=sdc_service,
@@ -733,28 +608,18 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
             project=project
         )
 
-    # @property
-    # def vnf_instances(self) -> Iterator[VnfInstantiation]:
-    #     """Vnf instances correlated with service.
-
-    #     Yields:
-    #         Iterator[VnfInstantiation]: VNF instance.
-
-    #     """
-    #     response: dict = self.send_message_json(
-    #         "GET",
-    #         f"Check {self.name} service instantiation status",
-    #         (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/orchestrationRequests/v7?"
-    #          f"filter=serviceInstanceId:EQUALS:{self.instance_id}"),
-    #         headers=headers_so_creator(OnapService.headers)
-    #     )
-    #     for request in response.get("requestList", []):
-    #         if request.get("request", {}).get("requestScope") == "vnf" \
-    #             and request.get("request", {}).get("requestType") == "createInstance":
-    #             yield VnfInstantiation.create_from_request_response(request)
-
     @property
     def aai_service_instance(self) -> AaiServiceInstance:
+        """Service instane associated with service instantiation request.
+
+        Raises:
+            AttributeError: Service is not instantiated
+            AttributeError: A&AI resource is not created
+
+        Returns:
+            AaiServiceInstance: AaiServiceInstance
+
+        """
         if self.status != self.StatusEnum.COMPLETED:
             raise AttributeError("Service not instantiated")
         try:
@@ -807,7 +672,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
             response: dict = self.send_message_json(
                 "POST",
                 f"Instantiate {self.sdc_service.name} service vnf {vnf.name}",
-                (f"http://so.api.simpledemo.onap.org:30277/onap/so/infra/serviceInstantiation/v7/"
+                (f"{self.base_url}/onap/so/infra/serviceInstantiation/{self.api_version}/"
                  f"serviceInstances/{self.instance_id}/vnfs"),
                 data=jinja_env().get_template("instantiate_vnf_ala_carte.json.j2").
                 render(
@@ -829,7 +694,6 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
                 name=vnf_instance_name,
                 request_id=response["requestReferences"]["requestId"],
                 instance_id=response["requestReferences"]["instanceId"],
-                service_instantiation=self,
                 line_of_business=line_of_business,
                 platform=platform,
                 vnf=vnf

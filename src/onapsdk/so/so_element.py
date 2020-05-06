@@ -8,17 +8,17 @@ from typing import Dict
 import logging
 import json
 
+from onapsdk.aai.cloud_infrastructure import CloudRegion
+from onapsdk.aai.instances import Customer
 from onapsdk.service import Service
 from onapsdk.vf import Vf
 from onapsdk.onap_service import OnapService
-
 from onapsdk.utils.headers_creator import headers_so_creator
 from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.tosca_file_handler import (
     get_modules_list_from_tosca_file,
     get_vf_list_from_tosca_file,
 )
-from onapsdk.aai_element import AaiElement, Customer
 
 
 @dataclass
@@ -27,8 +27,8 @@ class SoElement(OnapService):
 
     name: str = None
     _server: str = "SO"
-    _so_url = "http://so.api.simpledemo.onap.org:30277"
-    _so_api_version = "v7"
+    base_url = "http://so.api.simpledemo.onap.org:30277"
+    api_version = "v7"
     _logger: logging.Logger = logging.getLogger(__name__)
     _status: str = None
 
@@ -40,26 +40,18 @@ class SoElement(OnapService):
         """
         return headers_so_creator(OnapService.headers)
 
-    def instantiate(self, **kwargs) -> None:
-        """Create the request in SO if not already existing.
-
-        Implement that method on each subclass.
-        """
-        raise NotImplementedError
-
     @classmethod
     def get_cloud_info(cls):
         """Retrieve Cloud info."""
         # on pourrait imaginer de préciser le cloud ici en cas de Multicloud
         # en attendant on prendra le premier cloud venu..
-        aai = AaiElement()
-        aai_info = aai.get_cloud_info()
+        cloud_region: CloudRegion = next(CloudRegion.get_all())
         template_cloud = jinja_env().get_template("cloud_configuration.json.j2")
         parsed = json.loads(
             template_cloud.render(
-                cloud_region_id=aai_info.cloud_region_id,
-                tenant_id=next(aai_info.tenants).tenant_id,
-                cloud_owner=aai_info.cloud_owner,
+                cloud_region_id=cloud_region.cloud_region_id,
+                tenant_id=next(cloud_region.tenants).tenant_id,
+                cloud_owner=cloud_region.cloud_owner,
             )
         )
         return json.dumps(parsed, indent=4)
@@ -166,5 +158,5 @@ class SoElement(OnapService):
 
         """
         return "{}/onap/so/infra/serviceInstantiation/{}/serviceInstances".format(
-            cls._so_url, cls._so_api_version
+            cls.base_url, cls.api_version
         )

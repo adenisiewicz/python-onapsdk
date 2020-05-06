@@ -96,14 +96,14 @@ class AaiElement(OnapService):
         return Service.get_all()
 
     @classmethod
-    def tenants_info(cls, cloud_name):
+    def tenants_info(cls, cloud_owner, region_name):
         """Get the Cloud info of one cloud region."""
         try:
-            cloud_region: CloudRegion = CloudRegion.get_by_region_id(cloud_name)
+            cloud_region: CloudRegion = CloudRegion.get_by_id(cloud_owner, region_name)
             return cloud_region.tenants
         except ValueError as exc:
             cls.__logger.exception(str(exc))
-            raise Exception("Region not found")
+            raise Exception("CloudRegion not found")
 
     @classmethod
     def get_cloud_info(cls):
@@ -1181,7 +1181,7 @@ class ServiceSubscription(AaiElement):
         if not all([cloud_owner, cloud_region]):
             raise AttributeError("ServiceSubscription has no CloudOwner and/or "
                                  "CloudRegion relationship")
-        return CloudRegion.get_by_region_id(cloud_region)
+        return CloudRegion.get_by_id(cloud_owner, cloud_region)
 
     @property
     def tenant(self) -> "Tenant":
@@ -1389,10 +1389,11 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
             )
 
     @classmethod
-    def get_by_region_id(cls, cloud_region_id: str) -> "CloudRegion":
-        """Get CloudRegion object by cloud-region-id field value.
+    def get_by_id(cls, cloud_owner, cloud_region_id: str) -> "CloudRegion":
+        """Get CloudRegion object by cloud_owner and cloud-region-id field value.
 
-        This method calls A&AI cloud region API filtering them by cloud-region-id field value.
+        This method calls A&AI cloud region API filtering them by cloud_owner and
+        cloud-region-id field value.
 
         Raises:
             ValueError: Cloud region with given id does not exist.
@@ -1402,9 +1403,9 @@ class CloudRegion(AaiElement):  # pylint: disable=R0902
 
         """
         try:
-            return next(cls.get_all(cloud_region_id=cloud_region_id))
+            return next(cls.get_all(cloud_owner=cloud_owner, cloud_region_id=cloud_region_id))
         except StopIteration:
-            raise ValueError(f"CloudRegion with {cloud_region_id} cloud-region-id not found")
+            raise ValueError(f"CloudRegion with {cloud_owner},{cloud_region_id} cloud-id not found")
 
     @classmethod
     def create(cls,  # pylint: disable=R0914

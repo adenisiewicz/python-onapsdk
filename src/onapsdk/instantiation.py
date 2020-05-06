@@ -367,10 +367,10 @@ class VnfInstantiation(Instantiation):
             if not vnf:
                 raise ValueError("No vnf in service vnfs list")
             return cls(
-                name=request_response.get("request", {}).get("requestDetails", {})\
+                name=request_response.get("request", {})\
                     .get("instanceReferences", {}).get("vnfInstanceName"),
                 request_id=request_response.get("request", {}).get("requestId"),
-                instance_id=request_response.get("request", {}).get("requestDetails", {})\
+                instance_id=request_response.get("request", {})\
                     .get("instanceReferences", {}).get("vnfInstanceId"),
                 line_of_business=LineOfBusiness.create(request_response.get("request", {})\
                     .get("requestDetails", {}).get("lineOfBusiness", {}).get("lineOfBusinessName")),
@@ -589,7 +589,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         for details in response["requestList"]:
             if details.get("request", {}).get("requestScope") == "service" and \
                 details.get("request", {}).get("requestType") == "createInstance":
-                cloud_region = CloudRegion.get_by_region_id(
+                cloud_region = CloudRegion.get_by_id(
+                    details["request"]["requestDetails"]["cloudConfiguration"]["cloudOwner"],
                     details["request"]["requestDetails"]["cloudConfiguration"]["lcpCloudRegionId"]
                 )
                 return cls(
@@ -640,7 +641,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         for details in response["requestList"]:
             if details.get("request", {}).get("requestScope") == "service" and \
                 details.get("request", {}).get("requestType") == "createInstance":
-                cloud_region = CloudRegion.get_by_region_id(
+                cloud_region = CloudRegion.get_by_id(
+                    details["request"]["requestDetails"]["cloudConfiguration"]["cloudOwner"],
                     details["request"]["requestDetails"]["cloudConfiguration"]["lcpCloudRegionId"]
                 )
                 return cls(

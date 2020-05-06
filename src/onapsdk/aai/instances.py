@@ -104,6 +104,7 @@ class VfModuleInstance(AaiElement):  # pylint: disable=R0902
 
         Returns:
             str: VfModuleInstance url
+
         """
         return f"{self.vnf_instance.url}/vf-modules/vf-module/{self.vf_module_id}"
 
@@ -386,6 +387,7 @@ class VnfInstance(AaiElement):  # pylint: disable=R0902
 
         Returns:
             ServiceInstance: ServiceInstance object
+
         """
         customer: "Customer" = None
         service_subscription_type: str = None
@@ -636,6 +638,7 @@ class ServiceInstance(AaiElement):  # pylint: disable=R0902
 
         Yields:
             VnfInstance: VnfInstance object
+
         """
         for relationship in self.relationships:
             if relationship.related_to == "generic-vnf":
@@ -672,6 +675,7 @@ class ServiceInstance(AaiElement):  # pylint: disable=R0902
 
         Returns:
             VnfInstantiation: VnfInstantiation request object
+
         """
         if self.orchestration_status != "Active":
             raise AttributeError("Service has invalid orchestration status")

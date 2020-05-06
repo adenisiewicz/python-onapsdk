@@ -54,62 +54,6 @@ class AaiElement(OnapService):
             filter(lambda key_value_tuple: key_value_tuple[1] is not None, dict_to_filter.items(),)
         )
 
-    # @classmethod
-    # def customers(cls):
-    #     """Get the list of subscription types in A&AI."""
-    #     return Customer.get_all()
-
-    # @classmethod
-    # def subscriptions(cls):
-    #     """Get the list of subscriptions in A&AI."""
-    #     return Service.get_all()
-
-    # @classmethod
-    # def customer_service_tenant_relations(cls, customer_name):
-    #     """Get the list of customer/service/tenant relations in A&AI."""
-    #     url = (
-    #         cls.base_url
-    #         + cls.api_version
-    #         + "/business/customers/customer/"
-    #         + customer_name
-    #         + "/service-subscriptions?depth=all"
-    #     )
-    #     return cls.send_message_json("GET", "get relations", url)
-
-    # @classmethod
-    # def cloud_regions(cls) -> Iterator["CloudRegion"]:
-    #     """Get the list of subscription types in AAI."""
-    #     return CloudRegion.get_all()
-
-    # @classmethod
-    # def get_customers(cls):
-    #     """Get the list of  in A&AI."""
-    #     return Customer.get_all()
-
-    # @classmethod
-    # def get_subscription_type_list(cls):
-    #     """Get the list of subscription types in A&AI."""
-    #     return Service.get_all()
-
-    # @classmethod
-    # def tenants_info(cls, cloud_owner, region_name):
-    #     """Get the Cloud info of one cloud region."""
-    #     try:
-    #         cloud_region: CloudRegion = CloudRegion.get_by_id(cloud_owner, region_name)
-    #         return cloud_region.tenants
-    #     except ValueError as exc:
-    #         cls.__logger.exception(str(exc))
-    #         raise Exception("CloudRegion not found")
-
-    # @classmethod
-    # def get_cloud_info(cls):
-    #     """Get the preformatted Cloud info for SO instantiation."""
-    #     try:
-    #         return next(cls.cloud_regions())
-    #     except StopIteration:
-    #         cls.__logger.error("No cloud regions defined in A&AI")
-    #         raise
-
     @property
     def url(self) -> str:
         """Resource's url.
@@ -126,6 +70,7 @@ class AaiElement(OnapService):
 
         Yields:
             Relationship: resource relationship
+
         """
         for relationship in self.send_message_json("GET",
                                                    f"Get object relationships",

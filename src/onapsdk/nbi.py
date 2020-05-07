@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """NBI module."""
-import logging
 from abc import ABC
 from typing import Iterator
 from uuid import uuid4
@@ -15,8 +14,6 @@ from onapsdk.utils.jinja import jinja_env
 
 class Nbi(OnapService, ABC):
     """NBI base class."""
-
-    __logger: logging.Logger = logging.getLogger(__name__)
 
     base_url = "https://nbi.api.simpledemo.onap.org:30274"
     api_version = "/nbi/api/v4"
@@ -40,7 +37,7 @@ class Nbi(OnapService, ABC):
                 exception=ValueError
             )
         except ValueError:
-            cls.__logger.error("NBI Status check returns error")
+            cls._logger.error("NBI Status check returns error")
             return False
         return True
 

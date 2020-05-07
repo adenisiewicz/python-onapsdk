@@ -2,16 +2,12 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """ESR module."""
-import logging
-
 from onapsdk.msb import MSB
 from onapsdk.utils.jinja import jinja_env
 
 
 class ESR(MSB):
     """External system EST module."""
-
-    __logger: logging.Logger = logging.getLogger(__name__)
 
     base_url = f"{MSB.base_url}/api/aai-esr-server/v1/vims"
 

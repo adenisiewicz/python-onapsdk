@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """AAI Element module."""
-import logging
 from dataclasses import dataclass, field
 from typing import Dict, Iterator, List, Optional
 
@@ -28,8 +27,6 @@ class Relationship:
 
 class AaiElement(OnapService):
     """Mother Class of all A&AI elements."""
-
-    __logger: logging.Logger = logging.getLogger(__name__)
 
     name: str = "AAI"
     server: str = "AAI"

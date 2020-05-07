@@ -5,7 +5,6 @@
 from dataclasses import dataclass
 from io import BytesIO
 from os import makedirs
-import logging
 import time
 import re
 from typing import Dict, List
@@ -74,7 +73,6 @@ class Service(SdcResource):  # pylint: disable=R0902
     """
 
     SERVICE_PATH = "services"
-    _logger: logging.Logger = logging.getLogger(__name__)
     headers = headers_sdc_creator(SdcResource.headers)
 
     def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,

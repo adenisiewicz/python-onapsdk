@@ -3,15 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Multicloud module."""
 
-import logging
-
 from onapsdk.msb import MSB
 
 
 class Multicloud(MSB):
     """MSB subclass to register/unregister instance to ONAP."""
-
-    __logger: logging.Logger = logging.getLogger(__name__)
 
     base_url = f"{MSB.base_url}/api/multicloud/v1"
 

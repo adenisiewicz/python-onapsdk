@@ -5,7 +5,6 @@
 from dataclasses import dataclass
 from typing import Dict
 
-import logging
 import json
 
 from onapsdk.aai.cloud_infrastructure import CloudRegion
@@ -29,7 +28,6 @@ class SoElement(OnapService):
     _server: str = "SO"
     base_url = "http://so.api.simpledemo.onap.org:30277"
     api_version = "v7"
-    _logger: logging.Logger = logging.getLogger(__name__)
     _status: str = None
 
     @property

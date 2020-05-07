@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """VID module."""
-import logging
 from abc import ABC
 
 from onapsdk.onap_service import OnapService
@@ -11,8 +10,6 @@ from onapsdk.utils.jinja import jinja_env
 
 class Vid(OnapService, ABC):
     """VID base class."""
-
-    __logger: logging.Logger = logging.getLogger(__name__)
 
     base_url = "https://vid.api.simpledemo.onap.org:30200"
     api_version = "/vid"

@@ -4,7 +4,6 @@
 """Vf module."""
 from typing import Dict
 
-import logging
 import time
 from onapsdk.sdc_resource import SdcResource
 from onapsdk.vsp import Vsp
@@ -28,7 +27,6 @@ class Vf(SdcResource):
 
     """
 
-    _logger: logging.Logger = logging.getLogger(__name__)
     headers = headers_sdc_creator(SdcResource.headers)
 
     def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,

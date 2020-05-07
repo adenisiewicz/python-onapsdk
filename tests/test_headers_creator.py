@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
-from onapsdk.utils.headers_creator import headers_sdc_creator
-from onapsdk.utils.headers_creator import headers_sdc_tester
-from onapsdk.utils.headers_creator import headers_sdc_governor
-from onapsdk.utils.headers_creator import headers_sdc_operator
-from onapsdk.utils.headers_creator import headers_aai_creator
-from onapsdk.utils.headers_creator import headers_so_creator
+from onapsdk.utils.headers_creator import (
+    headers_aai_creator,
+    headers_sdc_creator,
+    headers_sdc_tester,
+    headers_sdc_governor,
+    headers_sdc_operator,
+    headers_sdnc_creator,
+    headers_so_creator,
+)
 
 def test_headers_sdc_creator():
     base_header = {}
@@ -49,5 +52,13 @@ def test_headers_so_creator():
     so_headers_creator = headers_so_creator(base_header)
     assert base_header != so_headers_creator
     assert so_headers_creator["x-fromappid"] == "AAI"
+    assert so_headers_creator["authorization"]
+    assert so_headers_creator["x-transactionid"]
+
+def test_headers_sdnc_creator():
+    base_header = {}
+    so_headers_creator = headers_sdnc_creator(base_header)
+    assert base_header != so_headers_creator
+    assert so_headers_creator["x-fromappid"] == "API client"
     assert so_headers_creator["authorization"]
     assert so_headers_creator["x-transactionid"]

@@ -5,7 +5,7 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Iterable, Iterator
+from typing import Iterable, Iterator
 from uuid import uuid4
 
 from onapsdk.aai import (
@@ -17,9 +17,10 @@ from onapsdk.aai import (
     Tenant
 )
 from onapsdk.onap_service import OnapService
+from onapsdk.sdnc import VfModulePreload
 from onapsdk.service import Service as SdcService, Vnf, VfModule
 from onapsdk.utils.jinja import jinja_env
-from onapsdk.utils.headers_creator import headers_so_creator, headers_sdnc_creator
+from onapsdk.utils.headers_creator import headers_so_creator
 from onapsdk.vid import LineOfBusiness, Platform, Project
 
 from .so_element import SoElement
@@ -34,50 +35,6 @@ class VnfParameter:
 
     name: str
     value: str
-
-
-class VfModulePreload(OnapService):
-    """Class to upload vf module preload."""
-
-    headers: Dict[str, str] = headers_sdnc_creator(OnapService.headers)
-
-    @classmethod
-    def upload_vf_module_preload(cls,  # pylint: disable=R0913
-                                 vnf_instance: "VnfInstance",
-                                 vf_module_instance_name: str,
-                                 vf_module: VfModule,
-                                 vnf_parameters: Iterable[VnfParameter] = None,
-                                 use_vnf_api=False):
-        """Upload vf module preload.
-
-        Args:
-            vnf_instance: VnfInstance object
-            vf_module_instance_name (str): VF module instance name
-            vf_module (VfModule): VF module
-            vnf_parameters (Iterable[VnfParameter], optional): Iterable object of VnfParameters.
-                Defaults to None.
-            use_vnf_api (bool, optional): Flague which determines if VNF_API should be used.
-                Set to False to use GR_API. Defaults to False.
-        """
-        if use_vnf_api:
-            url: str = ("https://sdnc.api.simpledemo.onap.org:30267/restconf/operations/"
-                        "VNF-API:preload-vnf-topology-operation")
-        else:
-            url: str = ("https://sdnc.api.simpledemo.onap.org:30267/restconf/operations/"
-                        "VNF-API:preload-vnf-topology-operation")
-        cls.send_message_json(
-            "POST",
-            "Upload VF module preload using VNF-API",
-            url,
-            data=jinja_env().get_template("instantiate_vf_module_ala_carte_upload_preload.json.j2").
-            render(
-                vnf_instance=vnf_instance,
-                vf_module_instance_name=vf_module_instance_name,
-                vf_module=vf_module,
-                vnf_parameters=vnf_parameters if vnf_parameters else []
-            ),
-            exception=ValueError
-        )
 
 
 class Instantiation(SoElement, ABC):
@@ -234,6 +191,7 @@ class VfModuleInstantiation(Instantiation):
                 vnf_instance=vnf_instance,
                 use_vnf_api=use_vnf_api
             ),
+            headers=headers_so_creator(OnapService.headers),
             exception=ValueError
         )
         return VfModuleInstantiation(

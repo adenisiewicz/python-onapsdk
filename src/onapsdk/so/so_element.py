@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """SO Element module."""
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Union
 
 import json
 

@@ -34,6 +34,7 @@ class OnapService(ABC):
         proxy (Dict[str, str]): the proxy configuration if needed.
 
     """
+
     _logger: logging.Logger = logging.getLogger(__qualname__)
     server: str = None
     headers: Dict[str, str] = {

@@ -1174,7 +1174,7 @@ class Customer(AaiElement):
         try:
             return self.get_service_subscription_by_service_type(service.name)
         except ValueError:
-            self._logger.debug("Service subscription doesn't exists, create a new one")
+            pass
         self.send_message(
             "PUT",
             "Create service subscription",

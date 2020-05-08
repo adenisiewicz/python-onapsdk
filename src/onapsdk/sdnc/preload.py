@@ -38,21 +38,46 @@ class VfModulePreload(SdncElement):
 
         """
         if use_vnf_api:
-            url: str = (f"{cls.base_url}/restconf/operations/"
+            url: str = ("https://sdnc.api.simpledemo.onap.org:30267/restconf/operations/"
                         "VNF-API:preload-vnf-topology-operation")
+            vnf_para = []
+            for vnf_parameter in vnf_parameters:
+                vnf_para.append({
+                        "vnf-parameter-name": vnf_parameter.name,
+                        "vnf-parameter-value": vnf_parameter.value
+                    })
+            cls.send_message_json(
+                "POST",
+                "Upload VF module preload using VNF-API",
+                url,
+                data=jinja_env().get_template("instantiate_vf_module_ala_carte_upload_preload.json.j2").
+                render(
+                    vnf_instance=vnf_instance,
+                    vf_module_instance_name=vf_module_instance_name,
+                    vf_module=vf_module,
+                    vnf_parameters=vnf_para
+                ),
+                exception=ValueError
+            )
         else:
-            url: str = (f"{cls.base_url}/restconf/operations/"
-                        "VNF-API:preload-vnf-topology-operation")
-        cls.send_message_json(
-            "POST",
-            "Upload VF module preload using VNF-API",
-            url,
-            data=jinja_env().get_template("instantiate_vf_module_ala_carte_upload_preload.json.j2").
-            render(
-                vnf_instance=vnf_instance,
-                vf_module_instance_name=vf_module_instance_name,
-                vf_module=vf_module,
-                vnf_parameters=vnf_parameters if vnf_parameters else []
-            ),
-            exception=ValueError
-        )
+            url: str = ("https://sdnc.api.simpledemo.onap.org:30267/restconf/operations/"
+                        "GENERIC-RESOURCE-API:preload-vf-module-topology-operation")
+            vnf_para = []
+            for vnf_parameter in vnf_parameters:
+                vnf_para.append({
+                        "name": vnf_parameter.name,
+                        "value": vnf_parameter.value
+                    })
+            cls.send_message_json(
+                "POST",
+                "Upload VF module preload using GENERIC-RESOURCE-API",
+                url,
+                data=jinja_env().get_template("instantiate_vf_module_ala_carte_upload_preload_gra.json.j2").
+                render(
+                    vnf_instance=vnf_instance,
+                    vf_module_instance_name=vf_module_instance_name,
+                    vf_module=vf_module,
+                    vnf_parameters=vnf_para
+                ),
+                exception=ValueError
+            )

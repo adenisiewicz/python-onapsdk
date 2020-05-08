@@ -3,10 +3,12 @@
 """Test Service module."""
 
 from os import path
+from pathlib import Path
 from unittest import mock
 from unittest.mock import MagicMock
 import shutil
 
+import oyaml as yaml
 import pytest
 
 import onapsdk.constants as const
@@ -627,3 +629,35 @@ def test_onboard_whole_service(mock_create,
         mock_checkin.assert_called_once()
         mock_certify.assert_called_once()
         mock_distribute.assert_called_once()
+
+
+def test_vnf_vf_modules_one():
+    """Test parsing TOSCA file with one VNF which has associated one VFmodule"""
+    service = Service(name="test")
+    with open(Path(Path(__file__).resolve().parent, "data/service-Ubuntu16-template.yml"), "r") as ubuntu:
+        service._tosca_template = yaml.safe_load(ubuntu.read())
+        assert len(service.vnfs) == 1
+        vnf = service.vnfs[0]
+        assert vnf.name == "ubuntu16_VF 0"
+        assert vnf.node_template_type == "org.openecomp.resource.vf.Ubuntu16Vf"
+        assert vnf.vf_module
+        assert vnf.vf_module.name == "ubuntu16_vf0..Ubuntu16Vf..base_ubuntu16..module-0"
+
+
+def test_vnf_vf_modules_two():
+    """Test parsing TOSCA file with two VNF which has associated one VFmodule"""
+    service = Service(name="test")
+    with open(Path(Path(__file__).resolve().parent, "data/service-Foo-template.yml"), "r") as ubuntu:
+        service._tosca_template = yaml.safe_load(ubuntu.read())
+        assert len(service.vnfs) == 2
+        vnf = service.vnfs[0]
+        assert vnf.name == "vFWCL_vPKG-vf 0"
+        assert vnf.node_template_type == "org.openecomp.resource.vf.VfwclVpkgVf"
+        assert vnf.vf_module
+        assert vnf.vf_module.name == "vfwcl_vpkgvf0..VfwclVpkgVf..base_vpkg..module-0"
+
+        vnf = service.vnfs[1]
+        assert vnf.name == "vFWCL_vFWSNK-vf 0"
+        assert vnf.node_template_type == "org.openecomp.resource.vf.VfwclVfwsnkVf"
+        assert vnf.vf_module
+        assert vnf.vf_module.name == "vfwcl_vfwsnkvf0..VfwclVfwsnkVf..base_vfw..module-0"

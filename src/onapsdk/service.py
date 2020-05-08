@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Service module."""
+from collections import namedtuple
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from io import BytesIO
 from os import makedirs
 import time
 import re
-from typing import Dict, List
+from typing import Dict, Iterable, List
 from zipfile import ZipFile, BadZipFile
 
 import oyaml as yaml
@@ -18,6 +20,16 @@ from onapsdk.utils.configuration import (components_needing_distribution,
                                          tosca_path)
 from onapsdk.utils.headers_creator import headers_sdc_creator
 from onapsdk.utils.jinja import jinja_env
+
+
+@dataclass
+class VfModule:
+    """VfModule dataclass."""
+
+    name: str
+    group_type: str
+    metadata: dict
+    properties: dict
 
 
 @dataclass
@@ -34,22 +46,35 @@ class NodeTemplate:
     capabilities: dict
 
 
+@dataclass
 class Vnf(NodeTemplate):  # pylint: disable=R0903
     """Vnf dataclass."""
+
+    vf_module: VfModule = None
+
+    def associate_vf_module(self, vf_modules: Iterable[VfModule]) -> None:
+        """Iterate through Service vf modules and found the valid one.
+
+        This is experimental! To be honest we are not sure if it works
+            correctly, it should be clarified with ONAP community.
+
+        Args:
+            vf_modules (Iterable[VfModule]): Service vf modules
+
+        """
+        AssociateMatch = namedtuple("AssociateMatch", ["ratio", "object"])
+        best_match: AssociateMatch = AssociateMatch(0.0, None)
+        for vf_module in vf_modules:  # type: VfModule
+            current_ratio: float = SequenceMatcher(None,
+                                                   self.name.lower(),
+                                                   vf_module.name.lower()).ratio()
+            if current_ratio > best_match.ratio:
+                best_match = AssociateMatch(current_ratio, vf_module)
+        self.vf_module = best_match.object
 
 
 class Network(NodeTemplate):  # pylint: disable=R0903
     """Network dataclass."""
-
-
-@dataclass
-class VfModule:
-    """VfModule dataclass."""
-
-    name: str
-    group_type: str
-    metadata: dict
-    properties: dict
 
 
 class Service(SdcResource):  # pylint: disable=R0902
@@ -149,6 +174,9 @@ class Service(SdcResource):  # pylint: disable=R0902
 
         Get tosca template from service tosca model bytes.
 
+        Raises:
+            AttributeError: Tosca model can't be downloaded using HTTP API
+
         Returns:
             str: Tosca template file
 
@@ -169,6 +197,9 @@ class Service(SdcResource):  # pylint: disable=R0902
 
         Send request to get service TOSCA model,
 
+        Raises:
+            AttributeError: Tosca model can't be downloaded using HTTP API
+
         Returns:
             bytes: TOSCA model file bytes
 
@@ -182,7 +213,8 @@ class Service(SdcResource):  # pylint: disable=R0902
                 "GET",
                 "Download Tosca Model for {}".format(self.name),
                 url,
-                headers=headers).content
+                headers=headers,
+                exception=AttributeError).content
         return self._tosca_model
 
     @property
@@ -205,13 +237,15 @@ class Service(SdcResource):  # pylint: disable=R0902
             for node_template_name, values in \
                 self.tosca_template.get("topology_template", {}).get("node_templates", {}).items():
                 if re.match("org.openecomp.resource.vf.*", values["type"]):
-                    self._vnfs.append(Vnf(
+                    vnf: Vnf = Vnf(
                         name=node_template_name,
                         node_template_type=values["type"],
                         metadata=values["metadata"],
                         properties=values["properties"],
-                        capabilities=values["capabilities"]
-                    ))
+                        capabilities=values.get("capabilities", {})
+                    )
+                    vnf.associate_vf_module(self.vf_modules)
+                    self._vnfs.append(vnf)
         return self._vnfs
 
     @property
@@ -255,15 +289,14 @@ class Service(SdcResource):  # pylint: disable=R0902
         """
         if self._vf_modules is None:
             self._vf_modules = []
-            if self.vnfs:
-                groups: dict = self.tosca_template.get("topology_template", {}).get("groups", {})
-                for group_name, values in groups.items():
-                    self._vf_modules.append(VfModule(
-                        name=group_name,
-                        group_type=values["type"],
-                        metadata=values["metadata"],
-                        properties=values["properties"]
-                    ))
+            groups: dict = self.tosca_template.get("topology_template", {}).get("groups", {})
+            for group_name, values in groups.items():
+                self._vf_modules.append(VfModule(
+                    name=group_name,
+                    group_type=values["type"],
+                    metadata=values["metadata"],
+                    properties=values["properties"]
+                ))
         return self._vf_modules
 
     def create(self) -> None:

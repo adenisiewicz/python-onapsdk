@@ -689,7 +689,7 @@ class ServiceInstance(AaiElement):  # pylint: disable=R0902
                                            f"{self.base_url}{relationship.related_link}",
                                            exception=ValueError))
 
-    def add_vnf(self,  # pylint: disable=R0913, R0801
+    def add_vnf(self,  # pylint: disable=R0913
                 vnf: "Vnf",
                 line_of_business: "LineOfBusiness",
                 platform: "Platform",

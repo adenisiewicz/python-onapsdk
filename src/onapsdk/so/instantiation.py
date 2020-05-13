@@ -238,19 +238,19 @@ class VnfInstantiation(Instantiation):
         raise ValueError("No createInstance request found")
 
     @classmethod
-    def instantiate_ala_carte(cls,  # pylint: disable=R0913, R0801
-                              aai_service_instance: "ServiceInstance",  # pylint: disable=R0801
-                              vnf: "Vnf",  # pylint: disable=R0801
-                              line_of_business: "LineOfBusiness",  # pylint: disable=R0801
-                              platform: "Platform",  # pylint: disable=R0801
-                              vnf_instance_name: str = None,  # pylint: disable=R0801
-                              use_vnf_api: bool = False) -> "VnfInstantiation":  # pylint: disable=R0801
+    def instantiate_ala_carte(cls,  # pylint: disable=R0913
+                              aai_service_instance: "ServiceInstance",
+                              vnf_object: "Vnf",
+                              line_of_business_object: "LineOfBusiness",
+                              platform_object: "Platform",
+                              vnf_instance_name: str = None,
+                              use_vnf_api: bool = False) -> "VnfInstantiation":
         """Instantiate Vnf using a'la carte method.
 
         Args:
-            vnf (Vnf): Vnf to instantiate
-            line_of_business (LineOfBusiness): LineOfBusiness to use in instantiation request
-            platform (Platform): Platform to use in instantiation request
+            vnf_object (Vnf): Vnf to instantiate
+            line_of_business_object (LineOfBusiness): LineOfBusiness to use in instantiation request
+            platform_object (Platform): Platform to use in instantiation request
             vnf_instance_name (str, optional): Vnf instance name. Defaults to None.
             use_vnf_api (bool, optional): Flague which determines if VF_API should be used.
                 Set False if you want to use GR_API. Defaults to False.
@@ -269,18 +269,18 @@ class VnfInstantiation(Instantiation):
         response: dict = cls.send_message_json(
             "POST",
             (f"Instantiate {aai_service_instance.service_subscription.sdc_service.name} "
-             f"service vnf {vnf.name}"),
+             f"service vnf {vnf_object.name}"),
             (f"{cls.base_url}/onap/so/infra/serviceInstantiation/{cls.api_version}/"
              f"serviceInstances/{aai_service_instance.instance_id}/vnfs"),
             data=jinja_env().get_template("instantiate_vnf_ala_carte.json.j2").
             render(
                 vnf_service_instance_name=vnf_instance_name,
-                vnf=vnf,
+                vnf=vnf_object,
                 service=sdc_service,
                 cloud_region=aai_service_instance.service_subscription.cloud_region,
                 tenant=aai_service_instance.service_subscription.tenant,
-                line_of_business=line_of_business,
-                platform=platform,
+                line_of_business=line_of_business_object,
+                platform=platform_object,
                 service_instance=aai_service_instance,
                 use_vnf_api=use_vnf_api
             ),
@@ -291,9 +291,9 @@ class VnfInstantiation(Instantiation):
             name=vnf_instance_name,
             request_id=response["requestReferences"]["requestId"],
             instance_id=response["requestReferences"]["instanceId"],
-            line_of_business=line_of_business,
-            platform=platform,
-            vnf=vnf
+            line_of_business=line_of_business_object,
+            platform=platform_object,
+            vnf=vnf_object
         )
 
 class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902

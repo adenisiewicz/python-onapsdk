@@ -2,22 +2,19 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """SO Element module."""
+from abc import ABC
 from dataclasses import dataclass
+from enum import Enum
 from typing import Dict
 
 import json
 
-from onapsdk.aai.cloud_infrastructure import CloudRegion
-from onapsdk.aai.instances import Customer
 from onapsdk.service import Service
 from onapsdk.vf import Vf
 from onapsdk.onap_service import OnapService
 from onapsdk.utils.headers_creator import headers_so_creator
 from onapsdk.utils.jinja import jinja_env
-from onapsdk.utils.tosca_file_handler import (
-    get_modules_list_from_tosca_file,
-    get_vf_list_from_tosca_file,
-)
+from onapsdk.utils.tosca_file_handler import get_modules_list_from_tosca_file
 
 
 @dataclass
@@ -37,29 +34,6 @@ class SoElement(OnapService):
         It is used as a property because x-transactionid header should be unique for each request.
         """
         return headers_so_creator(OnapService.headers)
-
-    @classmethod
-    def get_cloud_info(cls):
-        """Retrieve Cloud info."""
-        # on pourrait imaginer de préciser le cloud ici en cas de Multicloud
-        # en attendant on prendra le premier cloud venu..
-        cloud_region: CloudRegion = next(CloudRegion.get_all())
-        template_cloud = jinja_env().get_template("cloud_configuration.json.j2")
-        parsed = json.loads(
-            template_cloud.render(
-                cloud_region_id=cloud_region.cloud_region_id,
-                tenant_id=next(cloud_region.tenants).tenant_id,
-                cloud_owner=cloud_region.cloud_owner,
-            )
-        )
-        return json.dumps(parsed, indent=4)
-
-    @classmethod
-    def get_subscriber(cls, global_customer_id: str = None):
-        """Get subscriber Info."""
-        if not global_customer_id:
-            return next(Customer.get_all())
-        return Customer.get_by_global_customer_id(global_customer_id)
 
     @classmethod
     def get_subscription_service_type(cls, vf_name):
@@ -113,39 +87,6 @@ class SoElement(OnapService):
         parsed = json.loads(template_service.render(modules=modules))
         return json.dumps(parsed, indent=4)
 
-    def get_vnfs(self, **kwargs):
-        """Get VNFs description for macro instantiation."""
-        vf_names = get_vf_list_from_tosca_file(kwargs["ns_model"])
-
-        for vf_name in vf_names:
-            template_vnf = jinja_env().get_template("vnf_instance_macro.json.j2")
-
-            self._logger.debug(kwargs["ns_name"])
-            self._logger.debug("----------------------> 1")
-            self._logger.debug(self.get_vnf_model_info(vf_name))
-            self._logger.debug("----------------------> 2")
-            self._logger.debug(self.get_cloud_info())
-            self._logger.debug("----------------------> 3")
-            self._logger.debug("vnf_%s", vf_name)
-            self._logger.debug("----------------------> 4")
-            self._logger.debug(self.get_vf_model_info(kwargs["ns_model"]))
-            self._logger.debug("----------------------> 5")
-            self._logger.debug("vf_%s", vf_name)
-
-            vnfs_macro = json.loads(
-                template_vnf.render(
-                    vnf_model_info=self.get_vnf_model_info(vf_name),
-                    cloud_configuration=self.get_cloud_info(),
-                    vnf_instance_name="vnf_" + vf_name,
-                    vnf_instance_param=kwargs["ns_vnf_instance_params"],
-                    vf_modules=self.get_vf_model_info(kwargs["ns_model"]),
-                    vnf_model_instance_name="vnf_" + kwargs["ns_name"],
-                    vnf_instance_params=kwargs["ns_vf_instance_params"],
-                )
-            )
-        self._logger.info("vnfs payload part built: %s", vnfs_macro)
-        return json.dumps(vnfs_macro, indent=4)
-
     @classmethod
     def _base_create_url(cls) -> str:
         """
@@ -158,3 +99,94 @@ class SoElement(OnapService):
         return "{}/onap/so/infra/serviceInstantiation/{}/serviceInstances".format(
             cls.base_url, cls.api_version
         )
+
+
+class OrchestrationRequest(SoElement, ABC):
+    """Base SO orchestration request class."""
+
+    def __init__(self,
+                 request_id: str) -> None:
+        """Instantiate object initialization.
+
+        Initializator used by classes inherited from this abstract class.
+
+        Args:
+            request_id (str): request ID
+        """
+        super().__init__()
+        self.request_id: str = request_id
+
+    class StatusEnum(Enum):
+        """Status enum.
+
+        Store possible statuses for instantiation:
+            - IN_PROGRESS,
+            - FAILED,
+            - COMPLETE.
+        If instantiation has status which is not covered by these values
+            UNKNOWN value is used.
+
+        """
+
+        IN_PROGRESS = "IN_PROGRESS"
+        FAILED = "FAILED"
+        COMPLETED = "COMPLETE"
+        UNKNOWN = "UNKNOWN"
+
+    @property
+    def status(self) -> "StatusEnum":
+        """Object instantiation status.
+
+        It's populated by call SO orchestation request endpoint.
+
+        Returns:
+            StatusEnum: Instantiation status.
+
+        """
+        response: dict = self.send_message_json(
+            "GET",
+            f"Check {self.request_id} orchestration request status",
+            (f"{self.base_url}/onap/so/infra/"
+             f"orchestrationRequests/{self.api_version}/{self.request_id}"),
+            headers=headers_so_creator(OnapService.headers)
+        )
+        try:
+            return self.StatusEnum(response["request"]["requestStatus"]["requestState"])
+        except ValueError:
+            return self.StatusEnum.UNKNOWN
+
+    @property
+    def finished(self) -> bool:
+        """Store an information if instantion is finished or not.
+
+        Instantiation is finished if it's status is COMPLETED or FAILED.
+
+        Returns:
+            bool: True if instantiation is finished, False otherwise.
+
+        """
+        return self.status in [self.StatusEnum.COMPLETED, self.StatusEnum.FAILED]
+
+    @property
+    def completed(self) -> bool:
+        """Store an information if instantion is completed or not.
+
+        Instantiation is completed if it's status is COMPLETED.
+
+        Returns:
+            bool: True if instantiation is completed, False otherwise.
+
+        """
+        return self.finished and self.status == self.StatusEnum.COMPLETED
+
+    @property
+    def failed(self) -> bool:
+        """Store an information if instantion is failed or not.
+
+        Instantiation is failed if it's status is FAILED.
+
+        Returns:
+            bool: True if instantiation is failed, False otherwise.
+
+        """
+        return self.finished and self.status == self.StatusEnum.FAILED

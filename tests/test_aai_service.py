@@ -5,16 +5,15 @@ from unittest import mock
 
 import pytest
 
-from onapsdk.aai import (
-    AaiElement,
+from onapsdk.aai.aai_element import AaiElement, Relationship
+from onapsdk.aai.cloud_infrastructure import (
     CloudRegion,
     Complex,
-    Customer,
     EsrSystemInfo,
-    Relationship,
-    Service,
     Tenant
 )
+from onapsdk.aai.instances import Customer
+from onapsdk.aai.service_design_and_creation import Service
 from onapsdk.onap_service import OnapService
 
 

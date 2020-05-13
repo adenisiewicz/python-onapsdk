@@ -4,26 +4,17 @@
 """Instantion module."""
 from abc import ABC
 from dataclasses import dataclass
-from enum import Enum
 from typing import Iterable, Iterator
 from uuid import uuid4
 
-from onapsdk.aai import (
-    CloudRegion,
-    Customer,
-    OwningEntity,
-    ServiceInstance as AaiServiceInstance,
-    ServiceSubscription,
-    Tenant
-)
 from onapsdk.onap_service import OnapService
 from onapsdk.sdnc import VfModulePreload
 from onapsdk.service import Service as SdcService, Vnf, VfModule
 from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.headers_creator import headers_so_creator
-from onapsdk.vid import LineOfBusiness, Platform, Project
+from onapsdk.vid import LineOfBusiness, Platform
 
-from .so_element import SoElement
+from .so_element import OrchestrationRequest
 
 
 @dataclass
@@ -37,7 +28,7 @@ class VnfParameter:
     value: str
 
 
-class Instantiation(SoElement, ABC):
+class Instantiation(OrchestrationRequest, ABC):
     """Abstract class used for instantiation."""
 
     def __init__(self,  # pylint: disable=R0913
@@ -53,61 +44,9 @@ class Instantiation(SoElement, ABC):
             request_id (str): request ID
             instance_id (str): instance ID
         """
-        super().__init__()
+        super().__init__(request_id)
         self.name: str = name
-        self.request_id: str = request_id
         self.instance_id: str = instance_id
-
-    class StatusEnum(Enum):
-        """Status enum.
-
-        Store possible statuses for instantiation:
-            - IN_PROGRESS,
-            - FAILED,
-            - COMPLETE.
-        If instantiation has status which is not covered by these values
-            UNKNOWN value is used.
-
-        """
-
-        IN_PROGRESS = "IN_PROGRESS"
-        FAILED = "FAILED"
-        COMPLETED = "COMPLETE"
-        UNKNOWN = "UNKNOWN"
-
-    @property
-    def status(self) -> "StatusEnum":
-        """Object instantiation status.
-
-        It's populated by call SO orchestation request endpoint.
-
-        Returns:
-            StatusEnum: Instantiation status.
-
-        """
-        response: dict = self.send_message_json(
-            "GET",
-            f"Check {self.name} service instantiation status",
-            (f"{self.base_url}/onap/so/infra/"
-             f"orchestrationRequests/{self.api_version}/{self.request_id}"),
-            headers=headers_so_creator(OnapService.headers)
-        )
-        try:
-            return self.StatusEnum(response["request"]["requestStatus"]["requestState"])
-        except ValueError:
-            return self.StatusEnum.UNKNOWN
-
-    @property
-    def finished(self) -> bool:
-        """Store an information if instantion is finished or not.
-
-        Instantiation is finished if it's status is COMPLETED or FAILED.
-
-        Returns:
-            bool: True if instantiation is finished, False otherwise.
-
-        """
-        return self.status in [self.StatusEnum.COMPLETED, self.StatusEnum.FAILED]
 
 
 class VfModuleInstantiation(Instantiation):
@@ -245,19 +184,14 @@ class VnfInstantiation(Instantiation):
         if request_response.get("request", {}).get("requestScope") == "vnf" and \
             request_response.get("request", {}).get("requestType") == "createInstance":
             service: SdcService = None
-            service_instantiation: "ServiceInstantiation" = None
             for related_instance in request_response.get("request", {}).get("requestDetails", {})\
                     .get("relatedInstanceList", []):
                 if related_instance.get("relatedInstance", {}).get("modelInfo", {})\
                         .get("modelType") == "service":
                     service = SdcService(related_instance.get("relatedInstance", {})\
                         .get("modelInfo", {}).get("modelName"))
-                    service_instantiation = ServiceInstantiation.get_by_service_instance_id(\
-                        related_instance.get("relatedInstance", {}).get("instanceId"))
             if not service:
                 raise ValueError("No related service in Vnf instance details response")
-            if not service_instantiation:
-                raise ValueError("No related service instantiation in Vnf details response")
             vnf: Vnf = None
             for service_vnf in service.vnfs:
                 if service_vnf.name == request_response.get("request", {})\
@@ -304,13 +238,13 @@ class VnfInstantiation(Instantiation):
         raise ValueError("No createInstance request found")
 
     @classmethod
-    def instantiate_ala_carte(cls,  # pylint: disable=R0913
-                              aai_service_instance: AaiServiceInstance,
-                              vnf: Vnf,
-                              line_of_business: LineOfBusiness,
-                              platform: Platform,
-                              vnf_instance_name: str = None,
-                              use_vnf_api: bool = False) -> "VnfInstantiation":
+    def instantiate_ala_carte(cls,  # pylint: disable=R0913, R0801
+                              aai_service_instance: "ServiceInstance",  # pylint: disable=R0801
+                              vnf: "Vnf",  # pylint: disable=R0801
+                              line_of_business: "LineOfBusiness",  # pylint: disable=R0801
+                              platform: "Platform",  # pylint: disable=R0801
+                              vnf_instance_name: str = None,  # pylint: disable=R0801
+                              use_vnf_api: bool = False) -> "VnfInstantiation":  # pylint: disable=R0801
         """Instantiate Vnf using a'la carte method.
 
         Args:
@@ -369,12 +303,12 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
                  name: str,
                  request_id: str,
                  instance_id: str,
-                 sdc_service: SdcService,
-                 cloud_region: CloudRegion,
-                 tenant: Tenant,
-                 customer: Customer,
-                 owning_entity: OwningEntity,
-                 project: Project) -> None:
+                 sdc_service: "SdcService",
+                 cloud_region: "CloudRegion",
+                 tenant: "Tenant",
+                 customer: "Customer",
+                 owning_entity: "OwningEntity",
+                 project: "Project") -> None:
         """Class ServiceInstantiation object initialization.
 
         Args:
@@ -398,117 +332,13 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         self.project = project
 
     @classmethod
-    def get_by_service_instance_id(cls, service_instance_id: str) -> "ServiceInstantiation":
-        """Get service instancy by it's instance ID.
-
-        It uses SO API to get orchestration request for service with provided instance ID.
-
-        Raises:
-            ValueError: No service instance with given ID
-
-        Returns:
-            ServiceInstantiation: Service instantiation request
-
-        """
-        response: dict = cls.send_message_json(
-            "GET",
-            f"Check {service_instance_id} service instantiation status",
-            (f"{cls.base_url}/onap/so/infra/orchestrationRequests/{cls.api_version}?"
-             f"filter=serviceInstanceId:EQUALS:{service_instance_id}"),
-            headers=headers_so_creator(OnapService.headers)
-        )
-        if not response.get("requestList", []):
-            raise ValueError("Service instance doesn't exist")
-        for details in response["requestList"]:
-            if details.get("request", {}).get("requestScope") == "service" and \
-                details.get("request", {}).get("requestType") == "createInstance":
-                cloud_region = CloudRegion.get_by_id(
-                    details["request"]["requestDetails"]["cloudConfiguration"]["cloudOwner"],
-                    details["request"]["requestDetails"]["cloudConfiguration"]["lcpCloudRegionId"]
-                )
-                return cls(
-                    name=details["request"]["instanceReferences"]["serviceInstanceName"],
-                    sdc_service=SdcService(
-                        details["request"]["requestDetails"]["modelInfo"]["modelName"]
-                    ),
-                    cloud_region=cloud_region,
-                    tenant=cloud_region.get_tenant(
-                        details["request"]["requestDetails"]["cloudConfiguration"]["tenantId"]
-                    ),
-                    customer=Customer.get_by_global_customer_id(
-                        details["request"]["requestDetails"]["subscriberInfo"]\
-                            ["globalSubscriberId"]),
-                    owning_entity=OwningEntity.get_by_owning_entity_id(
-                        details["request"]["requestDetails"]["owningEntity"]["owningEntityId"]
-                    ),
-                    project=Project.create(
-                        details["request"]["requestDetails"]["project"]["projectName"]
-                    ),
-                    request_id=details["request"]["requestId"],
-                    instance_id=service_instance_id
-                )
-        raise ValueError("No createInstance request found")
-
-    @classmethod
-    def get_by_service_instance_name(cls, service_instance_name: str) -> "ServiceInstantiation":
-        """Get service instancy by it's name.
-
-        It uses SO API to get orchestration request for service with provided name.
-
-        Raises:
-            ValueError: No service instance with given name
-
-        Returns:
-            ServiceInstantiation: Service instantiation request
-
-        """
-        response: dict = cls.send_message_json(
-            "GET",
-            f"Check {service_instance_name} service instantiation status",
-            (f"{cls.base_url}/onap/so/infra/orchestrationRequests/{cls.api_version}?"
-             f"filter=serviceInstanceName:EQUALS:{service_instance_name}"),
-            headers=headers_so_creator(OnapService.headers)
-        )
-        if not response.get("requestList", []):
-            raise ValueError("Service instance doesn't exist")
-        for details in response["requestList"]:
-            if details.get("request", {}).get("requestScope") == "service" and \
-                details.get("request", {}).get("requestType") == "createInstance":
-                cloud_region = CloudRegion.get_by_id(
-                    details["request"]["requestDetails"]["cloudConfiguration"]["cloudOwner"],
-                    details["request"]["requestDetails"]["cloudConfiguration"]["lcpCloudRegionId"]
-                )
-                return cls(
-                    name=service_instance_name,
-                    sdc_service=SdcService(
-                        details["request"]["requestDetails"]["modelInfo"]["modelName"]
-                    ),
-                    cloud_region=cloud_region,
-                    tenant=cloud_region.get_tenant(
-                        details["request"]["requestDetails"]["cloudConfiguration"]["tenantId"]
-                    ),
-                    customer=Customer.get_by_global_customer_id(
-                        details["request"]["requestDetails"]["subscriberInfo"]\
-                            ["globalSubscriberId"]),
-                    owning_entity=OwningEntity.get_by_owning_entity_id(
-                        details["request"]["requestDetails"]["owningEntity"]["owningEntityId"]
-                    ),
-                    project=Project.create(
-                        details["request"]["requestDetails"]["project"]["projectName"]
-                    ),
-                    request_id=details["request"]["requestId"],
-                    instance_id=details["request"]["instanceReferences"]["serviceInstanceId"]
-                )
-        raise ValueError("No createInstance request found")
-
-    @classmethod
     def instantiate_so_ala_carte(cls,  # pylint: disable=R0913
-                                 sdc_service: SdcService,
-                                 cloud_region: CloudRegion,
-                                 tenant: Tenant,
-                                 customer: Customer,
-                                 owning_entity: OwningEntity,
-                                 project: Project,
+                                 sdc_service: "SdcService",
+                                 cloud_region: "CloudRegion",
+                                 tenant: "Tenant",
+                                 customer: "Customer",
+                                 owning_entity: "OwningEntity",
+                                 project: "Project",
                                  service_instance_name: str = None,
                                  use_vnf_api: bool = False) -> "ServiceInstantiationc":
         """Instantiate service using SO a'la carte request.
@@ -567,7 +397,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         )
 
     @property
-    def aai_service_instance(self) -> AaiServiceInstance:
+    def aai_service_instance(self) -> "ServiceInstance":
         """Service instane associated with service instantiation request.
 
         Raises:
@@ -575,13 +405,13 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
             AttributeError: A&AI resource is not created
 
         Returns:
-            AaiServiceInstance: AaiServiceInstance
+            ServiceInstance: ServiceInstance
 
         """
         if self.status != self.StatusEnum.COMPLETED:
             raise AttributeError("Service not instantiated")
         try:
-            service_subscription: ServiceSubscription = \
+            service_subscription: "ServiceSubscription" = \
                 self.customer.get_service_subscription_by_service_type(self.sdc_service.name)
             return service_subscription.get_service_instance_by_name(self.name)
         except ValueError:
@@ -590,8 +420,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
 
 
     def instantiate_vnf(self,
-                        line_of_business: LineOfBusiness,
-                        platform: Platform,
+                        line_of_business: "LineOfBusiness",
+                        platform: "Platform",
                         vnf_service_instance_name_factory: str = None,
                         use_vnf_api: bool = True) -> Iterator[VnfInstantiation]:
         """Instantiate VNF for Service.

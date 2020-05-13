@@ -5,6 +5,11 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import onapsdk
+from onapsdk.so.deletion import (
+    ServiceDeletionRequest,
+    VnfDeletionRequest,
+    VfModuleDeletionRequest
+)
 from onapsdk.service import Service as SdcService
 from onapsdk.utils.jinja import jinja_env
 
@@ -108,6 +113,19 @@ class VfModuleInstance(AaiElement):  # pylint: disable=R0902
         """
         return f"{self.vnf_instance.url}/vf-modules/vf-module/{self.vf_module_id}"
 
+    @property
+    def vf_module(self) -> "VfModule":
+        """Vf module associated with that vf module instance.
+
+        Raises:
+            AttributeError: Could not find VF module for that VfModule instance
+
+        Returns:
+            VfModule: VfModule object associated with vf module instance
+
+        """
+        return self.vnf_instance.vnf.vf_module
+
     @classmethod
     def create_from_api_response(cls,
                                  api_response: dict,
@@ -141,6 +159,18 @@ class VfModuleInstance(AaiElement):  # pylint: disable=R0902
             module_index=api_response.get("module-index"),
             selflink=api_response.get("selflink")
         )
+
+    def delete(self) -> "VfModuleDeletionRequest":
+        """Create deletion request.
+
+        Send request to delete VF module instance
+
+        Returns:
+            VfModuleDeletionRequest: Deletion request object
+
+        """
+        self._logger.debug("Delete %s VF module", self.vf_module_id)
+        return VfModuleDeletionRequest.send_request(self)
 
 
 class VnfInstance(AaiElement):  # pylint: disable=R0902
@@ -513,6 +543,17 @@ class VnfInstance(AaiElement):  # pylint: disable=R0902
             vnf_parameters
         )
 
+    def delete(self) -> "VnfDeletionRequest":
+        """Create VNF deletion request.
+
+        Send request to delete VNF instance
+
+        Returns:
+            VnfDeletionRequest: Deletion request
+
+        """
+        self._logger.debug("Delete %s VNF", self.vnf_id)
+        return VnfDeletionRequest.send_request(self)
 
 
 class ServiceInstance(AaiElement):  # pylint: disable=R0902
@@ -648,7 +689,7 @@ class ServiceInstance(AaiElement):  # pylint: disable=R0902
                                            f"{self.base_url}{relationship.related_link}",
                                            exception=ValueError))
 
-    def add_vnf(self,  # pylint: disable=R0913
+    def add_vnf(self,  # pylint: disable=R0913, R0801
                 vnf: "Vnf",
                 line_of_business: "LineOfBusiness",
                 platform: "Platform",
@@ -687,6 +728,18 @@ class ServiceInstance(AaiElement):  # pylint: disable=R0902
             vnf_instance_name,
             use_vnf_api
         )
+
+    def delete(self) -> "ServiceDeletionRequest":
+        """Create service deletion request.
+
+        Send a request to delete service instance
+
+        Returns:
+            ServiceDeletionRequest: Deletion request object
+
+        """
+        self._logger.debug("Delete %s service instance", self.instance_id)
+        return ServiceDeletionRequest.send_request(self)
 
 
 @dataclass

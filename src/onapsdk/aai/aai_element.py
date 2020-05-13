@@ -70,7 +70,7 @@ class AaiElement(OnapService):
 
         """
         for relationship in self.send_message_json("GET",
-                                                   f"Get object relationships",
+                                                   "Get object relationships",
                                                    f"{self.url}/relationship-list")\
                                                        .get("relationship", []):
             yield Relationship(

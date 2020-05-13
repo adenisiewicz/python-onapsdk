@@ -6,12 +6,12 @@
                "vf-module-name":"{{vf_module_instance_name}}"
             },
             "vf-module-parameters": {
-                "param": {{ vnf_parameters }},
+                "param": {{ vnf_parameters }}
                 }
          },
          "vnf-topology-identifier-structure":{
-            "vnf-name":"{{vnf_instance.name}}",
-            "vnf-type":"{{vnf.name}}"
+            "vnf-name":"{{vnf_instance.vnf_name}}",
+            "vnf-type":"{{vnf_instance.vnf_type}}"
          },
          "vnf-resource-assignments":{
                 "availability-zones":{

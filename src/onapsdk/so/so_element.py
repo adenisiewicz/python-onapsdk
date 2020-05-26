@@ -152,7 +152,8 @@ class OrchestrationRequest(SoElement, ABC):
         )
         try:
             return self.StatusEnum(response["request"]["requestStatus"]["requestState"])
-        except ValueError:
+        except (KeyError, ValueError):
+            self._logger.exception("Invalid status")
             return self.StatusEnum.UNKNOWN
 
     @property

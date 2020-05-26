@@ -4,7 +4,7 @@
 """Instantion module."""
 from abc import ABC
 from dataclasses import dataclass
-from typing import Iterable, Iterator
+from typing import Iterable
 from uuid import uuid4
 
 from onapsdk.onap_service import OnapService
@@ -31,7 +31,7 @@ class VnfParameter:
 class Instantiation(OrchestrationRequest, ABC):
     """Abstract class used for instantiation."""
 
-    def __init__(self,  # pylint: disable=R0913
+    def __init__(self,
                  name: str,
                  request_id: str,
                  instance_id: str) -> None:
@@ -52,7 +52,7 @@ class Instantiation(OrchestrationRequest, ABC):
 class VfModuleInstantiation(Instantiation):
     """VF module instantiation class."""
 
-    def __init__(self,  # pylint: disable=R0913
+    def __init__(self,
                  name: str,
                  request_id: str,
                  instance_id: str,
@@ -70,7 +70,7 @@ class VfModuleInstantiation(Instantiation):
         self.vf_module: VfModule = vf_module
 
     @classmethod
-    def instantiate_ala_carte(cls,  # pylint: disable=R0913
+    def instantiate_ala_carte(cls,  # pylint: disable=too-many-arguments
                               vf_module,
                               vnf_instance,
                               vf_module_instance_name: str = None,
@@ -144,7 +144,7 @@ class VfModuleInstantiation(Instantiation):
 class VnfInstantiation(Instantiation):
     """VNF instantiation class."""
 
-    def __init__(self,  # pylint: disable=R0913
+    def __init__(self,  # pylint: disable=too-many-arguments
                  name: str,
                  request_id: str,
                  instance_id: str,
@@ -238,7 +238,7 @@ class VnfInstantiation(Instantiation):
         raise ValueError("No createInstance request found")
 
     @classmethod
-    def instantiate_ala_carte(cls,  # pylint: disable=R0913
+    def instantiate_ala_carte(cls,  # pylint: disable=too-many-arguments
                               aai_service_instance: "ServiceInstance",
                               vnf_object: "Vnf",
                               line_of_business_object: "LineOfBusiness",
@@ -296,10 +296,10 @@ class VnfInstantiation(Instantiation):
             vnf=vnf_object
         )
 
-class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
+class ServiceInstantiation(Instantiation):
     """Service instantiation class."""
 
-    def __init__(self,  # pylint: disable=R0913
+    def __init__(self,  # pylint: disable=too-many-arguments
                  name: str,
                  request_id: str,
                  instance_id: str,
@@ -332,7 +332,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         self.project = project
 
     @classmethod
-    def instantiate_so_ala_carte(cls,  # pylint: disable=R0913
+    def instantiate_so_ala_carte(cls,  # pylint: disable=too-many-arguments
                                  sdc_service: "SdcService",
                                  cloud_region: "CloudRegion",
                                  tenant: "Tenant",
@@ -417,72 +417,3 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=R0913, R0902
         except ValueError:
             self._logger.error("A&AI resources not created properly")
             raise AttributeError
-
-
-    def instantiate_vnf(self,
-                        line_of_business: "LineOfBusiness",
-                        platform: "Platform",
-                        vnf_service_instance_name_factory: str = None,
-                        use_vnf_api: bool = True) -> Iterator[VnfInstantiation]:
-        """Instantiate VNF for Service.
-
-        Get VNF for Service from it's Tosca and call instantiation requests.
-
-        Args:
-            line_of_business (LineOfBusiness): LineOfBusiness to use in instantiation request
-            platform (Platform): Platform to use in instantiation request
-            vnf_service_instance_name_factory (str, optional): Factory to create VNF names.
-                It's going to be a prefix of name. Index of vnf in Tosca file will be
-                added to it.
-                If no value is provided it's going to be
-                "Python_ONAP_SDK_vnf_service_instance_{str(uuid4())}".
-                Defaults to None.
-            use_vnf_api (bool, optional): Flague to determine if VNF_API or GR_API
-                should be used to instantiate. Defaults to True.
-
-        Raises:
-            AttributeError: Service is not instantiated.
-
-        Yields:
-            Iterator[VnfInstantiation]: VnfInstantion class object
-
-        """
-        if self.status != self.StatusEnum.COMPLETED:
-            raise AttributeError("Service is not instantiated")
-        if not self.sdc_service.vnfs:
-            self._logger.info("No vnfs to instantiate")
-            return
-        if vnf_service_instance_name_factory is None:
-            vnf_service_instance_name_factory = \
-                f"Python_ONAP_SDK_vnf_service_instance_{str(uuid4())}_"
-        for index, vnf in enumerate(self.sdc_service.vnfs):
-            vnf_instance_name: str = f"{vnf_service_instance_name_factory}{index}"
-            response: dict = self.send_message_json(
-                "POST",
-                f"Instantiate {self.sdc_service.name} service vnf {vnf.name}",
-                (f"{self.base_url}/onap/so/infra/serviceInstantiation/{self.api_version}/"
-                 f"serviceInstances/{self.instance_id}/vnfs"),
-                data=jinja_env().get_template("instantiate_vnf_ala_carte.json.j2").
-                render(
-                    vnf_service_instance_name=vnf_instance_name,
-                    vnf=vnf,
-                    service=self.sdc_service,
-                    cloud_region=self.cloud_region,
-                    tenant=self.tenant,
-                    customer=self.customer,
-                    line_of_business=line_of_business,
-                    platform=platform,
-                    service_instance=self,
-                    use_vnf_api=use_vnf_api
-                ),
-                headers=headers_so_creator(OnapService.headers),
-                exception=ValueError
-            )
-            yield VnfInstantiation(
-                name=vnf_instance_name,
-                request_id=response["requestReferences"]["requestId"],
-                instance_id=response["requestReferences"]["instanceId"],
-                line_of_business=line_of_business,
-                platform=platform,
-                vnf=vnf
-            )

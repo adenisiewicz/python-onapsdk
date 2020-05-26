@@ -6,7 +6,6 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-#  pylint: disable=missing-docstring
 """Utils class."""
 import json
 import string

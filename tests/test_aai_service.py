@@ -12,7 +12,7 @@ from onapsdk.aai.cloud_infrastructure import (
     EsrSystemInfo,
     Tenant
 )
-from onapsdk.aai.instances import Customer
+from onapsdk.aai.business import Customer
 from onapsdk.aai.service_design_and_creation import Service
 from onapsdk.onap_service import OnapService
 
@@ -227,18 +227,6 @@ CLOUD_REGION_RELATIONSHIP = {
                 }
             ],
             "related-to": "complex",
-        }
-    ]
-}
-
-
-CUSTOMERS = {
-    "customer": [
-        {
-            "subscriber-name": "generic",
-            "subscriber-type": "INFRA",
-            "global-customer-id": "generic",
-            "resource-version": "1581510772967",
         }
     ]
 }
@@ -516,16 +504,6 @@ def test_cloud_region_creation(mock_send):
     assert cloud_region.cloud_extra_info == ""
     assert cloud_region.upgrade_cycle == "Test"
 
-@mock.patch.object(AaiElement, 'send_message_json')
-def test_customer_service_tenant_relations(mock_send):
-    """Test the retrieval of service/tenant relations in A&AI."""
-    mock_send.return_value = SIMPLE_CUSTOMER
-    customer = next(Customer.get_all())
-    mock_send.return_value = SERVICE_SUBSCRIPTION
-    res = list(customer.service_subscriptions)
-    assert len(res) == 2
-    assert res[0].service_type == "freeradius"
-
 @mock.patch.object(CloudRegion, 'get_all')
 @mock.patch.object(AaiElement, 'send_message_json')
 def test_tenants_info(mock_send, mock_cloud_regions):
@@ -659,16 +637,14 @@ def test_filter_none_value():
     assert ret == {"a": "b", "c": "d"}
 
 
-@mock.patch.object(Customer, "send_message_json")
-def test_customers_get_all(mock_send):
-    """Test get_all Customer class method."""
-    mock_send.return_value = {}
-    customers = list(Customer.get_all())
-    assert len(customers) == 0
-
-    mock_send.return_value = CUSTOMERS
-    customers = list(Customer.get_all())
-    assert len(customers) == 1
+@mock.patch.object(AaiElement, "send_message_json")
+def test_add_relationship(mock_send):
+    """Test add_relationship method."""
+    cloud_region = CloudRegion(cloud_owner="tester", cloud_region_id="test",
+                               orchestration_disabled=True, in_maint=False)
+    cloud_region.add_relationship(Relationship(related_to="test",
+                                               related_link="test",
+                                               relationship_data={}))
 
 
 # # -----------------------------------------------------------------------------

@@ -12,7 +12,7 @@ class ESR(MSB):
     base_url = f"{MSB.base_url}/api/aai-esr-server/v1/vims"
 
     @classmethod
-    def register_vim(cls,  # pylint: disable=R0913
+    def register_vim(cls,  # pylint: disable=too-many-arguments
                      cloud_owner: str,
                      cloud_region_id: str,
                      cloud_type: str,

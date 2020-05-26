@@ -25,7 +25,7 @@ class DeletionRequest(OrchestrationRequest, ABC):
         raise NotImplementedError
 
 
-class VfModuleDeletionRequest(DeletionRequest):  # pylint: disable=R0903
+class VfModuleDeletionRequest(DeletionRequest):
     """VF module deletion class."""
 
     @classmethod
@@ -62,7 +62,7 @@ class VfModuleDeletionRequest(DeletionRequest):  # pylint: disable=R0903
         return cls(request_id=response["requestReferences"]["requestId"])
 
 
-class VnfDeletionRequest(DeletionRequest):  # pylint: disable=R0903
+class VnfDeletionRequest(DeletionRequest):
     """VNF deletion class."""
 
     @classmethod
@@ -97,7 +97,7 @@ class VnfDeletionRequest(DeletionRequest):  # pylint: disable=R0903
         return cls(request_id=response["requestReferences"]["requestId"])
 
 
-class ServiceDeletionRequest(DeletionRequest):  # pylint: disable=R0903
+class ServiceDeletionRequest(DeletionRequest):
     """Service deletion request class."""
 
     @classmethod

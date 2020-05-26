@@ -6,7 +6,7 @@ from abc import ABC
 from typing import Iterator
 from uuid import uuid4
 
-from onapsdk.aai.instances import Customer
+from onapsdk.aai.business.customer import Customer
 from onapsdk.onap_service import OnapService
 from onapsdk.utils import get_zulu_time_isoformat
 from onapsdk.utils.jinja import jinja_env
@@ -45,7 +45,7 @@ class Nbi(OnapService, ABC):
 class ServiceSpecification(Nbi):
     """NBI service specification class."""
 
-    def __init__(self,  # pylint: disable=R0913
+    def __init__(self,  # pylint: disable=too-many-arguments
                  unique_id: str,
                  name: str,
                  invariant_uuid: str,
@@ -137,7 +137,7 @@ class ServiceSpecification(Nbi):
 class Service(Nbi):
     """NBI service."""
 
-    def __init__(self,  # pylint: disable=R0913
+    def __init__(self,  # pylint: disable=too-many-arguments
                  name: str,
                  service_id: str,
                  service_specification_name: str,
@@ -220,10 +220,10 @@ class Service(Nbi):
         return ServiceSpecification.get_by_id(self._service_specification_id)
 
 
-class ServiceOrder(Nbi):  # pylint: disable=R0902
+class ServiceOrder(Nbi):  # pylint: disable=too-many-instance-attributes
     """Service order class."""
 
-    def __init__(self,  # pylint: disable=R0913
+    def __init__(self,  # pylint: disable=too-many-arguments
                  unique_id: str,
                  href: str,
                  priority: str,

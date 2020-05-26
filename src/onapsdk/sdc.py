@@ -176,8 +176,6 @@ class SDC(OnapService, ABC):
                                self._version_path(),
                                action_type=action_type)
         template = jinja_env().get_template(self.ACTION_TEMPLATE)
-        # if action == "certificationRequest":
-        #     action = "submit"
         data = template.render(action=action, const=const)
         result = self.send_message(self.ACTION_METHOD,
                                    "{} {}".format(action,

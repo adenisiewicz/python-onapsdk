@@ -47,7 +47,7 @@ class NodeTemplate:
 
 
 @dataclass
-class Vnf(NodeTemplate):  # pylint: disable=R0903
+class Vnf(NodeTemplate):
     """Vnf dataclass."""
 
     vf_module: VfModule = None
@@ -73,11 +73,11 @@ class Vnf(NodeTemplate):  # pylint: disable=R0903
         self.vf_module = best_match.object
 
 
-class Network(NodeTemplate):  # pylint: disable=R0903
+class Network(NodeTemplate):  # pylint: disable=too-few-public-methods
     """Network dataclass."""
 
 
-class Service(SdcResource):  # pylint: disable=R0902
+class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
     """
     ONAP Service Object used for SDC operations.
 
@@ -127,7 +127,7 @@ class Service(SdcResource):  # pylint: disable=R0902
     def onboard(self) -> None:
         """Onboard the Service in SDC."""
         # first Lines are equivalent for all onboard functions but it's more readable
-        if not self.status: # pylint: disable=R0801
+        if not self.status:
             self.create()
             time.sleep(10)
             self.onboard()

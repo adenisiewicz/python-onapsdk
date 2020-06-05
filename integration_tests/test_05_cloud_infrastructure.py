@@ -3,8 +3,7 @@ import requests
 
 from onapsdk.aai.cloud_infrastructure import CloudRegion, Complex
 
-
-AAI_MOCK_URL = "http://localhost:5000"
+from .urls import AAI_MOCK_URL
 
 
 @pytest.mark.integration

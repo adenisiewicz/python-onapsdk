@@ -302,13 +302,8 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
         """
         logger.debug("Parse status for SDC Resource")
         if sdc_status.capitalize() == const.CERTIFIED:
-            if distribution_state:
-                if distribution_state == const.DISTRIBUTION_NOT_APPROVED:
-                    return const.CERTIFIED
-                if distribution_state == const.DISTRIBUTION_APPROVED:
-                    return const.APPROVED
-                if distribution_state == const.SDC_DISTRIBUTED:
-                    return const.DISTRIBUTED
+            if distribution_state and distribution_state == const.SDC_DISTRIBUTED:
+                return const.DISTRIBUTED
             return const.CERTIFIED
         if sdc_status == const.NOT_CERTIFIED_CHECKOUT:
             return const.DRAFT

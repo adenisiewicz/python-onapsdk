@@ -65,6 +65,12 @@
     services:
       - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-sdc:develop
         alias: sdc.api.fe.simpledemo.onap.org
+      - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-sdnc:latest
+        alias: sdnc.api.simpledemo.onap.org
+      - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-so:latest
+        alias: so.api.simpledemo.onap.org
+      - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-aai:latest
+        alias: aai.api.sparky.simpledemo.onap.org
     image: python:3.7
     allow_failure: true
     script:

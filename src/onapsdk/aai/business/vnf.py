@@ -254,7 +254,6 @@ class VnfInstance(Instance):  # pylint: disable=too-many-instance-attributes
         """
         if not self._vnf:
             for vnf in self.service_instance.service_subscription.sdc_service.vnfs:
-                print(vnf.metadata)
                 if vnf.metadata["UUID"] == self.model_version_id:
                     self._vnf = vnf
                     return self._vnf

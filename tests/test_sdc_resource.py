@@ -195,10 +195,10 @@ def test__parse_sdc_status_certified_not_approved():
                                          const.DISTRIBUTION_NOT_APPROVED,
                                          logging.getLogger()) == const.CERTIFIED
 
-def test__parse_sdc_status_approved():
+def test__parse_sdc_status_certified_approved():
     assert SdcResource._parse_sdc_status("CERTIFIED",
                                          const.DISTRIBUTION_APPROVED,
-                                         logging.getLogger()) == const.APPROVED
+                                         logging.getLogger()) == const.CERTIFIED
 
 def test__parse_sdc_status_distributed():
     assert SdcResource._parse_sdc_status("CERTIFIED", const.SDC_DISTRIBUTED,

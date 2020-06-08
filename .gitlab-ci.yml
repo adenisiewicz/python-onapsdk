@@ -62,6 +62,8 @@
   
   integration_tests:
     stage: test
+    variables:
+      FF_NETWORK_PER_BUILD: 1  # Enable https://docs.gitlab.com/runner/executors/docker.html#network-per-build feature
     services:
       - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-sdc:develop
         alias: sdc.api.fe.simpledemo.onap.org

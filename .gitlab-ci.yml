@@ -107,5 +107,4 @@ include:
   - template: Jobs/Code-Quality.gitlab-ci.yml
   - template: SAST.gitlab-ci.yml
   - template: License-Management.gitlab-ci.yml
- 	- template: Container-Scanning.gitlab-ci.yml
-
+  - template: Container-Scanning.gitlab-ci.yml

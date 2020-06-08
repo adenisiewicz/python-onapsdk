@@ -43,7 +43,7 @@ class SettingsLoader:
                 raise ValueError("Can't import custom settings. Is it under PYTHONPATH?")
             self.filter_and_set(module)
 
-    def __getattr__(self, name: str) -> Any:
+    def __getattribute__(self, name: str) -> Any:
         """Return stored attributes.
 
         If attribute name is uppercase return it from
@@ -65,7 +65,7 @@ class SettingsLoader:
                 return self._settings[name]
             except KeyError as exc:
                 raise AttributeError(exc)
-        return self.__dict__[name]
+        return super().__getattribute__(name)
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Save attribute.

@@ -14,8 +14,6 @@ from onapsdk.vf import Vf
 from onapsdk.service import Service
 import onapsdk.constants as const
 
-from .urls import SDC_MOCK_URL
-
 
 @pytest.mark.integration
 def test_service_unknown():

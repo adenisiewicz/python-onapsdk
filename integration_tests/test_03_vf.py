@@ -13,8 +13,6 @@ from onapsdk.vsp import Vsp
 from onapsdk.vf import Vf
 import onapsdk.constants as const
 
-from .urls import SDC_MOCK_URL
-
 
 @pytest.mark.integration
 def test_vf_unknown():

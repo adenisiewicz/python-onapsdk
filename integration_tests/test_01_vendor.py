@@ -9,8 +9,6 @@ from onapsdk.sdc import SDC
 from onapsdk.vendor import Vendor
 import onapsdk.constants as const
 
-from .urls import SDC_MOCK_URL
-
 
 @pytest.mark.integration
 def test_vendor_unknown():

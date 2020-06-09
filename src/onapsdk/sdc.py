@@ -5,9 +5,9 @@
 from typing import Any, Dict, List
 from abc import ABC, abstractmethod
 
-import logging
 from requests import Response
 
+from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService
 import onapsdk.constants as const
 from onapsdk.utils.jinja import jinja_env
@@ -19,9 +19,8 @@ class SDC(OnapService, ABC):
     server: str = "SDC"
     ACTION_TEMPLATE: str
     ACTION_METHOD: str
-    base_front_url = "https://sdc.api.fe.simpledemo.onap.org:30207"
-    base_back_url = "https://sdc.api.be.simpledemo.onap.org:30204"
-    _logger: logging.Logger = logging.getLogger(__name__)
+    base_front_url = settings.SDC_FE_URL
+    base_back_url = settings.SDC_BE_URL
 
     def __init__(self):
         """Initialize the object."""

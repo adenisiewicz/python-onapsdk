@@ -7,6 +7,7 @@ import pytest
 
 import requests
 
+from onapsdk.sdc import SDC
 from onapsdk.vendor import Vendor
 from onapsdk.vsp import Vsp
 from onapsdk.vf import Vf
@@ -16,8 +17,6 @@ import onapsdk.constants as const
 @pytest.mark.integration
 def test_vf_unknown():
     """Integration tests for Vf."""
-    Vendor.base_front_url = "http://sdc.api.fe.simpledemo.onap.org:30206"
-    Vendor.base_back_url = Vendor.base_front_url
     response = requests.post("{}/reset".format(Vendor.base_front_url))
     response.raise_for_status()
     vendor = Vendor(name="test")
@@ -42,8 +41,6 @@ def test_vf_unknown():
 @pytest.mark.integration
 def test_vf_onboard_unknown():
     """Integration tests for Vf."""
-    Vendor.base_front_url = "http://sdc.api.fe.simpledemo.onap.org:30206"
-    Vendor.base_back_url = Vendor.base_front_url
     response = requests.post("{}/reset".format(Vendor.base_front_url))
     response.raise_for_status()
     vendor = Vendor(name="test")

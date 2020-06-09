@@ -18,8 +18,6 @@ import onapsdk.constants as const
 @pytest.mark.integration
 def test_service_unknown():
     """Integration tests for Service."""
-    SDC.base_front_url = "http://sdc.api.fe.simpledemo.onap.org:30206"
-    SDC.base_back_url = Vendor.base_front_url
     response = requests.post("{}/reset".format(SDC.base_front_url))
     response.raise_for_status()
     vendor = Vendor(name="test")
@@ -39,14 +37,8 @@ def test_service_unknown():
     svc.add_resource(vf)
     svc.checkin()
     assert svc.status == const.CHECKED_IN
-    svc.submit()
-    assert svc.status == const.SUBMITTED
-    svc.start_certification()
-    assert svc.status == const.UNDER_CERTIFICATION
     svc.certify()
     assert svc.status == const.CERTIFIED
-    svc.approve()
-    assert svc.status == const.APPROVED
     svc.distribute()
     assert svc.status == const.DISTRIBUTED
     assert svc.distributed
@@ -54,8 +46,6 @@ def test_service_unknown():
 @pytest.mark.integration
 def test_service_onboard_unknown():
     """Integration tests for Service."""
-    SDC.base_front_url = "http://sdc.api.fe.simpledemo.onap.org:30206"
-    SDC.base_back_url = Vendor.base_front_url
     response = requests.post("{}/reset".format(SDC.base_front_url))
     response.raise_for_status()
     vendor = Vendor(name="test")

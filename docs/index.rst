@@ -12,7 +12,7 @@ ONAP SDK Documentation contents
    usage/usage
 
    architecture
-   modules
+   modules/modules
 
 .. include:: description.rst
 

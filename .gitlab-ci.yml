@@ -104,7 +104,6 @@
       variables:
         - $JOBS_DISABLED
 
-
   include:
     - remote: 'https://gitlab.com/Orange-OpenSource/lfn/ci_cd/gitlab-ci-templates/raw/master/pylint.gitlab-ci.yml'
     - remote: 'https://gitlab.com/Orange-OpenSource/lfn/ci_cd/gitlab-ci-templates/-/raw/5-sparkles-add-code-climate-coverage-support-for-pytest/pytest.gitlab-ci.yml'

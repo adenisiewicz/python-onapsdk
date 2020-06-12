@@ -713,12 +713,16 @@ def test_model_init():
 
 
 @mock.patch.object(Model, 'send_message_json')
-def test_model_get_all(mock_send_message_json):
+def test_zero_model_get_all(mock_send_message_json):
     """Test get_all Model class method"""
     mock_send_message_json.return_value = {}
     Model.get_all()
     assert len(list(Model.get_all())) == 0
 
+
+@mock.patch.object(Model, 'send_message_json')
+def test_model_get_all(mock_send_message_json):
+    """Test get_all Model class method"""
     mock_send_message_json.return_value = SIMPLE_MODEL
     Model.get_all()
     assert len(list(Model.get_all())) == 1

@@ -681,8 +681,18 @@ def test_add_relationship(mock_send):
 #     pass
 
 
+# pylint: disable=C0301
+SIMPLE_MODEL = {
+    "model": [
+        {
+            "model-invariant-id": "1234567890",
+            "model-type": "generic",
+            "resource-version": "1561218640404",
+        }
+    ]
+}
+# pylint: enable=C0301
 
-#test service creation 
 
 @mock.patch.object(Service, 'send_message')
 def test_service_create(mock_send):
@@ -690,7 +700,6 @@ def test_service_create(mock_send):
     Service.create("1234", "description")
     mock_send.assert_called_once()
     method, description, url = mock_send.call_args[0]
-
     assert method == "PUT"
     assert description == "Create A&AI service"
     assert url == (f"{Service.base_url}{Service.api_version}/service-design-and-creation/"
@@ -710,5 +719,11 @@ def test_model_get_all(mock_send_message_json):
     Model.get_all()
     assert len(list(Model.get_all())) == 0
 
-
-    #model_1 = next(Model.get_all())
+    mock_send_message_json.return_value = SIMPLE_MODEL
+    Model.get_all()
+    assert len(list(Model.get_all())) == 1
+    model_1 = next(Model.get_all())
+    assert model_1.invariant_id == "1234567890"
+    assert model_1.model_type == "generic"
+    assert model_1.resource_version == "1561218640404"
+    mock_send_message_json.assert_called_with("GET", 'Get A&AI sdc models', mock.ANY)

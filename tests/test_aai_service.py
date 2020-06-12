@@ -13,7 +13,7 @@ from onapsdk.aai.cloud_infrastructure import (
     Tenant
 )
 from onapsdk.aai.business import Customer
-from onapsdk.aai.service_design_and_creation import Service
+from onapsdk.aai.service_design_and_creation import Service, Model
 from onapsdk.onap_service import OnapService
 
 
@@ -679,3 +679,36 @@ def test_add_relationship(mock_send):
 # def test_check_aai_resource_net_not_found():
 #     """Test that a given net is not in A&AI (cleaned)."""
 #     pass
+
+
+
+#test service creation 
+
+@mock.patch.object(Service, 'send_message')
+def test_service_create(mock_send):
+    """Test service creation"""
+    Service.create("1234", "description")
+    mock_send.assert_called_once()
+    method, description, url = mock_send.call_args[0]
+
+    assert method == "PUT"
+    assert description == "Create A&AI service"
+    assert url == (f"{Service.base_url}{Service.api_version}/service-design-and-creation/"
+                   f"services/service/1234")
+
+
+def test_model_init():
+    """Test model initailization"""
+    model = Model("12345", "ubuntu", "version16")
+    assert isinstance(model, Model)
+
+
+@mock.patch.object(Model, 'send_message_json')
+def test_model_get_all(mock_send_message_json):
+    """Test get_all Model class method"""
+    mock_send_message_json.return_value = {}
+    Model.get_all()
+    assert len(list(Model.get_all())) == 0
+
+
+    #model_1 = next(Model.get_all())

@@ -322,7 +322,6 @@ class ServiceOrder(Nbi):  # pylint: disable=too-many-instance-attributes
         for service_order in cls.send_message_json("GET",
                                                    "Get all service orders",
                                                    f"{cls.base_url}{cls.api_version}/serviceOrder"):
-            print(service_order)
             service_order_related_party = None
             if service_order.get("relatedParty") is not None:
                 service_order_related_party = service_order.get(

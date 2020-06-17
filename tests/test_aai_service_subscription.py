@@ -3,6 +3,7 @@ from unittest import mock
 import pytest
 
 from onapsdk.aai.business import Customer, ServiceSubscription, ServiceInstance
+from onapsdk.service import Service as SdcService
 
 
 SERVICE_INSTANCES = {
@@ -83,3 +84,11 @@ def test_get_service_instance_by_name(mock_get):
                                             instance_name="test")
     service_instance = service_subscription.get_service_instance_by_name(service_instance_name="test")
     assert service_instance.instance_name == "test"
+
+
+def test_sdc_service_subscription():
+    """Test service subscription sdc property"""
+    service_subscription = ServiceSubscription(customer=None,
+                                               service_type="test_service_type",
+                                               resource_version="test_resource_version")  
+    assert service_subscription.sdc_service == SdcService("test_service_type")

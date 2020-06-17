@@ -403,3 +403,19 @@ def test_customer_subscribe_service(mock_send_message, mock_send_message_json):
     service._unique_uuid = "1234"
     mock_send_message_json.side_effect = (ValueError, SERVICE_SUBSCRIPTION)
     customer.subscribe_service(service)
+
+
+@mock.patch.object(ServiceSubscription, "send_message_json")
+def test_get_service_instance_by_filter_parameter(mock_send_message_json):
+    """Test Service Subscription get_service_instance_by_filter_parameter method"""
+    customer = Customer("generic", "generic", "INFRA")
+    service_subscription = ServiceSubscription(customer=customer,
+                                               service_type="test_service_type",
+                                               resource_version="test_resource_version")
+    mock_send_message_json.return_value = SERVICE_INSTANCES
+    service_instance = service_subscription._get_service_instance_by_filter_parameter(filter_parameter_name="service-instance-id", filter_parameter_value="5410bf79-2aa3-450e-a324-ec5630dc18cf")
+    assert service_instance.instance_name == "test"
+    assert service_instance.instance_id == "5410bf79-2aa3-450e-a324-ec5630dc18cf"
+    
+
+    

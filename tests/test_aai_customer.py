@@ -5,7 +5,7 @@ from unittest import mock
 
 import pytest
 
-from onapsdk.aai.business import Customer, ServiceSubscription
+from onapsdk.aai.business import Customer, ServiceSubscription, ServiceInstance
 from onapsdk.aai.cloud_infrastructure import CloudRegion, Tenant
 from onapsdk.service import Service as SdcService
 
@@ -416,6 +416,15 @@ def test_get_service_instance_by_filter_parameter(mock_send_message_json):
     service_instance = service_subscription._get_service_instance_by_filter_parameter(filter_parameter_name="service-instance-id", filter_parameter_value="5410bf79-2aa3-450e-a324-ec5630dc18cf")
     assert service_instance.instance_name == "test"
     assert service_instance.instance_id == "5410bf79-2aa3-450e-a324-ec5630dc18cf"
-    
 
-    
+
+@mock.patch.object(ServiceSubscription, "_get_service_instance_by_filter_parameter")
+def test_get_service_instance_by_id(mock_get):
+    """Test Service Subscription get_service_instance_by_id method"""
+    service_subscription = ServiceSubscription(customer=None,
+                                               service_type="test_service_type",
+                                               resource_version="test_resource_version")
+    mock_get.return_value = ServiceInstance(service_subscription="ServiceSubscription",
+                                            instance_id="5410bf79-2aa3-450e-a324-ec5630dc18cf")
+    service_instance = service_subscription.get_service_instance_by_id(service_instance_id="5410bf79-2aa3-450e-a324-ec5630dc18cf")
+    assert service_instance.instance_id == "5410bf79-2aa3-450e-a324-ec5630dc18cf"

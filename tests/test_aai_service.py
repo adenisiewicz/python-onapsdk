@@ -694,6 +694,13 @@ SIMPLE_MODEL = {
 # pylint: enable=C0301
 
 
+def test_service_url():
+    """Test service property"""
+    service = Service("12345", "description", "version1.0")
+    assert service.url == (f"{service.base_url}{service.api_version}/service-design-and-creation/services/service/"
+                f"{service.service_id}?resource-version={service.resource_version}")
+
+
 @mock.patch.object(Service, 'send_message')
 def test_service_create(mock_send):
     """Test service creation"""
@@ -710,6 +717,13 @@ def test_model_init():
     """Test model initailization"""
     model = Model("12345", "ubuntu", "version16")
     assert isinstance(model, Model)
+
+
+def test_model_url():
+    """Test Model's url property"""
+    model = Model("12345", "ubuntu", "version16")
+    assert model.url == (f"{model.base_url}{model.api_version}/service-design-and-creation/models/"
+                         f"model/{model.invariant_id}?resource-version={model.resource_version}")
 
 
 @mock.patch.object(Model, 'send_message_json')

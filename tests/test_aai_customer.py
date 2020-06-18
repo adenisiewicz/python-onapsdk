@@ -420,6 +420,7 @@ AVAILABILITY_ZONES = {
 
 @mock.patch.object(CloudRegion, "send_message_json")
 def test_availability_zones(mock_send_message_json):
+    """Test Cloud Region property"""
     cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
                                cloud_region_id="test_cloud_region",
                                orchestration_disabled=True,
@@ -432,7 +433,24 @@ def test_availability_zones(mock_send_message_json):
 
 
 @mock.patch.object(CloudRegion, "send_message")
+def test_add_availability_zone(mock_send_message):
+    """Test Cloud Region class method"""
+    cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
+                               cloud_region_id="test_cloud_region",
+                               orchestration_disabled=True,
+                               in_maint=False)
+    cloud_region.add_availability_zone(availability_zone_name="test_zone",
+                                       availability_zone_hypervisor_type="1234")
+    mock_send_message.assert_called_once()
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "PUT"
+    assert description == "Add availability zone to cloud region"
+    assert url == f"{cloud_region.url}/availability-zones/availability-zone/test_zone"
+
+
+@mock.patch.object(CloudRegion, "send_message")
 def test_add_tenant_to_cloud(mock_send_message):
+    """Test Cloud Region class method"""
     cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
                                cloud_region_id="test_cloud_region",
                                orchestration_disabled=True,

@@ -404,3 +404,29 @@ def test_customer_subscribe_service(mock_send_message, mock_send_message_json):
     mock_send_message_json.side_effect = (ValueError, SERVICE_SUBSCRIPTION)
     customer.subscribe_service(service)
 
+
+#test the availability zone 
+AVAILABILITY_ZONES = {
+    "availability-zone":[
+        {
+            "availability-zone-name":"OPNFV LaaS",
+            "hypervisor-type":"1234",
+            "operational-status":"working",
+            "resource-version":"version1.0"
+        }
+    ]
+}
+
+
+@mock.patch.object(CloudRegion, "send_message_json")
+def test_availability_zones(mock_send_message_json):
+    cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
+                               cloud_region_id="test_cloud_region",
+                               orchestration_disabled=True,
+                               in_maint=False)
+    mock_send_message_json.return_value = AVAILABILITY_ZONES
+    cloud_zones = cloud_region.availability_zones
+    zone1 = next(cloud_zones)
+    assert zone1.name == "OPNFV LaaS"
+    assert zone1.hypervisor_type == "1234"
+

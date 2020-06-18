@@ -502,3 +502,17 @@ def test_unregister_from_multicloud(mock_unregister):
                                in_maint=False)
     cloud_region.unregister_from_multicloud()
     mock_unregister.assert_called_once()
+
+
+@mock.patch.object(CloudRegion, "send_message")
+def test_delete_cloud_region(mock_send_message):
+    cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
+                               cloud_region_id="test_cloud_region",
+                               orchestration_disabled=True,
+                               in_maint=False)
+    cloud_region.delete()
+    mock_send_message.assert_called_once()
+    method, descritption, url = mock_send_message.call_args[0]
+    assert method == "DELETE"
+    assert descritption == f"Delete cloud region test_cloud_region"
+    assert url == cloud_region.url

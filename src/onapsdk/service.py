@@ -239,7 +239,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             self._vnfs = []
             for node_template_name, values in \
                 self.tosca_template.get("topology_template", {}).get(
-                    "node_templates", {}).items():
+                        "node_templates", {}).items():
                 if re.match("org.openecomp.resource.vf.*", values["type"]):
                     vnf: Vnf = Vnf(
                         name=node_template_name,
@@ -271,7 +271,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             self._networks = []
             for node_template_name, values in \
                 self.tosca_template.get("topology_template", {}).get(
-                    "node_templates", {}).items():
+                        "node_templates", {}).items():
                 if re.match("org.openecomp.resource.vl.*", values["type"]):
                     self._networks.append(Network(
                         name=node_template_name,
@@ -407,18 +407,6 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         except BadZipFile as exc:
             self._logger.exception(exc)
 
-    def _unzip_csar_file(self, zip_file: Union[str, BytesIO],
-                         function: Callable[[str,
-                                             TextIOWrapper], None]) -> None:
-        """Unzip Csar File and perform an action on the file."""
-        with ZipFile(zip_file) as myzip:
-            for name in myzip.namelist():
-                if (name[-13:] == "-template.yml"
-                        and name[:20] == "Definitions/service-"):
-                    service_template = name
-            with myzip.open(service_template) as template_file:
-                function(service_template, template_file)
-
     def _check_distributed(self) -> bool:
         """Check if service is distributed and update status accordingly."""
         url = "{}/services/distribution/{}".format(self._base_create_url(),
@@ -454,7 +442,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                         and (const.DOWNLOAD_OK in elt['status'])):
                     status[key] = True
                     self._logger.info(("[SDC][Get Distribution] Service "
-                                        "distributed in %s"), key)
+                                       "distributed in %s"), key)
         return status
 
     def load_metadata(self) -> None:
@@ -546,14 +534,30 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                                   "should be in  status %s"), self.name,
                                  self.status, desired_status)
 
-    def _write_csar_file(self, service_template: str,
+    @staticmethod
+    def _unzip_csar_file(zip_file: Union[str, BytesIO],
+                         function: Callable[[str,
+                                             TextIOWrapper], None]) -> None:
+        """Unzip Csar File and perform an action on the file."""
+        with ZipFile(zip_file) as myzip:
+            for name in myzip.namelist():
+                if (name[-13:] == "-template.yml"
+                        and name[:20] == "Definitions/service-"):
+                    service_template = name
+            with myzip.open(service_template) as template_file:
+                function(service_template, template_file)
+
+    @staticmethod
+    def _write_csar_file(service_template: str,
                          template_file: TextIOWrapper) -> None:
         """Write service temple into a file."""
         with open(tosca_path() + service_template[12:], 'wb') as file2:
             file2.write(template_file.read())
 
-    def _load_tosca_template(self, service_template: str,
-                         template_file: TextIOWrapper) -> None:
+    # _service_template is not used but function generation is generic
+    # pylint: disable-unused-argument
+    def _load_tosca_template(self, _service_template: str,
+                             template_file: TextIOWrapper) -> None:
         """Load Tosca template."""
         self._tosca_template = yaml.safe_load(template_file.read())
 

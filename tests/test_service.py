@@ -668,3 +668,14 @@ def test_vnf_vf_modules_two():
         assert vnf.node_template_type == "org.openecomp.resource.vf.VfwclVfwsnkVf"
         assert vnf.vf_module
         assert vnf.vf_module.name == "vfwcl_vfwsnkvf0..VfwclVfwsnkVf..base_vfw..module-0"
+
+
+def test_service_networks():
+    service = Service(name="test")
+    with open(Path(Path(__file__).resolve().parent, "data/service-TestServiceFyx-template.yml"), "r") as service_file:
+        service._tosca_template = yaml.safe_load(service_file.read())
+    assert len(service.networks) == 1
+
+    network = service.networks[0]
+    assert network.name == "NeutronNet 0"
+    assert network.node_template_type == "org.openecomp.resource.vl.nodes.heat.network.neutron.Net"

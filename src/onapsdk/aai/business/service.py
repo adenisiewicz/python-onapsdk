@@ -3,7 +3,7 @@
 from typing import Iterator
 
 from onapsdk.so.deletion import ServiceDeletionRequest
-from onapsdk.so.instantiation import VnfInstantiation
+from onapsdk.so.instantiation import NetworkInstantiation, VnfInstantiation
 
 from .instance import Instance
 from .vnf import VnfInstance
@@ -174,6 +174,21 @@ class ServiceInstance(Instance):  # pylint: disable=too-many-instance-attributes
             line_of_business,
             platform,
             vnf_instance_name
+        )
+
+    def add_network(self,  # pylint: disable=too-many-arguments
+                    network: "Network",
+                    line_of_business: "LineOfBusiness",
+                    platform: "Platform",
+                    network_instance_name: str = None) -> "NetworkInstantiation":
+        if self.orchestration_status != "Active":
+            raise AttributeError("Service has invalid orchestration status")
+        return NetworkInstantiation.instantiate_ala_carte(
+            self,
+            network,
+            line_of_business,
+            platform,
+            network_instance_name
         )
 
     def delete(self) -> "ServiceDeletionRequest":

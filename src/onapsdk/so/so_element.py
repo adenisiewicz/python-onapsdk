@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """SO Element module."""
+import json
+import time
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict
-
-import json
 
 from onapsdk.configuration import settings
 from onapsdk.sdc.service import Service
@@ -105,6 +105,8 @@ class SoElement(OnapService):
 class OrchestrationRequest(SoElement, ABC):
     """Base SO orchestration request class."""
 
+    WAIT_FOR_SLEEP_TIME = 10
+
     def __init__(self,
                  request_id: str) -> None:
         """Instantiate object initialization.
@@ -192,3 +194,10 @@ class OrchestrationRequest(SoElement, ABC):
 
         """
         return self.finished and self.status == self.StatusEnum.FAILED
+
+    def wait_for_finish(self) -> bool:
+        self._logger.debug("Wait unit orchestation request is not finished")
+        while not self.finished:
+            time.sleep(self.WAIT_FOR_SLEEP_TIME)
+        self._logger.info("Orchestration request finished")
+        return self.completed

@@ -461,3 +461,20 @@ def test_add_tenant_to_cloud(mock_send_message):
     assert method == "PUT"
     assert description == "add tenant to cloud region"
     assert url == f"{cloud_region.url}/tenants/tenant/123456"
+
+
+@mock.patch.object(CloudRegion, "send_message")
+def test_add_esr_system_info(mock_send_message):
+    cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
+                               cloud_region_id="test_cloud_region",
+                               orchestration_disabled=True,
+                               in_maint=False)
+    cloud_region.add_esr_system_info(esr_system_info_id="123456",
+                                     user_name="test_user",
+                                     password="password",
+                                     system_type="test_type")
+    mock_send_message.assert_called_once()
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "PUT"
+    assert description == "Add external system info to cloud region"
+    assert url == f"{cloud_region.url}/esr-system-info-list/esr-system-info/123456"

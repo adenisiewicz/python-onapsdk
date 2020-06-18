@@ -406,7 +406,7 @@ def test_customer_subscribe_service(mock_send_message, mock_send_message_json):
     customer.subscribe_service(service)
 
 
-#test the availability zone 
+#test the Cloud Region Class  
 AVAILABILITY_ZONES = {
     "availability-zone":[
         {

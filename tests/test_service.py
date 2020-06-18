@@ -12,8 +12,8 @@ import oyaml as yaml
 import pytest
 
 import onapsdk.constants as const
-from onapsdk.service import Service
-from onapsdk.sdc_resource import SdcResource
+from onapsdk.sdc.service import Service
+from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.utils.headers_creator import headers_sdc_tester
 from onapsdk.utils.headers_creator import headers_sdc_governor
 from onapsdk.utils.headers_creator import headers_sdc_operator

@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from onapsdk.onap_service import OnapService
 from onapsdk.sdnc import VfModulePreload
-from onapsdk.service import Service as SdcService, Vnf, VfModule
+from onapsdk.sdc.service import Service as SdcService, Vnf, VfModule
 from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.headers_creator import headers_so_creator
 from onapsdk.vid import LineOfBusiness, Platform

@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 
 from onapsdk.sdnc import VfModulePreload
-from onapsdk.service import Service as SdcService
+from onapsdk.sdc.service import Service as SdcService
 from onapsdk.so.so_element import OrchestrationRequest
 from onapsdk.so.instantiation import (
     ServiceInstantiation,

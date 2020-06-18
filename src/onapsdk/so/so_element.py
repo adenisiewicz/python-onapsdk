@@ -10,8 +10,8 @@ from typing import Dict
 import json
 
 from onapsdk.configuration import settings
-from onapsdk.service import Service
-from onapsdk.vf import Vf
+from onapsdk.sdc.service import Service
+from onapsdk.sdc.vf import Vf
 from onapsdk.onap_service import OnapService
 from onapsdk.utils.headers_creator import headers_so_creator
 from onapsdk.utils.jinja import jinja_env

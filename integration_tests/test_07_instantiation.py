@@ -8,7 +8,7 @@ from onapsdk.aai.business import Customer, ServiceInstance, ServiceSubscription,
 from onapsdk.aai.cloud_infrastructure import CloudRegion, Tenant
 from onapsdk.configuration import settings
 from onapsdk.sdnc.preload import VfModulePreload
-from onapsdk.service import Service
+from onapsdk.sdc.service import Service
 from onapsdk.so.deletion import ServiceDeletionRequest, VfModuleDeletionRequest, VnfDeletionRequest
 from onapsdk.so.instantiation import (ServiceInstantiation,
                                       VfModuleInstantiation, VnfInstantiation)

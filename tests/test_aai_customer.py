@@ -8,6 +8,7 @@ import pytest
 from onapsdk.aai.business import Customer, ServiceSubscription, ServiceInstance
 from onapsdk.aai.cloud_infrastructure import CloudRegion, Tenant
 from onapsdk.service import Service as SdcService
+from onapsdk.multicloud import Multicloud
 
 
 SIMPLE_CUSTOMER = {
@@ -465,6 +466,7 @@ def test_add_tenant_to_cloud(mock_send_message):
 
 @mock.patch.object(CloudRegion, "send_message")
 def test_add_esr_system_info(mock_send_message):
+    """Test Cloud Region class method"""
     cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
                                cloud_region_id="test_cloud_region",
                                orchestration_disabled=True,
@@ -478,3 +480,25 @@ def test_add_esr_system_info(mock_send_message):
     assert method == "PUT"
     assert description == "Add external system info to cloud region"
     assert url == f"{cloud_region.url}/esr-system-info-list/esr-system-info/123456"
+
+
+@mock.patch.object(Multicloud, "register_vim")
+def test_register_to_multicloud(mock_register):
+    """Test register to multicloud"""
+    cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
+                               cloud_region_id="test_cloud_region",
+                               orchestration_disabled=True,
+                               in_maint=False)
+    cloud_region.register_to_multicloud()
+    mock_register.assert_called_once()
+
+
+@mock.patch.object(Multicloud, "unregister_vim")
+def test_unregister_from_multicloud(mock_unregister):
+    """Test register to multicloud"""
+    cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
+                               cloud_region_id="test_cloud_region",
+                               orchestration_disabled=True,
+                               in_maint=False)
+    cloud_region.unregister_from_multicloud()
+    mock_unregister.assert_called_once()

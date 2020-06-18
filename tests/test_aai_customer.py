@@ -430,3 +430,16 @@ def test_availability_zones(mock_send_message_json):
     assert zone1.name == "OPNFV LaaS"
     assert zone1.hypervisor_type == "1234"
 
+
+@mock.patch.object(CloudRegion, "send_message")
+def test_add_tenant_to_cloud(mock_send_message):
+    cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
+                               cloud_region_id="test_cloud_region",
+                               orchestration_disabled=True,
+                               in_maint=False)
+    cloud_region.add_tenant(tenant_id="123456", tenant_name="test_tenant")
+    mock_send_message.assert_called_once()
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "PUT"
+    assert description == "add tenant to cloud region"
+    assert url == f"{cloud_region.url}/tenants/tenant/123456"

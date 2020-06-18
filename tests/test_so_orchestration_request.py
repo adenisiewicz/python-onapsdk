@@ -4,6 +4,8 @@ import pytest
 
 from onapsdk.so.so_element import OrchestrationRequest, SoElement
 from onapsdk.vf import Vf
+from onapsdk.utils.headers_creator import headers_so_creator
+from onapsdk.onap_service import OnapService
 
 
 IN_PROGRESS = {
@@ -71,6 +73,13 @@ def test_orchestration_request_status(mock_send_message):
 
 
 #Test the Class SoElement 
+def test_SoElement_headers():
+    """Test the header property"""
+    element = SoElement()
+    assert element.headers != headers_so_creator(OnapService.headers)
+    #check x-transactionid for headers
+
+
 def test_get_subscription_service_type():
     """Test SO Element class method"""
     vf_object_name = SoElement.get_subscription_service_type("vf_name")

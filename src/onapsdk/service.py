@@ -533,3 +533,55 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
     def _sdc_path(cls) -> None:
         """Give back the end of SDC path."""
         return cls.SERVICE_PATH
+
+    
+    @classmethod
+    def add_vnf_uid_to_metadata(self, vnf_name:str):
+        """ Add vnf uniqueID"""
+        url = "https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/"/{}.\
+                                                                            format(self.unique_identifier)
+
+        request_return = self.send_message_json('GET',
+                                                'get vnf unique ID',
+                                                url)
+        #look for uniqueID 
+        unique_id = request_return["componentInstances"][0]["uniqueId"]  
+        vnf_it = 0
+        for vnf in self.vnfs:
+            if vnf.name == vnf_name:
+                self.vnfs[vnf_it].metadata["uniqueId"] = unique_id
+                return unique_id 
+            vnf_it += 1
+        raise AttributeError("Couldn't find VNF")
+	
+
+    @classmethod 
+    def add_artifact_to_vnf(self, vnf_name:str, artifact_type:str, package_to_upload: str = None): #artifact_path:str
+        """upload artifact to VF"""
+        if package_to_upload :
+            #this is the artifact path
+            url = "https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/{}/resourceInstance/{}/artifacts".\
+                    format(self.unique_identifier, add_vnf_uid_to_metadata(self, vnf_name))
+
+
+            headers = self.headers.copy()
+            headers.pop("Content-Type")
+            headers["Accept-Encoding"] = "gzip, deflate, br"
+            headers["artifactGroupType"] = "DEPLOYMENT"
+            headers["artifactLabel"] = "test"
+            headers["artifactName"] = "k8s_tca_clampnode.yaml"
+            headers["artifactType"] = artifact_type
+            headers["description"] = "test"
+            data = {'upload': package_to_upload}
+            upload_result = self.send_message('POST',
+                                            'add artifact to vnf',
+                                            url,
+                                            headers=headers,
+                                            files=data)
+            if upload_result:
+                    self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
+                                    vnf_name)
+            else:
+                self._logger.error(
+                    "an error occured during file upload for blueprint Artifact to VNF %s",
+                    vnf_name)

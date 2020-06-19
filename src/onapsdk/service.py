@@ -442,7 +442,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
 
     def _parse_components_status(self, status: Dict[str, bool],
                                  element: Dict[str, Any]) -> Dict[str, bool]:
-        "Parse components distribution "
+        """Parse components distribution status."""
         for key in status:
             if ((key in element['omfComponentID'])
                     and (const.DOWNLOAD_OK in element['status'])):
@@ -549,6 +549,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
 
         Raises:
             AttributeError: CSAR file has no service template
+
         """
         with ZipFile(zip_file) as myzip:
             service_template = None

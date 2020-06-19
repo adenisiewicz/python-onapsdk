@@ -9,7 +9,7 @@ from io import BytesIO, TextIOWrapper
 from os import makedirs
 import time
 import re
-from typing import Dict, Iterable, List, Callable, Union
+from typing import Dict, Iterable, List, Callable, Union, Any
 from zipfile import ZipFile, BadZipFile
 from requests import Response
 
@@ -437,12 +437,18 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         self._logger.debug("[SDC][Get Distribution] distrib_list = %s",
                            distrib_list)
         for elt in distrib_list:
-            for key in status:
-                if ((key in elt['omfComponentID'])
-                        and (const.DOWNLOAD_OK in elt['status'])):
-                    status[key] = True
-                    self._logger.info(("[SDC][Get Distribution] Service "
-                                       "distributed in %s"), key)
+            status = self._parse_components_status(status, elt)
+        return status
+
+    def _parse_components_status(self, status: Dict[str, bool],
+                                 element: Dict[str, Any]) -> Dict[str, bool]:
+        "Parse components distribution "
+        for key in status:
+            if ((key in element['omfComponentID'])
+                    and (const.DOWNLOAD_OK in element['status'])):
+                status[key] = True
+                self._logger.info(("[SDC][Get Distribution] Service "
+                                   "distributed in %s"), key)
         return status
 
     def load_metadata(self) -> None:
@@ -538,12 +544,22 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
     def _unzip_csar_file(zip_file: Union[str, BytesIO],
                          function: Callable[[str,
                                              TextIOWrapper], None]) -> None:
-        """Unzip Csar File and perform an action on the file."""
+        """
+        Unzip Csar File and perform an action on the file.
+
+        Raises:
+            AttributeError: CSAR file has no service template
+        """
         with ZipFile(zip_file) as myzip:
+            service_template = None
             for name in myzip.namelist():
                 if (name[-13:] == "-template.yml"
                         and name[:20] == "Definitions/service-"):
                     service_template = name
+
+            if not service_template:
+                raise AttributeError("CSAR file has no service template")
+
             with myzip.open(service_template) as template_file:
                 function(service_template, template_file)
 
@@ -551,8 +567,8 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
     def _write_csar_file(service_template: str,
                          template_file: TextIOWrapper) -> None:
         """Write service temple into a file."""
-        with open(tosca_path() + service_template[12:], 'wb') as file2:
-            file2.write(template_file.read())
+        with open(tosca_path() + service_template[12:], 'wb') as file:
+            file.write(template_file.read())
 
     # _service_template is not used but function generation is generic
     # pylint: disable-unused-argument

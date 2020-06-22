@@ -563,7 +563,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         self.unique_identifier = service_uid
         missing_identifier = self.add_vnf_uid_to_metadata(vnf_name, self.unique_identifier)
         url = "https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/{}/"
-              "resourceInstance/{}/artifacts".format(self.unique_identifier, missing_identifier)
+            "resourceInstance/{}/artifacts".format(self.unique_identifier, missing_identifier)
         headers = self.headers.copy()
         headers.pop("Content-Type")
         headers["Accept-Encoding"] = "gzip, deflate, br"

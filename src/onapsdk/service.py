@@ -541,8 +541,8 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                                                 'Get vnf unique ID',
                                                 url)
         if request_return:
-            componentInstances_list = request_return["componentInstances"]
-            for instance in componentInstances_list:
+            component_instances = request_return["componentInstances"]
+            for instance in component_instances:
                 if instance["name"] == vnf_name:
                     unique_id = instance["uniqueId"]
                     break
@@ -575,5 +575,6 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
                               vnf_name)
         else:
-            self._logger.error("an error occured during file upload for blueprint Artifact to VNF %s",
-                               vnf_name)
+            self._logger.error(("an error occured during file upload for blueprint Artifact"
+                                "to VNF %s"),vnf_name)
+                                

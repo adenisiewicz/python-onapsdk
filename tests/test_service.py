@@ -676,7 +676,8 @@ VNFS = [Vnf(name="ubuntu16test_VF 0", node_template_type=None, metadata={}, prop
 ARTIFACTS = {
     "componentInstances" : [
         {
-            "uniqueId" : "test_unique_id"
+            "uniqueId" : "test_unique_id",
+            "name" : "ubuntu16test_VF 0"
         }
     ]                 
 }
@@ -690,8 +691,7 @@ def test_add_vnf_uid_to_metadata(mock_send):
         svc = Service()
         svc.unique_identifier = "service_unique_identifier"
         mock_send.return_value = ARTIFACTS
-        unique_id = svc.add_vnf_uid_to_metadata(vnf_name="ubuntu16test_VF 0", 
-                                                uid=svc.unique_identifier)
+        unique_id = svc.add_vnf_uid_to_metadata(vnf_name="ubuntu16test_VF 0")
         mock_send.assert_called_once_with(
             'GET', 'Get vnf unique ID',
             f"https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/{svc.unique_identifier}")

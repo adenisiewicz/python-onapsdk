@@ -534,36 +534,33 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         """Give back the end of SDC path."""
         return cls.SERVICE_PATH
 
-    
-    def add_vnf_uid_to_metadata(self, vnf_name: str, uid: str):
-        """Add vnf uniqueID."""
-        url = "https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/{}".\
-              format(uid)
-
+    def add_vnf_uid_to_metadata(self, vnf_name: str):
+        """Get vnf uniqueID."""
+        url = "{}/services/{}".format(self._base_create_url(), self.unique_identifier)
         request_return = self.send_message_json('GET',
                                                 'Get vnf unique ID',
                                                 url)
-        #look for uniqueID 
-        if request_return != '{}':
-            unique_id = request_return["componentInstances"][0]["uniqueId"]  
+        if request_return:
+            componentInstances_list = request_return["componentInstances"]
+            for instance in componentInstances_list:
+                if instance["name"] == vnf_name:
+                    unique_id = instance["uniqueId"]
+                    break
             vnf_it = 0
-            #look for the desired vnf  
             for vnf in self.vnfs:
                 if vnf.name == vnf_name:
                     self.vnfs[vnf_it].metadata["uniqueId"] = unique_id
                     return unique_id
                 vnf_it += 1
-            raise AttributeError("Couldn't find VNF")
-        raise AttributeError("Couldn't find any VNF")
-	
+        raise AttributeError("Couldn't find VNF")
 
     def add_artifact_to_vf(self, vnf_name: str, service_uid: str, artifact_type: str):
         """Add the TCA blueprint artifact to vf."""
-        #must set the service unique identifier or re-set it to its value
         self.unique_identifier = service_uid
-        missing_identifier = self.add_vnf_uid_to_metadata(vnf_name, self.unique_identifier)
-        url = "https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/{}/resourceInstance/{}/artifacts".\
-              format(self.unique_identifier, missing_identifier)
+        missing_identifier = self.add_vnf_uid_to_metadata(vnf_name)
+        base = "https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services"
+        url = "{}/{}/resourceInstance/{}/artifacts".\
+              format(base, self.unique_identifier, missing_identifier)
         headers = self.headers.copy()
         headers.pop("Content-Type")
         headers["Accept-Encoding"] = "gzip, deflate, br"
@@ -571,13 +568,12 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         data = template.render(artifact_type=artifact_type)
         upload_result = self.send_message('POST',
                                           'Add artifact to vf',
-                                           url,
-                                           headers=headers,
-                                           data=data)
+                                          url,
+                                          headers=headers,
+                                          data=data)
         if upload_result:
             self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
                               vnf_name)
         else:
             self._logger.error("an error occured during file upload for blueprint Artifact to VNF %s",
                                vnf_name)
-

@@ -558,9 +558,8 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         """Add the TCA blueprint artifact to vf."""
         self.unique_identifier = service_uid
         missing_identifier = self.add_vnf_uid_to_metadata(vnf_name)
-        base = "https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services"
-        url = "{}/{}/resourceInstance/{}/artifacts".\
-              format(base, self.unique_identifier, missing_identifier)
+        url = "{}/services/{}/resourceInstance/{}/artifacts".\
+              format(self._base_create_url(), self.unique_identifier, missing_identifier)
         headers = self.headers.copy()
         headers.pop("Content-Type")
         headers["Accept-Encoding"] = "gzip, deflate, br"

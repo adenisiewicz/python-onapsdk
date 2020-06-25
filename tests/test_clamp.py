@@ -61,7 +61,6 @@ def test_check_loop_template_none(mock_send_message_json):
         assert template is None
 
 
-
 @mock.patch.object(Clamp, 'send_message_json')
 def test_check_policies(mock_send_message_json):
     mock_send_message_json.return_value = POLICIES
@@ -70,3 +69,9 @@ def test_check_policies(mock_send_message_json):
         mock_send_message_json.\
             assert_called_once_with('GET', 'Get stocked policies', (f"{Clamp.base_url()}/policyToscaModels/"))
         assert exists 
+
+
+def test_cl_initialization():
+    """Class initialization test."""
+    loop = LoopInstance(template="test", name="LOOP_name", details={})
+    assert isinstance(loop, LoopInstance)

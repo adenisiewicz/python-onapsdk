@@ -13,6 +13,11 @@ class Clamp(Onap):
 
     def __init__(self) -> None:
         """Initialize the object."""
+        super().__init__()
+        self.name: str = None
+        self._identifier: str = None
+        self._status: str = None
+        self._version: str = None
 
     @classmethod
     def base_url(cls) -> str:

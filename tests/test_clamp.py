@@ -36,6 +36,11 @@ POLICIES = [
 
 LOOP_DETAILS = {
     "name" : "LOOP_test",
+    "operationalPolicies" : [
+        {
+            "name" : "MICROSERVICE_test"
+        }
+    ],
     "microServicePolicies" : [
         {
             "name" : "MICROSERVICE_test"

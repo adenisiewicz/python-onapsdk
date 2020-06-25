@@ -57,3 +57,13 @@ class LoopInstance(Clamp):
             if len(self.details["microServicePolicies"]) > 0:
                 return True
         raise ValueError("Couldn't create the instance")
+
+    def add_oprational_policy(self, policy_type: str, policy_version: str) -> None:
+        """Add op policy to the loop instance"""
+        url = "{}/loop/addOperationaPolicy/{}/policyModel/{}/{}".\
+              format(self.base_url, self.name, policy_type, policy_version)
+        add_response = self.send_message_json('PUT', 'Create Loop Instance', url)
+        if add_response and len(add_response["operationalPolicies"]) > len(self.details["operationalPolicies"]):
+            self.details = add_response
+        raise ValueError("Couldn't add the op policy")
+

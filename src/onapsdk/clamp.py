@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
-import json
-
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.service import Service
 

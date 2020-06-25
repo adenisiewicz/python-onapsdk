@@ -13,18 +13,15 @@ class Clamp(Onap):
 
     def __init__(self):
         """Initialize the object."""
-        super().__init__()
-    
+
     @classmethod
     def base_url(cls) -> str:
-        """
-        Give back the base url of Clamp.
-        """
+        """Give back the base url of Clamp."""
         return "https://clamp.api.simpledemo.onap.org:30258/restservices/clds/v2/"
-        
+
     @classmethod
     def check_loop_template(cls, service: Service) -> str:
-        """returns loop template name if exists."""
+        """Return loop template name if exists."""
         url = "{}/templates/".format(cls.base_url())
         template_list = cls.send_message_json('GET', 'Get Loop Templates', url)
         for template in template_list:
@@ -37,7 +34,7 @@ class Clamp(Onap):
         """Ensure that policies are stored in CLAMP."""
         url = "{}/policyToscaModels/".format(cls.base_url())
         policies = cls.send_message_json('GET', 'Get stocked policies', url)
-        if len(policies)>30:
+        if len(policies) > 30:
             for policy in policies:
                 if policy["policyAcronym"] == policy_name:
                     return True
@@ -47,7 +44,8 @@ class Clamp(Onap):
 class LoopInstance(Clamp):
     """Control Loop instantiation class."""
 
-    def __init__(template: str, name: str, details: dict):
+    def __init__(self, template: str, name: str, details: dict):
+        """Initialize the object."""
         self.template = template
         self.name = name
         self.details = details

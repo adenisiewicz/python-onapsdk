@@ -11,8 +11,6 @@ from onapsdk.service import Service
 class Clamp(Onap):
     """Mother Class of all CLAMP elements."""
 
-    def __init__(self) -> None:
-        """Initialize the object."""
     @classmethod
     def base_url(cls) -> str:
         """Give back the base url of Clamp."""
@@ -50,12 +48,14 @@ class LoopInstance(Clamp):
         self.name = name
         self.details = details
 
-    def create(self) -> None:
+    def create(self) -> bool:
         """Create instance and load loop details."""
         url = "{}/loop/create/{}?templateName={}".\
               format(self.base_url, self.name, self.template)
-        instance_details = self.send_message('POST', 'Add artifact to vf', url)
+        instance_details = self.send_message_json('POST', 'Create Loop Instance', url)
         if  instance_details:
             self.name = "LOOP_" + self.name
-            self.details = json.load(instance_details)
+            self.details = instance_details
+            if len(self.details["microServicePolicies"]) > 0:
+                return True
         raise ValueError("Couldn't create the instance")

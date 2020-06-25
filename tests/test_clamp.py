@@ -34,6 +34,16 @@ POLICIES = [
     }
 ]
 
+LOOP_DETAILS = {
+    "name" : "LOOP_test",
+    "microServicePolicies" : [
+        {
+            "name" : "MICROSERVICE_test"
+        }
+    ]
+}
+#end of examples
+
 
 def test_initialization():
     """Class initialization test."""
@@ -73,5 +83,17 @@ def test_check_policies(mock_send_message_json):
 
 def test_cl_initialization():
     """Class initialization test."""
-    loop = LoopInstance(template="test", name="LOOP_name", details={})
+    loop = LoopInstance(template="template", name="LOOP_name", details={})
     assert isinstance(loop, LoopInstance)
+
+
+@mock.patch.object(LoopInstance, 'send_message_json')
+def test_create(mock_send_message_json):
+    """Test Loop instance creation."""
+    instance = LoopInstance(template="template", name="test", details={})
+    mock_send_message_json.return_value = LOOP_DETAILS
+    instance.create()
+    mock_send_message_json.assert_called_once_with('POST', 'Create Loop Instance',
+         (f"{instance.base_url}/loop/create/test?templateName=template"))
+    assert instance.name == "LOOP_test"
+    assert len(instance.details["microServicePolicies"]) > 0

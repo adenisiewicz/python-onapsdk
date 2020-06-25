@@ -17,12 +17,8 @@ class Clamp(Onap):
     
     @classmethod
     def base_url(cls) -> str:
-         """
+        """
         Give back the base url of Clamp.
-
-        Returns:
-            str: the base url
-
         """
         return "https://clamp.api.simpledemo.onap.org:30258/restservices/clds/v2/"
         

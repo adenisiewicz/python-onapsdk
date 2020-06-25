@@ -1,23 +1,34 @@
-###############################################################################################
-##########################################CLAMP################################################
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# SPDX-License-Identifier: Apache-2.0
+"""Clamp module."""
 import json
 
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.service import Service
-#base_url = "https://clamp.api.simpledemo.onap.org:30258/restservices/clds/v2/"
 
 
 class Clamp(Onap):
     """Mother Class of all CLAMP elements."""
+
     def __init__(self):
+        """Initialize the object."""
         super().__init__()
     
     @classmethod
     def base_url(cls) -> str:
+         """
+        Give back the base url of Clamp.
+
+        Returns:
+            str: the base url
+
+        """
         return "https://clamp.api.simpledemo.onap.org:30258/restservices/clds/v2/"
         
     @classmethod
-    def check_loop_template(cls, service: Service):
+    def check_loop_template(cls, service: Service) -> str:
+        """returns loop template name if exists."""
         url = "{}/templates/".format(cls.base_url())
         template_list = cls.send_message_json('GET', 'Get Loop Templates', url)
         for template in template_list:
@@ -26,7 +37,8 @@ class Clamp(Onap):
         raise ValueError("Template not found")
 
     @classmethod
-    def check_policies(cls, policy_name: str):
+    def check_policies(cls, policy_name: str) -> bool:
+        """Ensure that policies are stored in CLAMP."""
         url = "{}/policyToscaModels/".format(cls.base_url())
         policies = cls.send_message_json('GET', 'Get stocked policies', url)
         if len(policies)>30:
@@ -38,12 +50,14 @@ class Clamp(Onap):
 
 class LoopInstance(Clamp):
     """Control Loop instantiation class."""
+
     def __init__(template: str, name: str, details: dict):
         self.template = template
         self.name = name
         self.details = details
 
     def create(self):
+        """Create instance and load loop details."""
         url = "{}/loop/create/{}?templateName={}".\
               format(self.base_url, self.name, self.template)
         instance_details = self.send_message('POST', 'Add artifact to vf', url)

@@ -11,8 +11,9 @@ from onapsdk.service import Service
 class Clamp(Onap):
     """Mother Class of all CLAMP elements."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the object."""
+        super().__init__()
 
     @classmethod
     def base_url(cls) -> str:
@@ -44,13 +45,14 @@ class Clamp(Onap):
 class LoopInstance(Clamp):
     """Control Loop instantiation class."""
 
-    def __init__(self, template: str, name: str, details: dict):
+    def __init__(self, template: str, name: str, details: dict) -> None:
         """Initialize the object."""
+        super().__init__()
         self.template = template
         self.name = name
         self.details = details
 
-    def create(self):
+    def create(self) -> None:
         """Create instance and load loop details."""
         url = "{}/loop/create/{}?templateName={}".\
               format(self.base_url, self.name, self.template)

@@ -1,27 +1,21 @@
 {
     "input": {
-        "request-information": {
-            "notification-url": "onap.org",
-            "order-version": "1",
-            "request-action": "PreloadNetworkRequest",
-            "request-id": "test",
-            "order-number": "1"
-        },
         "preload-network-topology-information": {
             "network-policy": [],
             "route-table-reference": [],
             "vpn-bindings": [],
             "network-topology-identifier-structure": {
-                "network-role": "string",
-                "network-technology": "string",
-                "network-name": "{{network_instance_name}}",
+                "network-role": "integration_test_net",
+                "network-technology": "neutron",
+                "network-name": "{{ network_instance_name }}",
                 "network-type": "Generic NeutronNet"
             },
             "is-external-network": false,
             "is-shared-network": false,
             "is-provider-network": false,
+            "physical-network-name": "Not Aplicable", 
             "subnets": [
-                {
+                {# {
                     "subnet-name": "string",
                     "subnet-role": "string",
                     "start-address": "string",
@@ -32,7 +26,7 @@
                     "dhcp-end-address": "string",
                     "gateway-address": "string",
 
-                }
+                } #}
             ]
         },
         "sdnc-request-header": {

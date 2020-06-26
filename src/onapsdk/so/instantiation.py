@@ -9,7 +9,6 @@ from uuid import uuid4
 
 from onapsdk.onap_service import OnapService
 from onapsdk.sdnc import NetworkPreload, VfModulePreload
-# from onapsdk.sdnc import NetworkPreload, VfModulePreload
 from onapsdk.sdc.service import Network, Service as SdcService, Vnf, VfModule
 from onapsdk.utils.jinja import jinja_env
 from onapsdk.utils.headers_creator import headers_so_creator
@@ -30,7 +29,7 @@ class VnfParameter:
 
 
 @dataclass
-class Subnet:
+class Subnet:  # pylint: disable=too-many-instance-attributes
     """Class to store subnet parameters used for preload."""
 
     name: str
@@ -44,6 +43,17 @@ class Subnet:
     dhcp_end_address: Optional[str] = None
 
     def __post_init__(self) -> None:
+        """Post init subnet method.
+
+        Checks if both dhcp_start_address and dhcp_end_address
+            values are provided if dhcp is enabled
+
+        Raises:
+            ValueError: dhcp_enabled has invalid value
+            ValueError: Not both dhcp_start_address
+                and dhcp_end_address values provided
+
+        """
         if self.dhcp_enabled.upper() not in ["N", "Y"]:
             raise ValueError("dhcp_enabled must be \"N\" or \"Y\"")
         if self.dhcp_enabled.upper() == "Y" and \
@@ -160,13 +170,23 @@ class VfModuleInstantiation(Instantiation):
 
 
 class NodeTemplateInstantiation(Instantiation, ABC):
+    """Base class for service's node_template object instantiation."""
 
-    def __init__(self,
-                 name: str, 
-                 request_id: str, 
+    def __init__(self,  # pylint: disable=too-many-arguments
+                 name: str,
+                 request_id: str,
                  instance_id: str,
                  line_of_business: LineOfBusiness,
-                 platform: Platform,):
+                 platform: Platform) -> None:
+        """Node template object initialization.
+
+        Args:
+            name (str): Node template name
+            request_id (str): Node template instantiation request ID
+            instance_id (str): Node template instance ID
+            line_of_business (LineOfBusiness): LineOfBusiness class object used for instantation
+            platform (Platform): Platform class object used for instantiation
+        """
         super().__init__(name, request_id, instance_id)
         self.line_of_business = line_of_business
         self.platform = platform
@@ -300,7 +320,7 @@ class VnfInstantiation(NodeTemplateInstantiation):
              f"serviceInstances/{aai_service_instance.instance_id}/vnfs"),
             data=jinja_env().get_template("instantiate_vnf_ala_carte.json.j2").
             render(
-                vnf_service_instance_name=vnf_instance_name,
+                instance_name=vnf_instance_name,
                 vnf=vnf_object,
                 service=sdc_service,
                 cloud_region=aai_service_instance.service_subscription.cloud_region,
@@ -491,6 +511,8 @@ class NetworkInstantiation(NodeTemplateInstantiation):
         if network_instance_name is None:
             network_instance_name = \
                 f"Python_ONAP_SDK_network_instance_{str(uuid4())}"
+        NetworkPreload.upload_network_preload(network=network_object,
+                                              network_instance_name=network_instance_name)
         response: dict = cls.send_message_json(
             "POST",
             (f"Instantiate {aai_service_instance.service_subscription.sdc_service.name} "
@@ -499,14 +521,15 @@ class NetworkInstantiation(NodeTemplateInstantiation):
              f"serviceInstances/{aai_service_instance.instance_id}/networks"),
             data=jinja_env().get_template("instantiate_network_ala_carte.json.j2").
             render(
-                network_instance_name=network_instance_name,
+                instance_name=network_instance_name,
                 network=network_object,
                 service=sdc_service,
                 cloud_region=aai_service_instance.service_subscription.cloud_region,
                 tenant=aai_service_instance.service_subscription.tenant,
                 line_of_business=line_of_business_object,
                 platform=platform_object,
-                service_instance=aai_service_instance
+                service_instance=aai_service_instance,
+                subnets=subnets
             ),
             headers=headers_so_creator(OnapService.headers),
             exception=ValueError

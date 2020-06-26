@@ -196,6 +196,16 @@ class OrchestrationRequest(SoElement, ABC):
         return self.finished and self.status == self.StatusEnum.FAILED
 
     def wait_for_finish(self) -> bool:
+        """Wait until orchestration request is finished.
+
+        It uses time.sleep with WAIT_FOR_SLEEP_TIME value as a parameter to
+            wait unitl request is finished (OrchestrationRequest.finished
+            returns True).
+
+        Returns:
+            bool: True if request if successfully completed, False otherwise
+
+        """
         self._logger.debug("Wait unit orchestation request is not finished")
         while not self.finished:
             time.sleep(self.WAIT_FOR_SLEEP_TIME)

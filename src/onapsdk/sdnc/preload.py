@@ -11,13 +11,27 @@ from .sdnc_element import SdncElement
 
 
 class NetworkPreload(SdncElement):
+    """Class to upload network module preload."""
 
     headers: Dict[str, str] = headers_sdnc_creator(SdncElement.headers)
 
     @classmethod
     def upload_network_preload(cls,
                                network: "Network",
+                               network_instance_name: str,
                                subnets: Iterable["Subnet"] = None) -> None:
+        """Upload network preload.
+
+        Args:
+            network: Network object
+            network_instance_name (str): network instance name
+            subnets (Iterable[Subnet], optional): Iterable object of Subnet.
+                Defaults to None.
+
+        Raises:
+            ValueError: Preload request returns HTTP response with error code
+
+        """
         cls.send_message_json(
             "POST",
             "Upload Network preload using GENERIC-RESOURCE-API",
@@ -26,10 +40,9 @@ class NetworkPreload(SdncElement):
             data=jinja_env().get_template(
                 "instantiate_network_ala_carte_upload_preload_gr_api.json.j2").
             render(
-                vnf_instance=vnf_instance,
-                vf_module_instance_name=vf_module_instance_name,
-                vf_module=vf_module,
-                vnf_parameters=vnf_para
+                network=network,
+                network_instance_name=network_instance_name,
+                subnets=subnets if subnets else []
             ),
             exception=ValueError
         )

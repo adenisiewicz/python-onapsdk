@@ -1,11 +1,11 @@
 {
     "requestDetails": {
         "requestInfo": {
-            "instanceName": "{{ vnf_service_instance_name }}",
+            "instanceName": "{{ instance_name }}",
             "source": "VID",
             "suppressRollback": false,
             "requestorId": "test",
-            "productFamilyId": "1234"
+            "productFamilyId": "{{ service_instance.model_invariant_id }}"
         },
         "modelInfo": {
             {% block model_info %}{% endblock %}

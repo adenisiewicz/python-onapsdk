@@ -1,0 +1,32 @@
+{
+  "abatement": false,
+  "operations": [
+    {
+      "failure_retries": "final_failure_retries",
+      "id": "policy-1-vfmodule-create",
+      "failure_timeout": "final_failure_timeout",
+      "failure": "final_failure",
+      "operation": {
+        "payload": {
+          "requestParameters": "{\"usePreload\":false,\"userParams\":[]}",
+          "configurationParameters": "[{\"ip-addr\":\"$.vf-module-topology.vf-module-parameters.param[16].value\",\"oam-ip-addr\":\"$.vf-module-topology.vf-module-parameters.param[30].value\"}]"
+        },
+        "target": {
+          "entityIds": "{{entityIds}}",
+          "targetType": "VFMODULE"
+        },
+        "actor": "SO",
+        "operation": "VF Module Create"
+      },
+      "failure_guard": "final_failure_guard",
+      "retries": 1,
+      "timeout": 300,
+      "failure_exception": "final_failure_exception",
+      "description": "test",
+      "success": "final_success"
+    }
+  ],
+  "trigger": "policy-1-vfmodule-create",
+  "timeout": 650,
+  "id": "{{LOOP_name}}"
+}

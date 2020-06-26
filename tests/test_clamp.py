@@ -37,6 +37,19 @@ POLICIES = [
 
 LOOP_DETAILS = {
     "name" : "LOOP_test",
+    "modelService" : {
+        "resourceDetails": {
+            "VFModule" : {
+                "resourcecID" : {
+                    "vfModuleModelName" : "resourcecID",
+                    "vfModuleModelInvariantUUID" : "InvariantUUID",
+                    "vfModuleModelUUID" : "UUID",
+                    "vfModuleModelVersion" : "1.0",
+                    "vfModuleModelCustomizationUUID" : "CustomizationUUID"
+                }
+            }
+        }
+    },
     "operationalPolicies" : [
         {
             "name" : "MICROSERVICE_test"

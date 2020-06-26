@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Test vf module."""
+"""Test clamp module."""
 
 from unittest import mock
 from unittest.mock import MagicMock
 
+import json
 import pytest
 
 from onapsdk.clamp import Clamp, LoopInstance
@@ -102,3 +103,37 @@ def test_create(mock_send_message_json):
          (f"{instance.base_url}/loop/create/test?templateName=template"))
     assert instance.name == "LOOP_test"
     assert len(instance.details["microServicePolicies"]) > 0
+
+
+@mock.patch.object(LoopInstance, 'send_message_json')
+def test_add_operational_policy(mock_send_message_json):
+    """Test adding an op policy."""
+    loop = LoopInstance(template="template", name="LOOP_test", details={})
+    loop.details = {
+        "name" : "LOOP_test",
+        "operationalPolicies" : [],
+        "microServicePolicies" : [
+            {
+                "name" : "MICROSERVICE_test"
+            }
+        ]
+    }
+    mock_send_message_json.return_value = LOOP_DETAILS
+    loop.add_oprational_policy(policy_type="FrequencyLimiter", policy_version="1.0.0")
+    mock_send_message_json.assert_called_once_with('PUT', 'Create Operational Policy',
+        (f"{loop.base_url}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"))
+    assert loop.name == "LOOP_test"
+    assert len(loop.details["operationalPolicies"]) > 0
+
+
+@mock.patch.object(LoopInstance, 'send_message')
+def test_update_microservice_policy(mock_send_message):
+    """Test Loop Instance add TCA configuration."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message.return_value = True
+    loop.update_microservice_policy()
+    mock_send_message.assert_called_once() 
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "POST"
+    assert description == "ADD TCA config"
+    assert url == (f"{loop.base_url}/loop/updateMicroservicePolicy/{loop.name}")

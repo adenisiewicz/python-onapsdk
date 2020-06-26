@@ -98,17 +98,17 @@ class LoopInstance(Clamp):
         """Add drools configuration."""
         url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url, self.name)
         vfmodule_dicts = self.details["modelService"]["resourceDetails"]["VFModule"]
-        entityIds =  {}
-        #Get the last vf module
+        entity_ids = {}
+        #Get the vf module details
         for vfmodule in vfmodule_dicts:
-            entityIds["resourceID"] = vfmodule["vfModuleModelName"]
-            entityIds["modelInvariantId"] = vfmodule["vfModuleModelInvariantUUID"]
-            entityIds["modelVersionId"] = vfmodule["vfModuleModelUUID"]
-            entityIds["modelName"] = vfmodule["vfModuleModelName"]
-            entityIds["modelVersion"] = vfmodule["vfModuleModelVersion"]
-            entityIds["modelCustomizationId"] = vfmodule["vfModuleModelCustomizationUUID"]
+            entity_ids["resourceID"] = vfmodule["vfModuleModelName"]
+            entity_ids["modelInvariantId"] = vfmodule["vfModuleModelInvariantUUID"]
+            entity_ids["modelVersionId"] = vfmodule["vfModuleModelUUID"]
+            entity_ids["modelName"] = vfmodule["vfModuleModelName"]
+            entity_ids["modelVersion"] = vfmodule["vfModuleModelVersion"]
+            entity_ids["modelCustomizationId"] = vfmodule["vfModuleModelCustomizationUUID"]
         template = jinja_env().get_template("clamp_add_drools_policy.json.j2")
-        data = template.render(entityIds=entityIds)
+        data = template.render(entity_ids=entity_ids)
         upload_result = self.send_message('POST',
                                           'ADD TCA config',
                                           url,
@@ -119,4 +119,4 @@ class LoopInstance(Clamp):
         else:
             self._logger.error(("an error occured during file upload for drools config to loop's"
                                 " Op policy %s"), self.name)
-        return entityIds
+        return entity_ids

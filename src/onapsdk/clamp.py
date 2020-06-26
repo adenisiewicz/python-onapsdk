@@ -64,8 +64,8 @@ class LoopInstance(Clamp):
         url = "{}/loop/addOperationaPolicy/{}/policyModel/{}/{}".\
               format(self.base_url, self.name, policy_type, policy_version)
         add_response = self.send_message_json('PUT', 'Create Operational Policy', url)
-        if (add_response and 
-           (len(add_response["operationalPolicies"]) > len(self.details["operationalPolicies"]))):
+        nb_policies = len(self.details["operationalPolicies"])
+        if (add_response and (len(add_response["operationalPolicies"]) > nb_policies)):
             self.details = add_response
             return True
         raise ValueError("Couldn't add the op policy")
@@ -83,5 +83,5 @@ class LoopInstance(Clamp):
             self._logger.info("Files for TCA config %s have been uploaded to loop's microservice",
                               self.name)
         else:
-            self._logger.error("an error occured during file upload for TCA config to loop's microservice %s",
-                               self.name)
+            self._logger.error(("an error occured during file upload for TCA config to loop's"
+                                " microservice %s"), self.name)

@@ -16,25 +16,12 @@ class Clamp(Onap):
         return "https://clamp.api.simpledemo.onap.org:30258/restservices/clds/v2"
 
     @classmethod
-    def pkcs12_filename(cls) -> str:
-        """Give back the certificate name for Clamp."""
-        return ("https://gerrit.onap.org/r/gitweb?p=clamp.git;a=blob;f=src/main/resources/"
-                "clds/aaf/org.onap.clamp.p12;h=268aa1a3ce56e01448f8043cc0b05b5fceb5a47d;hb=HEAD")
-    
-    @classmethod
-    def pkcs12_password(cls) -> str:
-        """Give back the certificate password for Clamp."""
-        return "China in the Spring"
-
-    @classmethod
     def check_loop_template(cls, service: Service) -> str:
         """Return loop template name if exists."""
         url = "{}/templates/".format(cls.base_url())
         template_list = cls.send_message_json('GET',
                                               'Get Loop Templates',
-                                              url,
-                                              cls.pkcs12_filename,
-                                              cls.pkcs12_password)
+                                              url)
         for template in template_list:
             if template["modelService"]["serviceDetails"]["name"] == service.name:
                 return template["name"]
@@ -46,9 +33,7 @@ class Clamp(Onap):
         url = "{}/policyToscaModels/".format(cls.base_url())
         policies = cls.send_message_json('GET',
                                          'Get stocked policies',
-                                         url,
-                                         cls.pkcs12_filename,
-                                         cls.pkcs12_password)
+                                         url)
         if len(policies) > 30:
             for policy in policies:
                 if policy["policyAcronym"] == policy_name:
@@ -72,9 +57,7 @@ class LoopInstance(Clamp):
               format(self.base_url, self.name, self.template)
         instance_details = self.send_message_json('POST',
                                                   'Create Loop Instance',
-                                                  url,
-                                                  self.pkcs12_filename,
-                                                  self.pkcs12_password)
+                                                  url)
         if  instance_details:
             self.name = "LOOP_" + self.name
             self.details = instance_details
@@ -88,9 +71,7 @@ class LoopInstance(Clamp):
               format(self.base_url, self.name, policy_type, policy_version)
         add_response = self.send_message_json('PUT',
                                               'Create Operational Policy',
-                                              url,
-                                              self.pkcs12_filename,
-                                              self.pkcs12_password)
+                                              url)
         nb_policies = len(self.details["operationalPolicies"])
         if (add_response and (len(add_response["operationalPolicies"]) > nb_policies)):
             self.details = add_response
@@ -105,8 +86,6 @@ class LoopInstance(Clamp):
         upload_result = self.send_message('POST',
                                           'ADD TCA config',
                                           url,
-                                          self.pkcs12_filename,
-                                          self.pkcs12_password,
                                           data=data)
         if upload_result:
             self._logger.info("Files for TCA config %s have been uploaded to loop's microservice",

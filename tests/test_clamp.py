@@ -65,9 +65,7 @@ def test_check_loop_template(mock_send_message_json):
     template = Clamp.check_loop_template(service=svc)
     mock_send_message_json.assert_called_once_with('GET',
                                                    'Get Loop Templates',
-                                                   (f"{Clamp.base_url()}/templates/"),
-                                                   Clamp.pkcs12_filename,
-                                                   Clamp.pkcs12_password)
+                                                   (f"{Clamp.base_url()}/templates/"))
     assert template == "test_template"
 
 
@@ -89,9 +87,7 @@ def test_check_policies(mock_send_message_json):
         mock_send_message_json.\
             assert_called_once_with('GET',
                                     'Get stocked policies',
-                                    (f"{Clamp.base_url()}/policyToscaModels/"),
-                                    Clamp.pkcs12_filename,
-                                    Clamp.pkcs12_password)
+                                    (f"{Clamp.base_url()}/policyToscaModels/"))
         assert exists 
 
 
@@ -108,9 +104,7 @@ def test_create(mock_send_message_json):
     mock_send_message_json.return_value = LOOP_DETAILS
     instance.create()
     mock_send_message_json.assert_called_once_with('POST', 'Create Loop Instance',
-         (f"{instance.base_url}/loop/create/test?templateName=template"),
-         instance.pkcs12_filename,
-         instance.pkcs12_password)
+         (f"{instance.base_url}/loop/create/test?templateName=template"))
     assert instance.name == "LOOP_test"
     assert len(instance.details["microServicePolicies"]) > 0
 
@@ -131,9 +125,7 @@ def test_add_operational_policy(mock_send_message_json):
     mock_send_message_json.return_value = LOOP_DETAILS
     loop.add_oprational_policy(policy_type="FrequencyLimiter", policy_version="1.0.0")
     mock_send_message_json.assert_called_once_with('PUT', 'Create Operational Policy',
-        (f"{loop.base_url}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"),
-        loop.pkcs12_filename,
-        loop.pkcs12_password)
+        (f"{loop.base_url}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"))
     assert loop.name == "LOOP_test"
     assert len(loop.details["operationalPolicies"]) > 0
 
@@ -145,9 +137,7 @@ def test_update_microservice_policy(mock_send_message):
     mock_send_message.return_value = True
     loop.update_microservice_policy()
     mock_send_message.assert_called_once() 
-    method, description, url , auth, key= mock_send_message.call_args[0]
+    method, description, url = mock_send_message.call_args[0]
     assert method == "POST"
     assert description == "ADD TCA config"
     assert url == (f"{loop.base_url}/loop/updateMicroservicePolicy/{loop.name}")
-    assert auth == loop.pkcs12_filename
-    assert key == loop.pkcs12_password

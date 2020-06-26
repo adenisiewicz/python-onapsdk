@@ -100,7 +100,7 @@ class LoopInstance(Clamp):
         vfmodule_dicts = self.details["modelService"]["resourceDetails"]["VFModule"]
         entity_ids = {}
         #Get the vf module details
-        for vfmodule in vfmodule_dicts:
+        for vfmodule in vfmodule_dicts.values():
             entity_ids["resourceID"] = vfmodule["vfModuleModelName"]
             entity_ids["modelInvariantId"] = vfmodule["vfModuleModelInvariantUUID"]
             entity_ids["modelVersionId"] = vfmodule["vfModuleModelUUID"]
@@ -110,7 +110,7 @@ class LoopInstance(Clamp):
         template = jinja_env().get_template("clamp_add_drools_policy.json.j2")
         data = template.render(entity_ids=entity_ids)
         upload_result = self.send_message('POST',
-                                          'ADD TCA config',
+                                          'ADD drools config',
                                           url,
                                           data=data)
         if upload_result:

@@ -193,6 +193,7 @@ class LoopInstance(Clamp):
         if response:
             state = self.details["components"]["DCAE"]["componentState"]["stateName"]
             while state != "MICROSERVICE_INSTALLED_SUCCESSFULLY":
+                #modify the time sleep for loop refresh
                 time.sleep(0)
                 self.details = self.update_loop_details()
                 state = self.details["components"]["DCAE"]["componentState"]["stateName"]

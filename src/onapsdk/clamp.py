@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
+import time
+
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.service import Service
 from onapsdk.utils.jinja import jinja_env
@@ -180,6 +182,24 @@ class LoopInstance(Clamp):
             if new_state != old_state and not(action != "stop" and new_state == "SENT"):
                 action_done = True
         return action_done
+
+    def deploy_microservice_to_dcae(self) -> bool:
+        """Execute the deploy operation on the loop instance."""
+        url = "{}/loop/deploy/{}".format(self.base_url, self.name)
+        response = self.send_message_json('PUT',
+                                          'Deploy microservice to DCAE',
+                                          url)
+        deploy = False
+        if response:
+            state = self.details["components"]["DCAE"]["componentState"]["stateName"]
+            while state != "MICROSERVICE_INSTALLED_SUCCESSFULLY":
+                time.sleep(0)
+                self.details = self.update_loop_details()
+                state = self.details["components"]["DCAE"]["componentState"]["stateName"]
+                if state == "MICROSERVICE_INSTALLATION_FAILED":
+                    return False
+            deploy = True
+        return deploy
 
     def delete(self):
         """Delete the loop instance."""

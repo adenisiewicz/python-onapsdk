@@ -42,6 +42,11 @@ LOOP_DETAILS = {
             "componentState" : {
                 "stateName" : "UNKNOWN"
             }
+        },
+        "DCAE" : {
+            "componentState" : {
+                "stateName" : "BLUEPRINT_DEPLOYED"
+            }
         }
     },
     "modelService" : {
@@ -252,4 +257,40 @@ def test_not_submited_policy(mock_send_message_json, mock_update):
                                                    (f"{loop.base_url}/loop/submit/LOOP_test"))
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT"
-    assert not action 
+    assert not action
+
+
+SUBMITED = {
+        "components" : {
+        "DCAE" : {
+            "componentState" : {
+                "stateName" : "MICROSERVICE_INSTALLED_SUCCESSFULLY"
+            }
+        }
+    }
+}
+
+NOT_SUBMITED = {
+        "components" : {
+        "DCAE" : {
+            "componentState" : {
+                "stateName" : "MICROSERVICE_INSTALLATION_FAILED"
+            }
+        }
+    }
+}
+
+
+@mock.patch.object(LoopInstance, 'update_loop_details')
+@mock.patch.object(LoopInstance, 'send_message_json')
+def test_not_submited_microservice_to_dcae(mock_send_message_json, mock_update):
+    """Test deploy microservice to DCAE."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message_json.return_value = True
+    mock_update.return_value = SUBMITED
+    deploy = loop.deploy_microservice_to_dcae()
+    mock_send_message_json.assert_called_once_with('PUT',
+                                                   'Deploy microservice to DCAE',
+                                                   (f"{loop.base_url}/loop/deploy/LOOP_test"))
+    assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLED_SUCCESSFULLY"
+    assert deploy == True

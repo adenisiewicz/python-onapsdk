@@ -121,7 +121,7 @@ class LoopInstance(Clamp):
                                 " Op policy %s"), self.name)
         return entity_ids
 
-    def add_frequency_limiter(self, limit: int =1) -> None:
+    def add_frequency_limiter(self, limit: int = 1) -> None:
         """Add frequency limiter config."""
         url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url, self.name)
         template = jinja_env().get_template("clamp_add_frequency.json.j2")
@@ -131,8 +131,17 @@ class LoopInstance(Clamp):
                                           url,
                                           data=data)
         if upload_result:
-            self._logger.info("Files for frequency config %s have been uploaded to loop's Op policy",
-                              self.name)
+            self._logger.info(("Files for frequency config %s have been uploaded to loop's"
+                              "Op policy"), self.name)
         else:
             self._logger.error(("an error occured during file upload for frequency config to loop's"
                                 " Op policy %s"), self.name)
+
+    def delete(self):
+        """Delete the loop instance."""
+        self._logger.debug("Delete %s loop instance", self.name)
+        url = "{}/loop/delete/{}".format(self.base_url, self.name)
+        request = self.send_message('PUT',
+                                    'Delete loop instance',
+                                    url)
+        return request

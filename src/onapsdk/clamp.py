@@ -78,6 +78,15 @@ class LoopInstance(Clamp):
             return True
         raise ValueError("Couldn't add the op policy")
 
+    def remove_oprational_policy(self, policy_type: str, policy_version: str) -> dict:
+        """Remove op policy from the loop instance."""
+        url = "{}/loop/removeOperationaPolicy/{}/policyModel/{}/{}".\
+              format(self.base_url, self.name, policy_type, policy_version)
+        response = self.send_message_json('PUT',
+                                          'Remove Operational Policy',
+                                          url)
+        return response
+
     def update_microservice_policy(self) -> None:
         """Add TCA config to microservice."""
         url = "{}/loop/updateMicroservicePolicy/{}".format(self.base_url, self.name)
@@ -132,7 +141,7 @@ class LoopInstance(Clamp):
                                           data=data)
         if upload_result:
             self._logger.info(("Files for frequency config %s have been uploaded to loop's"
-                              "Op policy"), self.name)
+                               "Op policy"), self.name)
         else:
             self._logger.error(("an error occured during file upload for frequency config to loop's"
                                 " Op policy %s"), self.name)

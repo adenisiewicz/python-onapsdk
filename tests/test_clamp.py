@@ -202,7 +202,7 @@ def test_add_frequency_limiter(mock_send_message):
     assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
 
 
-NEW_DETAILS = {
+SUBMITED_POLICY = {
         "components" : {
         "POLICY" : {
             "componentState" : {
@@ -212,15 +212,44 @@ NEW_DETAILS = {
     }
 }
 
+NOT_SUBMITED_POLICY = {
+        "components" : {
+        "POLICY" : {
+            "componentState" : {
+                "stateName" : "SENT"
+            }
+        }
+    }
+}
+
+
 @mock.patch.object(LoopInstance, 'update_loop_details')
 @mock.patch.object(LoopInstance, 'send_message_json')
 def test_submit_policy(mock_send_message_json, mock_update):
     """Test submit policies to policy engine."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
     mock_send_message_json.return_value = True
-    mock_update.return_value = NEW_DETAILS
-    loop.act_on_loop_policy("submit")
-    mock_send_message_json.assert_called_once()
+    mock_update.return_value = SUBMITED_POLICY
+    action = loop.act_on_loop_policy("submit")
+    mock_send_message_json.assert_called_once_with('PUT',
+                                                   'submit policy',
+                                                   (f"{loop.base_url}/loop/submit/LOOP_test"))
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT_AND_DEPLOYED"
-    
+    assert action
+
+
+@mock.patch.object(LoopInstance, 'update_loop_details')
+@mock.patch.object(LoopInstance, 'send_message_json')
+def test_not_submited_policy(mock_send_message_json, mock_update):
+    """Test submit policies to policy engine."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message_json.return_value = True
+    mock_update.return_value = NOT_SUBMITED_POLICY
+    action = loop.act_on_loop_policy("submit")
+    mock_send_message_json.assert_called_once_with('PUT',
+                                                   'submit policy',
+                                                   (f"{loop.base_url}/loop/submit/LOOP_test"))
+    mock_update.assert_called_once()
+    assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT"
+    assert not action 

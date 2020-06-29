@@ -176,7 +176,6 @@ class LoopInstance(Clamp):
         if policy_action:
             old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
             self.details = self.update_loop_details()
-            #new_state = "SENT_AND_DEPLOYED"
             new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
             if new_state != old_state and not(action != "stop" and new_state == "SENT"):
                 action_done = True

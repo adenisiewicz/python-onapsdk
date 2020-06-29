@@ -168,3 +168,16 @@ def test_add_drools_conf(mock_send_message):
     assert description == "ADD drools config"
     assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
     assert entity_ids["resourceID"] == "resourcecID"
+
+
+@mock.patch.object(LoopInstance, 'send_message')
+def test_add_frequency_limiter(mock_send_message):
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message.return_value = True
+    loop.add_frequency_limiter()
+    #add with the default frequency 1 
+    mock_send_message.assert_called_once() 
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "POST"
+    assert description == "ADD frequency limiter"
+    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")

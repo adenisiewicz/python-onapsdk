@@ -37,6 +37,13 @@ POLICIES = [
 
 LOOP_DETAILS = {
     "name" : "LOOP_test",
+    "components" : {
+        "POLICY" : {
+            "componentState" : {
+                "stateName" : "UNKNOWN"
+            }
+        }
+    },
     "modelService" : {
         "resourceDetails": {
             "VFModule" : {
@@ -115,7 +122,7 @@ def test_update_loop_details(mock_send_message_json):
     """Test Loop instance methode."""
     loop = LoopInstance(template="template", name="test", details={})
     mock_send_message_json.return_value = LOOP_DETAILS
-    loop.update_loop_details()
+    loop.details = loop.update_loop_details()
     mock_send_message_json.assert_called_once_with('GET', 'Get loop details',
          (f"{loop.base_url}/loop/test"))
     assert loop.details == LOOP_DETAILS
@@ -183,6 +190,7 @@ def test_add_drools_conf(mock_send_message):
 
 @mock.patch.object(LoopInstance, 'send_message')
 def test_add_frequency_limiter(mock_send_message):
+    """Test Loop Instance add frequency configuration."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
     mock_send_message.return_value = True
     loop.add_frequency_limiter()
@@ -192,3 +200,27 @@ def test_add_frequency_limiter(mock_send_message):
     assert method == "POST"
     assert description == "ADD frequency limiter config"
     assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
+
+
+NEW_DETAILS = {
+        "components" : {
+        "POLICY" : {
+            "componentState" : {
+                "stateName" : "SENT_AND_DEPLOYED"
+            }
+        }
+    }
+}
+
+@mock.patch.object(LoopInstance, 'update_loop_details')
+@mock.patch.object(LoopInstance, 'send_message_json')
+def test_submit_policy(mock_send_message_json, mock_update):
+    """Test submit policies to policy engine."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message_json.return_value = True
+    mock_update.return_value = NEW_DETAILS
+    loop.act_on_loop_policy("submit")
+    mock_send_message_json.assert_called_once()
+    mock_update.assert_called_once()
+    assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT_AND_DEPLOYED"
+    

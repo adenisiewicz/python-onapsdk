@@ -51,14 +51,15 @@ class LoopInstance(Clamp):
         self.name = name
         self.details = details
 
-    def update_loop_details(self) -> None:
+    def update_loop_details(self) -> dict:
         """Update loop details."""
         url = "{}/loop/{}".format(self.base_url, self.name)
         loop_details = self.send_message_json('GET',
                                               'Get loop details',
                                               url)
         if loop_details:
-            self.details = loop_details
+            return loop_details
+        raise ValueError("Couldn't get the appropriate details")
 
     def create(self) -> bool:
         """Create instance and load loop details."""
@@ -94,7 +95,7 @@ class LoopInstance(Clamp):
         response = self.send_message_json('PUT',
                                           'Remove Operational Policy',
                                           url)
-        #must modify loop details
+        #must modify loop details depending on response
         return response
 
     def update_microservice_policy(self) -> None:
@@ -156,15 +157,30 @@ class LoopInstance(Clamp):
             self._logger.error(("an error occured during file upload for frequency config to loop's"
                                 " Op policy %s"), self.name)
 
-    def act_on_loop_policy(self, action: str) -> dict:
-        """Act on loop's policy."""
+    def act_on_loop_policy(self, action: str) -> bool:
+        """
+        Act on loop's policy.
+
+        Args:
+            action : action to be done from (submit, stop, restart)
+
+        Returns:
+            action state : failed or done
+
+        """
         url = "{}/loop/{}/{}".format(self.base_url, action, self.name)
         policy_action = self.send_message_json('PUT',
                                                '{} policy'.format(action),
                                                url)
-        #update_loop_details()
-        #check SENT_AND_DEPLOYED in loop.details
-        #self.details["POLICY"]["componentState"]["stateName"]
+        action_done = False
+        if policy_action:
+            old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+            self.details = self.update_loop_details()
+            #new_state = "SENT_AND_DEPLOYED"
+            new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+            if new_state != old_state and not(action != "stop" and new_state == "SENT"):
+                action_done = True
+        return action_done
 
     def delete(self):
         """Delete the loop instance."""

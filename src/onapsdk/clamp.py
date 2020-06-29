@@ -51,6 +51,15 @@ class LoopInstance(Clamp):
         self.name = name
         self.details = details
 
+    def update_loop_details(self) -> None:
+        """Update loop details."""
+        url = "{}/loop/{}".format(self.base_url, self.name)
+        loop_details = self.send_message_json('GET',
+                                              'Get loop details',
+                                              url)
+        if loop_details:
+            self.details = loop_details
+
     def create(self) -> bool:
         """Create instance and load loop details."""
         url = "{}/loop/create/{}?templateName={}".\
@@ -85,6 +94,7 @@ class LoopInstance(Clamp):
         response = self.send_message_json('PUT',
                                           'Remove Operational Policy',
                                           url)
+        #must modify loop details
         return response
 
     def update_microservice_policy(self) -> None:
@@ -136,7 +146,7 @@ class LoopInstance(Clamp):
         template = jinja_env().get_template("clamp_add_frequency.json.j2")
         data = template.render(LOOP_name=self.name, limit=limit)
         upload_result = self.send_message('POST',
-                                          'ADD frequency limiter',
+                                          'ADD frequency limiter config',
                                           url,
                                           data=data)
         if upload_result:
@@ -146,11 +156,21 @@ class LoopInstance(Clamp):
             self._logger.error(("an error occured during file upload for frequency config to loop's"
                                 " Op policy %s"), self.name)
 
+    def act_on_loop_policy(self, action: str) -> dict:
+        """Act on loop's policy."""
+        url = "{}/loop/{}/{}".format(self.base_url, action, self.name)
+        policy_action = self.send_message_json('PUT',
+                                               '{} policy'.format(action),
+                                               url)
+        #update_loop_details()
+        #check SENT_AND_DEPLOYED in loop.details
+        #self.details["POLICY"]["componentState"]["stateName"]
+
     def delete(self):
         """Delete the loop instance."""
         self._logger.debug("Delete %s loop instance", self.name)
         url = "{}/loop/delete/{}".format(self.base_url, self.name)
-        request = self.send_message('PUT',
-                                    'Delete loop instance',
-                                    url)
+        request = self.send_message_json('PUT',
+                                         'Delete loop instance',
+                                         url)
         return request

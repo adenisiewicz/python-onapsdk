@@ -111,6 +111,17 @@ def test_cl_initialization():
 
 
 @mock.patch.object(LoopInstance, 'send_message_json')
+def test_update_loop_details(mock_send_message_json):
+    """Test Loop instance methode."""
+    loop = LoopInstance(template="template", name="test", details={})
+    mock_send_message_json.return_value = LOOP_DETAILS
+    loop.update_loop_details()
+    mock_send_message_json.assert_called_once_with('GET', 'Get loop details',
+         (f"{loop.base_url}/loop/test"))
+    assert loop.details == LOOP_DETAILS
+
+
+@mock.patch.object(LoopInstance, 'send_message_json')
 def test_create(mock_send_message_json):
     """Test Loop instance creation."""
     instance = LoopInstance(template="template", name="test", details={})
@@ -179,5 +190,5 @@ def test_add_frequency_limiter(mock_send_message):
     mock_send_message.assert_called_once() 
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"
-    assert description == "ADD frequency limiter"
+    assert description == "ADD frequency limiter config"
     assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")

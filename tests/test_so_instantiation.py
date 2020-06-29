@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from onapsdk.sdnc import VfModulePreload
+from onapsdk.sdnc import NetworkPreload, VfModulePreload
 from onapsdk.sdc.service import Service as SdcService
 from onapsdk.so.so_element import OrchestrationRequest
 from onapsdk.so.instantiation import (
@@ -104,7 +104,8 @@ def test_vnf_instantiation(mock_vnf_instantiation_send_message):
 
 
 @mock.patch.object(NetworkInstantiation, "send_message_json")
-def test_network_instantiation(mock_network_instantiation_send_message):
+@mock.patch.object(NetworkPreload, "send_message_json")
+def test_network_instantiation(mock_network_preload, mock_network_instantiation_send_message):
     aai_service_instance_mock = mock.MagicMock()
     aai_service_instance_mock.instance_id = "test_instance_id"
     vnf_instantiation = NetworkInstantiation.\
@@ -112,6 +113,7 @@ def test_network_instantiation(mock_network_instantiation_send_message):
                               network_object=mock.MagicMock(),
                               line_of_business_object=mock.MagicMock(),
                               platform_object=mock.MagicMock())
+    mock_network_preload.assert_called_once()
     assert vnf_instantiation.name.startswith("Python_ONAP_SDK_network_instance_")
     mock_network_instantiation_send_message.assert_called_once()
     method, _, url = mock_network_instantiation_send_message.call_args[0]
@@ -126,6 +128,7 @@ def test_network_instantiation(mock_network_instantiation_send_message):
                               line_of_business_object=mock.MagicMock(),
                               platform_object=mock.MagicMock(),
                               network_instance_name="test")
+    assert mock_network_preload.call_count == 2
     assert network_instantiation.name == "test"
 
 @mock.patch.object(Vid, "send_message")

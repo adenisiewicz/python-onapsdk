@@ -168,7 +168,7 @@ def test_service_instance_network_instances(mock_aai_element_send_message_json):
     service_instance = ServiceInstance(service_subscription=mock.MagicMock(),
                                        instance_id="test_service_instance_id")
     mock_aai_element_send_message_json.side_effect = [RELATIONSHIPS_NETWORK, NETWORK_INSTANCE]
-    assert len(list(service_instance.networks)) == 1
+    assert len(list(service_instance.network_instances)) == 1
 
 
 @mock.patch.object(VnfInstantiation, "instantiate_ala_carte")

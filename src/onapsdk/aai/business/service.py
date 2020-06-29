@@ -170,7 +170,7 @@ class ServiceInstance(Instance):  # pylint: disable=too-many-instance-attributes
         return self._get_related_instance(VnfInstance, "generic-vnf")
 
     @property
-    def networks(self) -> Iterator[NetworkInstance]:
+    def network_instances(self) -> Iterator[NetworkInstance]:
         """Network instances associated with service instance.
 
         Returns iterator of NetworkInstance representing network instantiated for that service

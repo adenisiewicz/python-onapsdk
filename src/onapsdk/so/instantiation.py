@@ -33,9 +33,9 @@ class Subnet:  # pylint: disable=too-many-instance-attributes
     """Class to store subnet parameters used for preload."""
 
     name: str
-    role: str
     start_address: str
     gateway_address: str
+    role: str = None
     cidr_mask: str = "24"
     ip_version: str = "4"
     dhcp_enabled: str = "N"

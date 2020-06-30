@@ -224,7 +224,8 @@ class ServiceInstance(Instance):  # pylint: disable=too-many-instance-attributes
                     network: "Network",
                     line_of_business: "LineOfBusiness",
                     platform: "Platform",
-                    network_instance_name: str = None) -> "NetworkInstantiation":
+                    network_instance_name: str = None,
+                    subnets: Iterator["Subnet"] = None) -> "NetworkInstantiation":
         """Add network into service instance.
 
         Instantiate vl.
@@ -253,7 +254,8 @@ class ServiceInstance(Instance):  # pylint: disable=too-many-instance-attributes
             network,
             line_of_business,
             platform,
-            network_instance_name
+            network_instance_name,
+            subnets
         )
 
     def delete(self) -> "ServiceDeletionRequest":

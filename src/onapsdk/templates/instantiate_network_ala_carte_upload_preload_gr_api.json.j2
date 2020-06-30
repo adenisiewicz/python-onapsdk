@@ -15,18 +15,16 @@
             "is-provider-network": false,
             "physical-network-name": "Not Aplicable", 
             "subnets": [
-                {# {
-                    "subnet-name": "string",
-                    "subnet-role": "string",
-                    "start-address": "string",
-                    "cidr-mask": "string",
-                    "ip-version": "string",
-                    "dhcp-enabled": "Y",
-                    "dhcp-start-address": "string",
-                    "dhcp-end-address": "string",
-                    "gateway-address": "string",
-
-                } #}
+                {% for subnet in subnets %}
+                {
+                    "subnet-name": "{{ subnet.name }}",
+                    "start-address": "{{ subnet.start_address }}",
+                    "cidr-mask": "{{ subnet.cidr_mask }}",
+                    "ip-version": "{{ subnet.ip_version }}",
+                    "dhcp-enabled": "N",
+                    "gateway-address": "{{ subnet.gateway_address }}",
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
             ]
         },
         "sdnc-request-header": {

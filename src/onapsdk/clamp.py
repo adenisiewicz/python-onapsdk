@@ -4,7 +4,6 @@
 """Clamp module."""
 import time
 from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
-from requests_pkcs12 import get,post
 
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.service import Service
@@ -29,13 +28,13 @@ class Clamp(Onap):
         with open('aaf_certificate.p12', 'rb') as pkcs12_file:
             pkcs12_data = pkcs12_file.read()
         pkcs12_password_bytes = "China in the Spring".encode('utf8')
-        PyoP12 = load_pkcs12(pkcs12_data, pkcs12_password_bytes)
-        cert = dump_certificate(FILETYPE_PEM, PyoP12.get_certificate())
-        pk = dump_privatekey(FILETYPE_PEM, PyoP12.get_privatekey(), "aes256", pkcs12_password_bytes)
+        pyo_pk = load_pkcs12(pkcs12_data, pkcs12_password_bytes)
+        cert = dump_certificate(FILETYPE_PEM, pyo_pk.get_certificate())
+        private_key = dump_privatekey(FILETYPE_PEM, pyo_pk.get_privatekey(), "aes256", pkcs12_password_bytes)
         with open('cert.pem', 'wb') as pem_file:
             pem_file.write(cert)
         with open('cert.key', 'wb') as key_file:
-            key_file.write(pk)
+            key_file.write(private_key)
         cls._cert = ('cert.pem', 'cert.key')
 
     @classmethod

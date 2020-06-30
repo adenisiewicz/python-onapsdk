@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
 import time
+from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
+from requests_pkcs12 import get,post
 
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.service import Service
@@ -12,10 +14,29 @@ from onapsdk.utils.jinja import jinja_env
 class Clamp(Onap):
     """Mother Class of all CLAMP elements."""
 
+    #class variable
+    _cert: tuple = None
+
     @classmethod
     def base_url(cls) -> str:
         """Give back the base url of Clamp."""
         return "https://clamp.api.simpledemo.onap.org:30258/restservices/clds/v2"
+
+    @classmethod
+    def create_cert(cls) -> None:
+        """Create certificate tuple."""
+        #we can add this function elsewhere like utils
+        with open('aaf_certificate.p12', 'rb') as pkcs12_file:
+            pkcs12_data = pkcs12_file.read()
+        pkcs12_password_bytes = "China in the Spring".encode('utf8')
+        PyoP12 = load_pkcs12(pkcs12_data, pkcs12_password_bytes)
+        cert = dump_certificate(FILETYPE_PEM, PyoP12.get_certificate())
+        pk = dump_privatekey(FILETYPE_PEM, PyoP12.get_privatekey(), "aes256", pkcs12_password_bytes)
+        with open('cert.pem', 'wb') as pem_file:
+            pem_file.write(cert)
+        with open('cert.key', 'wb') as key_file:
+            key_file.write(pk)
+        cls._cert = ('cert.pem', 'cert.key')
 
     @classmethod
     def check_loop_template(cls, service: Service) -> str:
@@ -23,7 +44,8 @@ class Clamp(Onap):
         url = "{}/templates/".format(cls.base_url())
         template_list = cls.send_message_json('GET',
                                               'Get Loop Templates',
-                                              url)
+                                              url,
+                                              cert=cls._cert)
         for template in template_list:
             if template["modelService"]["serviceDetails"]["name"] == service.name:
                 return template["name"]

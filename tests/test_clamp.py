@@ -90,7 +90,8 @@ def test_check_loop_template(mock_send_message_json):
     template = Clamp.check_loop_template(service=svc)
     mock_send_message_json.assert_called_once_with('GET',
                                                    'Get Loop Templates',
-                                                   (f"{Clamp.base_url()}/templates/"))
+                                                   (f"{Clamp.base_url()}/templates/"),
+                                                   cert=Clamp._cert)
     assert template == "test_template"
 
 

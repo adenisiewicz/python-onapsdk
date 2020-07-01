@@ -135,14 +135,14 @@ class LoopInstance(Clamp):
         """Validate Loop Instance details."""
         try:
             validate(self.details, self.loop_schema)
-        except SchemaError as e:
+        except SchemaError as error:
             print("There is an error with the schema")
-        except ValidationError as e:
-            print(e)
+        except ValidationError as error:
+            print(error)
             print("---------")
-            print(e.absolute_path)
+            print(error.absolute_path)
             print("---------")
-            print(e.absolute_schema_path)
+            print(error.absolute_schema_path)
         return True
 
     def create(self) -> bool:

@@ -3,3 +3,4 @@ jinja2==2.11.2
 simplejson==3.17.0
 oyaml==0.9
 pyOpenSSL==19.1.0
+jsonschema==3.2.0

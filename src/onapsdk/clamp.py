@@ -83,12 +83,21 @@ class LoopInstance(Clamp):
         if not self._details:
             self._update_loop_details()
         return self._details
+<<<<<<< HEAD
 
     @details.setter
     def details(self, details: dict) -> None:
         """Set value for details."""
         self._details = details
 
+=======
+        
+    @details.setter
+    def details (self, details: dict) -> None:
+        """Set value for details."""
+        self._details = details
+        
+>>>>>>> 51eeb8cc7dbc111968e868a2b1d4aa6931c8b160
     def _update_loop_details(self) -> dict:
         """Update loop details."""
         url = "{}/loop/{}".format(self.base_url, self.name)

@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
 import time
+import json
+import os
 from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
 from jsonschema import validate, ValidationError, SchemaError
 
@@ -28,7 +30,9 @@ class Clamp(Onap):
     def create_cert(cls, key: str) -> None:
         """Create certificate tuple."""
         #Must modify key from parameters to hide it
-        with open('aaf_certificate.p12', 'rb') as pkcs12_file:
+        _root_path = os.getcwd().rsplit('/onapsdk')[0]
+        file = _root_path +"/src/onapsdk/aaf_certificate.p12"
+        with open(file, 'rb') as pkcs12_file:
             pkcs12_data = pkcs12_file.read()
         pkcs12_password_bytes = key.encode('utf8')
         pyo_pk = load_pkcs12(pkcs12_data, pkcs12_password_bytes)
@@ -109,8 +113,12 @@ class LoopInstance(Clamp):
     def loop_schema(self) -> dict:
         """Return and lazy load the details schema."""
         if not self._loop_schema:
-            template = jinja_env().get_template("closed_loop_details.json.j2")
-            self._loop_schema = template.render()
+            #must change path
+            _root_path = os.getcwd().rsplit('/onapsdk')[0]
+            file = _root_path +"/src/onapsdk/schema_details.json"
+            with open(file, "rb") as plan:
+                json_schema = json.load(plan)
+                self._loop_schema = json_schema
         return self._loop_schema
 
     def validate_details(self) -> bool:

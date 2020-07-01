@@ -140,7 +140,7 @@ def test_validate_details():
     """Test Loop instance details validation."""
     loop = LoopInstance(template="template", name="test", details=LOOP_DETAILS)
     valid = loop.validate_details()
-    assert not valid
+    assert  not valid
 
 
 @mock.patch.object(LoopInstance, 'send_message_json')

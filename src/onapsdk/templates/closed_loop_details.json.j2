@@ -1,26 +1,145 @@
 {
-    "type" : "object",
-    "properties" : {
-        "name" : {"type" : "string"},
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
     },
-    "type" : "object",
-    "properties" : {
-        "components" : {"type" : "object"},
-        "properties" : {
-            "POLICY" : {"type" : "object"},
-            "properties" : {
-                "componentState" : {"type" : "object"},
-                "properties" : {
-                    "stateName" : {"type" : "string"}
-                    }
-            },
-            "DCAE" : {"type" : "object"},
-            "properties" : {
-                "componentState" : {"type" : "object"},
-                "properties" : {
-                    "stateName" : {"type" : "string"}
-                    }
+    "components": {
+      "type": "object",
+      "properties": {
+        "POLICY": {
+          "type": "object",
+          "properties": {
+            "componentState": {
+              "type": "object",
+              "properties": {
+                "stateName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "stateName"
+              ]
             }
+          },
+          "required": [
+            "componentState"
+          ]
+        },
+        "DCAE": {
+          "type": "object",
+          "properties": {
+            "componentState": {
+              "type": "object",
+              "properties": {
+                "stateName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "stateName"
+              ]
+            }
+          },
+          "required": [
+            "componentState"
+          ]
         }
+      },
+      "required": [
+        "POLICY",
+        "DCAE"
+      ]
     },
+    "modelService": {
+      "type": "object",
+      "properties": {
+        "resourceDetails": {
+          "type": "object",
+          "properties": {
+            "VFModule": {
+              "type": "object",
+              "properties": {
+                "resourcecID": {
+                  "type": "object",
+                  "properties": {
+                    "vfModuleModelName": {
+                      "type": "string"
+                    },
+                    "vfModuleModelInvariantUUID": {
+                      "type": "string"
+                    },
+                    "vfModuleModelUUID": {
+                      "type": "string"
+                    },
+                    "vfModuleModelVersion": {
+                      "type": "string"
+                    },
+                    "vfModuleModelCustomizationUUID": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "vfModuleModelName",
+                    "vfModuleModelInvariantUUID",
+                    "vfModuleModelUUID",
+                    "vfModuleModelVersion",
+                    "vfModuleModelCustomizationUUID"
+                  ]
+                }
+              },
+              "required": [
+                "resourcecID"
+              ]
+            }
+          },
+          "required": [
+            "VFModule"
+          ]
+        }
+      },
+      "required": [
+        "resourceDetails"
+      ]
+    },
+    "operationalPolicies": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      ]
+    },
+    "microServicePolicies": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "name",
+    "components",
+    "modelService",
+    "operationalPolicies",
+    "microServicePolicies"
+  ]
 }

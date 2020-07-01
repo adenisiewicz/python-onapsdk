@@ -12,34 +12,6 @@ from onapsdk.service import Service
 from onapsdk.utils.jinja import jinja_env
 
 
-SCHEMA = {
-    "type" : "object",
-    "properties" : {
-        "name" : {"type" : "string"},
-    },
-    "type" : "object",
-    "properties" : {
-        "components" : {"type" : "object"},
-        "properties" : {
-            "POLICY" : {"type" : "object"},
-            "properties" : {
-                "componentState" : {"type" : "object"},
-                "properties" : {
-                    "stateName" : {"type" : "string"}
-                    }
-            },
-            "DCAE" : {"type" : "object"},
-            "properties" : {
-                "componentState" : {"type" : "object"},
-                "properties" : {
-                    "stateName" : {"type" : "string"}
-                    }
-            }
-        }
-    },
-}
-
-
 class Clamp(Onap):
     """Mother Class of all CLAMP elements."""
 
@@ -55,7 +27,7 @@ class Clamp(Onap):
     @classmethod
     def create_cert(cls, key: str) -> None:
         """Create certificate tuple."""
-        #we can add this function elsewhere like utils
+        #Must modify key from parameters to hide it
         with open('aaf_certificate.p12', 'rb') as pkcs12_file:
             pkcs12_data = pkcs12_file.read()
         pkcs12_password_bytes = key.encode('utf8')
@@ -101,7 +73,7 @@ class LoopInstance(Clamp):
     """Control Loop instantiation class."""
 
     #class variable
-    loop_schema = SCHEMA
+    _loop_schema = None
 
     def __init__(self, template: str, name: str, details: dict) -> None:
         """Initialize the object."""
@@ -132,6 +104,13 @@ class LoopInstance(Clamp):
         if loop_details:
             return loop_details
         raise ValueError("Couldn't get the appropriate details")
+
+    @property
+    def loop_schema(self) -> dict:
+        if not self._loop_schema:
+            template = jinja_env().get_template("closed_loop_details.json.j2")
+            self._loop_schema = template.render()
+        return self._loop_schema
 
     def validate_details(self) -> bool:
         """Validate Loop Instance details."""

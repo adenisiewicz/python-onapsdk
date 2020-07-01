@@ -128,7 +128,7 @@ def test_update_loop_details(mock_send_message_json):
     """Test Loop instance methode."""
     loop = LoopInstance(template="template", name="test", details={})
     mock_send_message_json.return_value = LOOP_DETAILS
-    loop.details = loop.update_loop_details()
+    loop.details = loop._update_loop_details()
     mock_send_message_json.assert_called_once_with('GET', 'Get loop details',
          (f"{loop.base_url}/loop/test"))
     assert loop.details == LOOP_DETAILS
@@ -229,7 +229,7 @@ NOT_SUBMITED_POLICY = {
 }
 
 
-@mock.patch.object(LoopInstance, 'update_loop_details')
+@mock.patch.object(LoopInstance, '_update_loop_details')
 @mock.patch.object(LoopInstance, 'send_message_json')
 def test_submit_policy(mock_send_message_json, mock_update):
     """Test submit policies to policy engine."""
@@ -245,7 +245,7 @@ def test_submit_policy(mock_send_message_json, mock_update):
     assert action
 
 
-@mock.patch.object(LoopInstance, 'update_loop_details')
+@mock.patch.object(LoopInstance, '_update_loop_details')
 @mock.patch.object(LoopInstance, 'send_message_json')
 def test_not_submited_policy(mock_send_message_json, mock_update):
     """Test submit policies to policy engine."""
@@ -282,7 +282,7 @@ NOT_SUBMITED = {
 }
 
 
-@mock.patch.object(LoopInstance, 'update_loop_details')
+@mock.patch.object(LoopInstance, '_update_loop_details')
 @mock.patch.object(LoopInstance, 'send_message_json')
 def test_not_submited_microservice_to_dcae(mock_send_message_json, mock_update):
     """Test deploy microservice to DCAE."""

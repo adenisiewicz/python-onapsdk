@@ -9,8 +9,9 @@ from io import BytesIO
 from os import makedirs
 import time
 import re
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, BinaryIO
 from zipfile import ZipFile, BadZipFile
+import base64 
 
 import oyaml as yaml
 
@@ -554,25 +555,28 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                 vnf_it += 1
         raise AttributeError("Couldn't find VNF")
 
-    def add_artifact_to_vf(self, vnf_name: str, service_uid: str, artifact_type: str):
+    def add_artifact_to_vf(self, vnf_name: str, artifact_type: str,
+                          artifact_name: str, artifact: BinaryIO = None):
         """Add the TCA blueprint artifact to vf."""
-        self.unique_identifier = service_uid
-        missing_identifier = self.add_vnf_uid_to_metadata(vnf_name)
-        url = "{}/services/{}/resourceInstance/{}/artifacts".\
-              format(self._base_create_url(), self.unique_identifier, missing_identifier)
-        headers = self.headers.copy()
-        headers.pop("Content-Type")
-        headers["Accept-Encoding"] = "gzip, deflate, br"
-        template = jinja_env().get_template("service_add_artifact_to_vf.json.j2")
-        data = template.render(artifact_type=artifact_type)
-        upload_result = self.send_message('POST',
-                                          'Add artifact to vf',
-                                          url,
-                                          headers=headers,
-                                          data=data)
-        if upload_result:
-            self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
-                              vnf_name)
-        else:
-            self._logger.error(("an error occured during file upload for blueprint Artifact"
-                                "to VNF %s"), vnf_name)
+        if artifact:
+            missing_identifier = self.add_vnf_uid_to_metadata(vnf_name)
+            url = "{}/services/{}/resourceInstance/{}/artifacts".\
+                format(self._base_create_url(), self.unique_identifier, missing_identifier)
+            b64_artifact = base64.b64encode(artifact)
+            headers = self.headers.copy()
+            headers.pop("Content-Type")
+            headers["Accept-Encoding"] = "gzip, deflate, br"
+            template = jinja_env().get_template("service_add_artifact_to_vf.json.j2")
+            data = template.render(artifact_name=artifact_name, artifact_type=artifact_type,
+                                  b64_artifact=b64_artifact)
+            upload_result = self.send_message('POST',
+                                              'Add artifact to vf',
+                                              url,
+                                              headers=headers,
+                                              data=data)
+            if upload_result:
+                self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
+                                vnf_name)
+            else:
+                self._logger.error(("an error occured during file upload for blueprint Artifact"
+                                    "to VNF %s"), vnf_name)

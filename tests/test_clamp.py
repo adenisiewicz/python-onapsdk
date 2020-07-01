@@ -191,6 +191,32 @@ def test_update_microservice_policy(mock_send_message):
     assert url == (f"{loop.base_url}/loop/updateMicroservicePolicy/{loop.name}")
 
 
+@mock.patch.object(LoopInstance, 'send_message')
+def test_add_drools_policy_config(mock_send_message):
+    """Test Loop Instance add op policy configuration."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message.return_value = True
+    loop.add_op_policy_config(loop.add_drools_conf)
+    mock_send_message.assert_called_once() 
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "POST"
+    assert description == "ADD operational policy config"
+    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
+
+
+@mock.patch.object(LoopInstance, 'send_message')
+def test_add_frequency_policy_config(mock_send_message):
+    """Test Loop Instance add op policy configuration."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message.return_value = True
+    loop.add_op_policy_config(loop.add_frequency_limiter, limit=1)
+    mock_send_message.assert_called_once() 
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "POST"
+    assert description == "ADD operational policy config"
+    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
+
+
 SUBMITED_POLICY = {
         "components" : {
         "POLICY" : {
@@ -282,28 +308,3 @@ def test_not_submited_microservice_to_dcae(mock_send_message_json, mock_update):
     assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLED_SUCCESSFULLY"
     assert deploy == True
 
-
-@mock.patch.object(LoopInstance, 'send_message')
-def test_add_drools_policy_config(mock_send_message):
-    """Test Loop Instance add op policy configuration."""
-    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message.return_value = True
-    loop.add_op_policy_config(loop.add_drools_conf)
-    mock_send_message.assert_called_once() 
-    method, description, url = mock_send_message.call_args[0]
-    assert method == "POST"
-    assert description == "ADD operational policy config"
-    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
-
-
-@mock.patch.object(LoopInstance, 'send_message')
-def test_add_frequency_policy_config(mock_send_message):
-    """Test Loop Instance add op policy configuration."""
-    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message.return_value = True
-    loop.add_op_policy_config(loop.add_frequency_limiter, limit=1)
-    mock_send_message.assert_called_once() 
-    method, description, url = mock_send_message.call_args[0]
-    assert method == "POST"
-    assert description == "ADD operational policy config"
-    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")

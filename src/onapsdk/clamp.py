@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
 import time
+from functools import reduce
 from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
 from jsonschema import validate, ValidationError, SchemaError
 
@@ -188,7 +189,6 @@ class LoopInstance(Clamp):
 
     def add_drools_conf(self) -> dict:
         """Add drools configuration."""
-        url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url, self.name)
         vfmodule_dicts = self.details["modelService"]["resourceDetails"]["VFModule"]
         entity_ids = {}
         #Get the vf module details
@@ -201,34 +201,28 @@ class LoopInstance(Clamp):
             entity_ids["modelCustomizationId"] = vfmodule["vfModuleModelCustomizationUUID"]
         template = jinja_env().get_template("clamp_add_drools_policy.json.j2")
         data = template.render(entity_ids=entity_ids, LOOP_name=self.name)
-        upload_result = self.send_message('POST',
-                                          'ADD drools config',
-                                          url,
-                                          data=data,
-                                          cert=self._cert)
-        if upload_result:
-            self._logger.info("Files for drools config %s have been uploaded to loop's Op policy",
-                              self.name)
-        else:
-            self._logger.error(("an error occured during file upload for drools config to loop's"
-                                " Op policy %s"), self.name)
-        return entity_ids
+        return data
 
     def add_frequency_limiter(self, limit: int = 1) -> None:
         """Add frequency limiter config."""
-        url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url, self.name)
         template = jinja_env().get_template("clamp_add_frequency.json.j2")
         data = template.render(LOOP_name=self.name, limit=limit)
+        return data
+
+    def add_op_policy_config(self, func, **kwargs) ->None:
+        """Add op policy config."""
+        data = func(**kwargs)
+        url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url, self.name)
         upload_result = self.send_message('POST',
-                                          'ADD frequency limiter config',
+                                          'ADD operational policy config',
                                           url,
                                           data=data,
                                           cert=self._cert)
         if upload_result:
-            self._logger.info(("Files for frequency config %s have been uploaded to loop's"
+            self._logger.info(("Files for op policy config %s have been uploaded to loop's"
                                "Op policy"), self.name)
         else:
-            self._logger.error(("an error occured during file upload for frequency config to loop's"
+            self._logger.error(("an error occured during file upload for config to loop's"
                                 " Op policy %s"), self.name)
 
     def act_on_loop_policy(self, action: str) -> bool:

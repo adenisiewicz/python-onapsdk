@@ -72,9 +72,21 @@ class LoopInstance(Clamp):
         super().__init__()
         self.template = template
         self.name = name
-        self.details = details
+        self._details = details
 
-    def update_loop_details(self) -> dict:
+    @property
+    def details(self) -> dict:
+        """Return and lazy load the details."""
+        if not self._details:
+            self._update_loop_details()
+        return self._details
+        
+    @details.setter
+    def details (self, details: dict) -> None:
+        """Set value for details."""
+        self._details = details
+        
+    def _update_loop_details(self) -> dict:
         """Update loop details."""
         url = "{}/loop/{}".format(self.base_url, self.name)
         loop_details = self.send_message_json('GET',
@@ -198,7 +210,7 @@ class LoopInstance(Clamp):
         action_done = False
         if policy_action:
             old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-            self.details = self.update_loop_details()
+            self.details = self._update_loop_details()
             new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
             if new_state != old_state and not(action != "stop" and new_state == "SENT"):
                 action_done = True
@@ -216,7 +228,7 @@ class LoopInstance(Clamp):
             while state != "MICROSERVICE_INSTALLED_SUCCESSFULLY":
                 #modify the time sleep for loop refresh
                 time.sleep(0)
-                self.details = self.update_loop_details()
+                self.details = self._update_loop_details()
                 state = self.details["components"]["DCAE"]["componentState"]["stateName"]
                 if state == "MICROSERVICE_INSTALLATION_FAILED":
                     return False

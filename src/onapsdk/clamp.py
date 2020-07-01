@@ -107,6 +107,7 @@ class LoopInstance(Clamp):
 
     @property
     def loop_schema(self) -> dict:
+        """Return and lazy load the details schema."""
         if not self._loop_schema:
             template = jinja_env().get_template("closed_loop_details.json.j2")
             self._loop_schema = template.render()
@@ -118,12 +119,14 @@ class LoopInstance(Clamp):
             validate(self.details, self.loop_schema)
         except SchemaError as error:
             print("There is an error with the schema")
+            return False
         except ValidationError as error:
             print(error)
             print("---------")
             print(error.absolute_path)
             print("---------")
             print(error.absolute_schema_path)
+            return False
         return True
 
     def create(self) -> bool:

@@ -134,6 +134,13 @@ def test_update_loop_details(mock_send_message_json):
     assert loop.details == LOOP_DETAILS
 
 
+def test_validate_details():
+    """Test Loop instance details validation."""
+    loop = LoopInstance(template="template", name="test", details=LOOP_DETAILS)
+    valid = loop.validate_details()
+    assert valid
+
+
 @mock.patch.object(LoopInstance, 'send_message_json')
 def test_create(mock_send_message_json):
     """Test Loop instance creation."""

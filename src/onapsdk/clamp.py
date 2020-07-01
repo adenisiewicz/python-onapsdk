@@ -4,11 +4,40 @@
 """Clamp module."""
 import time
 from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
+from jsonschema import validate, ValidationError, SchemaError
 
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.service import Service
 from onapsdk.utils.jinja import jinja_env
+
+
+SCHEMA = {
+    "type" : "object",
+    "properties" : {
+        "name" : {"type" : "string"},
+    },
+    "type" : "object",
+    "properties" : {
+        "components" : {"type" : "object"},
+        "properties" : {
+            "POLICY" : {"type" : "object"},
+            "properties" : {
+                "componentState" : {"type" : "object"},
+                "properties" : {
+                    "stateName" : {"type" : "string"}
+                    }
+            },
+            "DCAE" : {"type" : "object"},
+            "properties" : {
+                "componentState" : {"type" : "object"},
+                "properties" : {
+                    "stateName" : {"type" : "string"}
+                    }
+            }
+        }
+    },
+}
 
 
 class Clamp(Onap):
@@ -24,12 +53,12 @@ class Clamp(Onap):
         return "{}/restservices/clds/v2".format(cls.base_back_url)
 
     @classmethod
-    def create_cert(cls) -> None:
+    def create_cert(cls, key: str) -> None:
         """Create certificate tuple."""
         #we can add this function elsewhere like utils
         with open('aaf_certificate.p12', 'rb') as pkcs12_file:
             pkcs12_data = pkcs12_file.read()
-        pkcs12_password_bytes = "China in the Spring".encode('utf8')
+        pkcs12_password_bytes = key.encode('utf8')
         pyo_pk = load_pkcs12(pkcs12_data, pkcs12_password_bytes)
         cert = dump_certificate(FILETYPE_PEM, pyo_pk.get_certificate())
         private_key = dump_privatekey(FILETYPE_PEM, pyo_pk.get_privatekey(),
@@ -70,6 +99,9 @@ class Clamp(Onap):
 class LoopInstance(Clamp):
     """Control Loop instantiation class."""
 
+    #class variable
+    loop_schema = SCHEMA
+
     def __init__(self, template: str, name: str, details: dict) -> None:
         """Initialize the object."""
         super().__init__()
@@ -98,6 +130,20 @@ class LoopInstance(Clamp):
         if loop_details:
             return loop_details
         raise ValueError("Couldn't get the appropriate details")
+
+    def validate_details(self) -> bool:
+        """Validate Loop Instance details."""
+        try:
+            validate(self.details, self.loop_schema)
+        except SchemaError as e:
+            print("There is an error with the schema")
+        except ValidationError as e:
+            print(e)
+            print("---------")
+            print(e.absolute_path)
+            print("---------")
+            print(e.absolute_schema_path)
+        return True
 
     def create(self) -> bool:
         """Create instance and load loop details."""
@@ -212,8 +258,10 @@ class LoopInstance(Clamp):
                                                url)
         action_done = False
         if policy_action:
+            self.validate_details()
             old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
             self.details = self._update_loop_details()
+            self.validate_details()
             new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
             if new_state != old_state and not(action != "stop" and new_state == "SENT"):
                 action_done = True
@@ -227,11 +275,13 @@ class LoopInstance(Clamp):
                                           url)
         deploy = False
         if response:
+            self.validate_details()
             state = self.details["components"]["DCAE"]["componentState"]["stateName"]
             while state != "MICROSERVICE_INSTALLED_SUCCESSFULLY":
                 #modify the time sleep for loop refresh
                 time.sleep(0)
                 self.details = self._update_loop_details()
+                self.validate_details()
                 state = self.details["components"]["DCAE"]["componentState"]["stateName"]
                 if state == "MICROSERVICE_INSTALLATION_FAILED":
                     return False

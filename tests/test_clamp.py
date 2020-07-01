@@ -160,7 +160,7 @@ def test_add_operational_policy(mock_send_message_json):
         ]
     }
     mock_send_message_json.return_value = LOOP_DETAILS
-    loop.add_oprational_policy(policy_type="FrequencyLimiter", policy_version="1.0.0")
+    loop.add_operational_policy(policy_type="FrequencyLimiter", policy_version="1.0.0")
     mock_send_message_json.assert_called_once_with('PUT', 'Create Operational Policy',
         (f"{loop.base_url}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"))
     assert loop.name == "LOOP_test"

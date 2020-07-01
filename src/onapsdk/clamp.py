@@ -5,6 +5,7 @@
 import time
 from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
 
+from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.service import Service
 from onapsdk.utils.jinja import jinja_env
@@ -14,12 +15,13 @@ class Clamp(Onap):
     """Mother Class of all CLAMP elements."""
 
     #class variable
+    base_back_url = settings.CLAMP_URL
     _cert: tuple = None
 
     @classmethod
     def base_url(cls) -> str:
         """Give back the base url of Clamp."""
-        return "https://clamp.api.simpledemo.onap.org:30258/restservices/clds/v2"
+        return "{}/restservices/clds/v2".format(cls.base_back_url)
 
     @classmethod
     def create_cert(cls) -> None:
@@ -98,7 +100,7 @@ class LoopInstance(Clamp):
                 return True
         raise ValueError("Couldn't create the instance")
 
-    def add_oprational_policy(self, policy_type: str, policy_version: str) -> bool:
+    def add_operational_policy(self, policy_type: str, policy_version: str) -> bool:
         """Add op policy to the loop instance."""
         url = "{}/loop/addOperationaPolicy/{}/policyModel/{}/{}".\
               format(self.base_url, self.name, policy_type, policy_version)
@@ -111,7 +113,7 @@ class LoopInstance(Clamp):
             return True
         raise ValueError("Couldn't add the op policy")
 
-    def remove_oprational_policy(self, policy_type: str, policy_version: str) -> dict:
+    def remove_operational_policy(self, policy_type: str, policy_version: str) -> dict:
         """Remove op policy from the loop instance."""
         url = "{}/loop/removeOperationaPolicy/{}/policyModel/{}/{}".\
               format(self.base_url, self.name, policy_type, policy_version)

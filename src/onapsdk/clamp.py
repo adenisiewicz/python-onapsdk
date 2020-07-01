@@ -54,13 +54,13 @@ class Clamp(Onap):
         raise ValueError("Template not found")
 
     @classmethod
-    def check_policies(cls, policy_name: str) -> bool:
+    def check_policies(cls, policy_name: str, req_policies: int = 30) -> bool:
         """Ensure that policies are stored in CLAMP."""
         url = "{}/policyToscaModels/".format(cls.base_url())
         policies = cls.send_message_json('GET',
                                          'Get stocked policies',
                                          url)
-        if len(policies) > 30:
+        if len(policies) > req_policies:
             for policy in policies:
                 if policy["policyAcronym"] == policy_name:
                     return True

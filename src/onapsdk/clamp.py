@@ -88,7 +88,8 @@ class Clamp(Onap):
         url = "{}/policyToscaModels/".format(cls.base_url())
         policies = cls.send_message_json('GET',
                                          'Get stocked policies',
-                                         url)
+                                         url,
+                                         cert=cls._cert)
         if len(policies) > req_policies:
             for policy in policies:
                 if policy["policyAcronym"] == policy_name:
@@ -126,7 +127,8 @@ class LoopInstance(Clamp):
         url = "{}/loop/{}".format(self.base_url, self.name)
         loop_details = self.send_message_json('GET',
                                               'Get loop details',
-                                              url)
+                                              url,
+                                              cert=self._cert)
         if loop_details:
             return loop_details
         raise ValueError("Couldn't get the appropriate details")
@@ -151,7 +153,8 @@ class LoopInstance(Clamp):
               format(self.base_url, self.name, self.template)
         instance_details = self.send_message_json('POST',
                                                   'Create Loop Instance',
-                                                  url)
+                                                  url,
+                                                  cert=self._cert)
         if  instance_details:
             self.name = "LOOP_" + self.name
             self.details = instance_details
@@ -165,7 +168,8 @@ class LoopInstance(Clamp):
               format(self.base_url, self.name, policy_type, policy_version)
         add_response = self.send_message_json('PUT',
                                               'Create Operational Policy',
-                                              url)
+                                              url,
+                                              cert=self._cert)
         nb_policies = len(self.details["operationalPolicies"])
         if (add_response and (len(add_response["operationalPolicies"]) > nb_policies)):
             self.details = add_response
@@ -178,7 +182,8 @@ class LoopInstance(Clamp):
               format(self.base_url, self.name, policy_type, policy_version)
         response = self.send_message_json('PUT',
                                           'Remove Operational Policy',
-                                          url)
+                                          url,
+                                          cert=self._cert)
         #must modify loop details depending on response
         return response
 
@@ -190,7 +195,8 @@ class LoopInstance(Clamp):
         upload_result = self.send_message('POST',
                                           'ADD TCA config',
                                           url,
-                                          data=data)
+                                          data=data,
+                                          cert=self._cert)
         if upload_result:
             self._logger.info("Files for TCA config %s have been uploaded to loop's microservice",
                               self.name)
@@ -216,7 +222,8 @@ class LoopInstance(Clamp):
         upload_result = self.send_message('POST',
                                           'ADD drools config',
                                           url,
-                                          data=data)
+                                          data=data,
+                                          cert=self._cert)
         if upload_result:
             self._logger.info("Files for drools config %s have been uploaded to loop's Op policy",
                               self.name)
@@ -233,7 +240,8 @@ class LoopInstance(Clamp):
         upload_result = self.send_message('POST',
                                           'ADD frequency limiter config',
                                           url,
-                                          data=data)
+                                          data=data,
+                                          cert=self._cert)
         if upload_result:
             self._logger.info(("Files for frequency config %s have been uploaded to loop's"
                                "Op policy"), self.name)
@@ -255,7 +263,8 @@ class LoopInstance(Clamp):
         url = "{}/loop/{}/{}".format(self.base_url, action, self.name)
         policy_action = self.send_message_json('PUT',
                                                '{} policy'.format(action),
-                                               url)
+                                               url,
+                                               cert=self._cert)
         action_done = False
         if policy_action:
             self.validate_details()
@@ -272,7 +281,8 @@ class LoopInstance(Clamp):
         url = "{}/loop/deploy/{}".format(self.base_url, self.name)
         response = self.send_message_json('PUT',
                                           'Deploy microservice to DCAE',
-                                          url)
+                                          url,
+                                          cert=self._cert)
         deploy = False
         if response:
             self.validate_details()
@@ -294,5 +304,6 @@ class LoopInstance(Clamp):
         url = "{}/loop/delete/{}".format(self.base_url, self.name)
         request = self.send_message_json('PUT',
                                          'Delete loop instance',
-                                         url)
+                                         url,
+                                         cert=self._cert)
         return request

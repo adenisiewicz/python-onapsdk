@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
 import time
-from functools import reduce
 from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
 from jsonschema import validate, ValidationError, SchemaError
 

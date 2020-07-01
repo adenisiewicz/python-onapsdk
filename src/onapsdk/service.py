@@ -11,7 +11,7 @@ import time
 import re
 from typing import Dict, Iterable, List, BinaryIO
 from zipfile import ZipFile, BadZipFile
-import base64 
+import base64
 
 import oyaml as yaml
 
@@ -556,7 +556,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         raise AttributeError("Couldn't find VNF")
 
     def add_artifact_to_vf(self, vnf_name: str, artifact_type: str,
-                          artifact_name: str, artifact: BinaryIO = None):
+                           artifact_name: str, artifact: BinaryIO = None):
         """Add the TCA blueprint artifact to vf."""
         if artifact:
             missing_identifier = self.add_vnf_uid_to_metadata(vnf_name)
@@ -568,7 +568,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             headers["Accept-Encoding"] = "gzip, deflate, br"
             template = jinja_env().get_template("service_add_artifact_to_vf.json.j2")
             data = template.render(artifact_name=artifact_name, artifact_type=artifact_type,
-                                  b64_artifact=b64_artifact)
+                                   b64_artifact=b64_artifact)
             upload_result = self.send_message('POST',
                                               'Add artifact to vf',
                                               url,
@@ -576,7 +576,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                                               data=data)
             if upload_result:
                 self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
-                                vnf_name)
+                                  vnf_name)
             else:
                 self._logger.error(("an error occured during file upload for blueprint Artifact"
                                     "to VNF %s"), vnf_name)

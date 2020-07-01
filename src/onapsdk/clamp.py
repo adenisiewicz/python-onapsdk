@@ -55,7 +55,7 @@ class Clamp(Onap):
 
     @classmethod
     def check_policies(cls, policy_name: str, req_policies: int = 30) -> bool:
-        """Ensure that policies are stored in CLAMP."""
+        """Ensure that a policy is stored in CLAMP."""
         url = "{}/policyToscaModels/".format(cls.base_url())
         policies = cls.send_message_json('GET',
                                          'Get stocked policies',

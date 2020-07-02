@@ -126,14 +126,14 @@ class LoopInstance(Clamp):
         try:
             validate(self.details, self.loop_schema)
         except SchemaError as error:
-            print("There is an error with the schema")
+            self._logger.error("There is an error with the schema")
             return False
         except ValidationError as error:
-            print(error)
-            print("---------")
-            print(error.absolute_path)
-            print("---------")
-            print(error.absolute_schema_path)
+            self._logger.error(error)
+            self._logger.error("---------")
+            self._logger.error(error.absolute_path)
+            self._logger.error("---------")
+            self._logger.error(error.absolute_schema_path)
             return False
         return True
 

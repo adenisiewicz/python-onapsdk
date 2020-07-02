@@ -177,6 +177,18 @@ def test_create(mock_send_message_json):
 
 
 @mock.patch.object(LoopInstance, 'send_message_json')
+def test_create_none(mock_send_message_json):
+    """Test Loop instance creation."""
+    instance = LoopInstance(template="template", name="test", details={})
+    mock_send_message_json.return_value = {}
+    with pytest.raises(ValueError):
+        instance.create()
+        mock_send_message_json.assert_called_once_with('POST', 'Create Loop Instance',
+            (f"{instance.base_url}/loop/create/test?templateName=template"),
+            cert=instance._cert)
+
+
+@mock.patch.object(LoopInstance, 'send_message_json')
 def test_add_operational_policy(mock_send_message_json):
     """Test adding an op policy."""
     loop = LoopInstance(template="template", name="LOOP_test", details={})

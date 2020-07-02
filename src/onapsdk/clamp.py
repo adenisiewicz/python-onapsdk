@@ -174,7 +174,7 @@ class LoopInstance(Clamp):
                                           'Remove Operational Policy',
                                           url,
                                           cert=self._cert)
-        #must modify loop details depending on response
+        self.details = self._update_loop_details()
         return response
 
     def update_microservice_policy(self) -> None:

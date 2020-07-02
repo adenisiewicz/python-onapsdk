@@ -156,6 +156,18 @@ def test_update_loop_details(mock_send_message_json):
     assert loop.details == LOOP_DETAILS
 
 
+@mock.patch.object(LoopInstance, 'send_message_json')
+def test_not_update_loop_details(mock_send_message_json):
+    """Test Loop instance update details."""
+    loop = LoopInstance(template="template", name="test", details={})
+    mock_send_message_json.return_value = {}
+    with pytest.raises(ValueError):
+        loop._update_loop_details()
+        mock_send_message_json.assert_called_once_with('POST', 'Create Loop Instance',
+            (f"{instance.base_url}/loop/create/test?templateName=template"),
+            cert=instance._cert)
+
+
 def test_validate_details():
     """Test Loop instance details validation."""
     loop = LoopInstance(template="template", name="test", details=LOOP_DETAILS)

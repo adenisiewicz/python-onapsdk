@@ -330,3 +330,14 @@ def test_not_submited_microservice_to_dcae(mock_send_message_json, mock_update):
     assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLED_SUCCESSFULLY"
     assert deploy == True
 
+
+@mock.patch.object(LoopInstance, 'send_message_json')
+def test_delete(mock_send_message_json):
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message_json.return_value = {}
+    request = loop.delete()
+    mock_send_message_json.assert_called_once_with('PUT',
+                                                   'Delete loop instance',
+                                                   (f"{loop.base_url}/loop/delete/{loop.name}"),
+                                                   cert=loop._cert)
+    assert request == {}

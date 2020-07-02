@@ -70,8 +70,9 @@ def test_service_upload_tca_artifact():
     assert svc.unique_identifier is not None
     #must be in check-out
     assert svc.status == const.DRAFT
+    file = open("{}/tca_clampnode.yaml".format(os.path.dirname(os.path.abspath(__file__))), 'rb')
+    data = file.read()
     svc.add_artifact_to_vf(vnf_name="ubuntu16test_VF 0", 
                             artifact_type="DCAE_INVENTORY_BLUEPRINT",
-                            artifact_name="clampnode.yaml",
-                            artifact=open("{}/tca_clampnode.yaml".format(
-        os.path.dirname(os.path.abspath(__file__))), 'rb').encode('utf-8'))
+                            artifact_name="test_clampnode.yaml",
+                            artifact=data)

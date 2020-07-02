@@ -572,7 +572,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             data = template.render(artifact_name=artifact_name, artifact_type=artifact_type,
                                    b64_artifact=b64_artifact)
             md5_content = hashlib.md5(data.encode()).hexdigest()
-            headers["Content-MD5"] = "N2RhMGIzMGQ5M2FkN2Q3YjUwMGNiMzQ1Y2JmYzcxOGQ="
+            headers["Content-MD5"] = md5_content
             upload_result = self.send_message('POST',
                                               'Add artifact to vf',
                                               url,

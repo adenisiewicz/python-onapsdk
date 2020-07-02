@@ -8,7 +8,8 @@ from unittest.mock import MagicMock
 import json
 import pytest
 
-from onapsdk.clamp import Clamp, LoopInstance
+from onapsdk.clamp.clamp_element import Clamp
+from onapsdk.clamp.loop_instance import LoopInstance
 from onapsdk.service import Service
 
 #examples

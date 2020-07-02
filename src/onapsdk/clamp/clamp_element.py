@@ -62,8 +62,8 @@ class Clamp(Onap):
                                          'Get stocked policies',
                                          url,
                                          cert=cls._cert)
-        if len(policies) >= req_policies:
-            for policy in policies:
-                if policy["policyAcronym"] == policy_name:
-                    return True
-        raise ValueError("Couldn't load policies from policy engine")
+        exist_policy = False
+        for policy in policies:
+            if policy["policyAcronym"] == policy_name:
+                exist_policy = True
+        return (len(policies) >= req_policies) and exist_policy

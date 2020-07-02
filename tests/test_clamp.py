@@ -109,14 +109,25 @@ def test_check_loop_template_none(mock_send_message_json):
 @mock.patch.object(Clamp, 'send_message_json')
 def test_check_policies(mock_send_message_json):
     mock_send_message_json.return_value = POLICIES
+    exists = Clamp.check_policies(policy_name="Test", req_policies=1)
+    mock_send_message_json.\
+        assert_called_once_with('GET',
+                                'Get stocked policies',
+                                (f"{Clamp.base_url()}/policyToscaModels/"),
+                                cert=Clamp._cert)
+    assert exists
+
+
+@mock.patch.object(Clamp, 'send_message_json')
+def test_check_policies_none(mock_send_message_json):
+    mock_send_message_json.return_value = POLICIES
     with pytest.raises(ValueError):
         exists = Clamp.check_policies(policy_name="Test")
         mock_send_message_json.\
-            assert_called_once_with('GET',
-                                    'Get stocked policies',
-                                    (f"{Clamp.base_url()}/policyToscaModels/"),
-                                    cert=Clamp._cert)
-        assert exists 
+                assert_called_once_with('GET',
+                                        'Get stocked policies',
+                                        (f"{Clamp.base_url()}/policyToscaModels/"),
+                                        cert=Clamp._cert)
 
 
 def test_cl_initialization():

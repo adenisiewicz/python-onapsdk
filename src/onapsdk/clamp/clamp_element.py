@@ -64,7 +64,7 @@ class Clamp(Onap):
                                          'Get stocked policies',
                                          url,
                                          cert=cls._cert)
-        if len(policies) > req_policies:
+        if len(policies) >= req_policies:
             for policy in policies:
                 if policy["policyAcronym"] == policy_name:
                     return True

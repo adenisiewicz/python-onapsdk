@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
-import json
 import os
 from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
 
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.service import Service
-from onapsdk.utils.jinja import jinja_env
 
 
 class Clamp(Onap):

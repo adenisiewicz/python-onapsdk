@@ -12,9 +12,9 @@ import re
 from typing import Dict, Iterable, List, BinaryIO
 from zipfile import ZipFile, BadZipFile
 import base64
+import hashlib
 
 import oyaml as yaml
-import hashlib
 
 import onapsdk.constants as const
 from onapsdk.sdc_resource import SdcResource

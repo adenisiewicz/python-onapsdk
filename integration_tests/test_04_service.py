@@ -59,3 +59,19 @@ def test_service_onboard_unknown():
     svc = Service(name='test', resources=[vf])
     svc.onboard()
     assert svc.distributed
+
+@pytest.mark.integration
+def test_service_upload_tca_artifact():
+    """Integration tests for Service."""
+    #i'll try after with mock sdc
+    Service.set_proxy({ 'http': 'socks5h://127.0.0.1:8080', 'https': 'socks5h://127.0.0.1:8080'})
+    #its the test service
+    svc = Service(name="sdk_integration")
+    assert svc.unique_identifier is not None
+    #must be in check-out
+    assert svc.status == const.DRAFT
+    svc.add_artifact_to_vf(vnf_name="ubuntu16test_VF 0", 
+                            artifact_type="DCAE_INVENTORY_BLUEPRINT",
+                            artifact_name="clampnode.yaml",
+                            artifact=open("{}/tca_clampnode.yaml".format(
+        os.path.dirname(os.path.abspath(__file__))), 'rb').encode('utf-8'))

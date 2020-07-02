@@ -63,9 +63,6 @@ class LoopInstance(Clamp):
         """Validate Loop Instance details."""
         try:
             validate(self.details, self.loop_schema)
-        except SchemaError as error:
-            self._logger.error("There is an error with the schema")
-            return False
         except ValidationError as error:
             self._logger.error(error)
             self._logger.error("---------")

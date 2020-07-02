@@ -22,7 +22,7 @@
                     "cidr-mask": "{{ subnet.cidr_mask }}",
                     "ip-version": "{{ subnet.ip_version }}",
                     "dhcp-enabled": "N",
-                    "gateway-address": "{{ subnet.gateway_address }}",
+                    "gateway-address": "{{ subnet.gateway_address }}"
                 }{% if not loop.last %},{% endif %}
                 {% endfor %}
             ]

@@ -512,7 +512,8 @@ class NetworkInstantiation(NodeTemplateInstantiation):
             network_instance_name = \
                 f"Python_ONAP_SDK_network_instance_{str(uuid4())}"
         NetworkPreload.upload_network_preload(network=network_object,
-                                              network_instance_name=network_instance_name)
+                                              network_instance_name=network_instance_name,
+                                              subnets=subnets)
         response: dict = cls.send_message_json(
             "POST",
             (f"Instantiate {aai_service_instance.service_subscription.sdc_service.name} "

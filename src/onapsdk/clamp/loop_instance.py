@@ -209,15 +209,15 @@ class LoopInstance(Clamp):
         if response:
             self.validate_details()
             state = self.details["components"]["DCAE"]["componentState"]["stateName"]
-            while state != "MICROSERVICE_INSTALLED_SUCCESSFULLY":
+            failure = "MICROSERVICE_INSTALLATION_FAILED"
+            success = "MICROSERVICE_INSTALLED_SUCCESSFULLY"
+            while state != success and state != failure:
                 #modify the time sleep for loop refresh
                 time.sleep(0)
                 self.details = self._update_loop_details()
                 self.validate_details()
                 state = self.details["components"]["DCAE"]["componentState"]["stateName"]
-                if state == "MICROSERVICE_INSTALLATION_FAILED":
-                    return False
-            deploy = True
+            deploy = (state == success)
         return deploy
 
     def delete(self):

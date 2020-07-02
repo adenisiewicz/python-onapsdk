@@ -211,7 +211,7 @@ class LoopInstance(Clamp):
             state = self.details["components"]["DCAE"]["componentState"]["stateName"]
             failure = "MICROSERVICE_INSTALLATION_FAILED"
             success = "MICROSERVICE_INSTALLED_SUCCESSFULLY"
-            while state != success and state != failure:
+            while state not in (success, failure):
                 #modify the time sleep for loop refresh
                 time.sleep(0)
                 self.details = self._update_loop_details()

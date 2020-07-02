@@ -134,6 +134,7 @@ class LoopInstance(Clamp):
 
     def add_drools_conf(self) -> dict:
         """Add drools configuration."""
+        self.validate_details()
         vfmodule_dicts = self.details["modelService"]["resourceDetails"]["VFModule"]
         entity_ids = {}
         #Get the vf module details

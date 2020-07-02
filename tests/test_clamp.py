@@ -136,6 +136,14 @@ def test_cl_initialization():
     assert isinstance(loop, LoopInstance)
 
 
+@mock.patch.object(LoopInstance, '_update_loop_details')
+def test_details(mock_update):
+    loop = LoopInstance(template="template", name="LOOP_name", details={})
+    mock_update.return_value = {"name" : "test"}
+    details = loop.details
+    assert details == {}
+
+
 @mock.patch.object(LoopInstance, 'send_message_json')
 def test_update_loop_details(mock_send_message_json):
     """Test Loop instance methode."""
@@ -244,6 +252,20 @@ def test_add_frequency_policy_config(mock_send_message):
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
     mock_send_message.return_value = True
     loop.add_op_policy_config(loop.add_frequency_limiter, limit=1)
+    mock_send_message.assert_called_once() 
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "POST"
+    assert description == "ADD operational policy config"
+    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
+
+
+@mock.patch.object(LoopInstance, 'send_message')
+def test_add_op_policy_config_error(mock_send_message):
+    """Test Loop Instance add op policy configuration."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message.return_value = False
+    #if u put a non cong function 
+    loop.add_op_policy_config(loop.add_frequency_limiter)
     mock_send_message.assert_called_once() 
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"

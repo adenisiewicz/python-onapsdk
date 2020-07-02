@@ -222,6 +222,29 @@ def test_add_operational_policy(mock_send_message_json):
     assert len(loop.details["operationalPolicies"]) > 0
 
 
+@mock.patch.object(LoopInstance, 'send_message_json')
+def test_not_add_operational_policy(mock_send_message_json):
+    """Test adding an op policy."""
+    loop = LoopInstance(template="template", name="LOOP_test", details={})
+    loop.details = {
+        "name" : "LOOP_test",
+        "operationalPolicies" : [],
+        "microServicePolicies" : [
+            {
+                "name" : "MICROSERVICE_test"
+            }
+        ]
+    }
+    with pytest.raises(ValueError):
+        mock_send_message_json.return_value = loop.details
+        #mistaken policy version
+        loop.add_operational_policy(policy_type="FrequencyLimiter", policy_version="not_correct")
+        mock_send_message_json.assert_called_once_with('PUT', 'Create Operational Policy',
+            (f"{loop.base_url}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/not_correct"),
+            cert=loop._cert)
+        assert len(loop.details["operationalPolicies"]) == 0
+
+
 @mock.patch.object(LoopInstance, '_update_loop_details')
 @mock.patch.object(LoopInstance, 'send_message_json')
 def test_remove_operational_policy(mock_send_message_json, mock_update):
@@ -255,6 +278,15 @@ def test_update_microservice_policy(mock_send_message):
     assert method == "POST"
     assert description == "ADD TCA config"
     assert url == (f"{loop.base_url}/loop/updateMicroservicePolicy/{loop.name}")
+
+
+@mock.patch.object(LoopInstance, 'send_message')
+def test_update_microservice_policy_none(mock_send_message):
+    """Test Loop Instance add TCA configuration."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_send_message.return_value = False
+    loop.update_microservice_policy()
+    mock_send_message.assert_called_once() 
 
 
 @mock.patch.object(LoopInstance, 'send_message')

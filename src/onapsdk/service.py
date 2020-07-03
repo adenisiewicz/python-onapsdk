@@ -13,7 +13,7 @@ from typing import Dict, Iterable, List, BinaryIO
 from zipfile import ZipFile, BadZipFile
 import base64
 import hashlib
-
+import os
 import oyaml as yaml
 
 import onapsdk.constants as const
@@ -556,7 +556,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                 vnf_it += 1
         raise AttributeError("Couldn't find VNF")
 
-    def add_artifact_to_vf(self, vnf_name: str, artifact_type: str,
+    def add_artifact_to_vf(self, vnf_name: str, artifact_type: str, artifact_label: str,
                            artifact_name: str, artifact: BinaryIO = None):
         """Add the TCA blueprint artifact to vf."""
         if artifact:
@@ -568,11 +568,12 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             headers["Accept"] = "application/json, text/plain, */*"
             headers["Accept-Encoding"] = "gzip, deflate, br"
             headers["Content-Type"] = "application/json; charset=UTF-8"
-            template = jinja_env().get_template("service_add_artifact_to_vf.json.j2")
-            data = template.render(artifact_name=artifact_name, artifact_type=artifact_type,
-                                   b64_artifact=b64_artifact)
-            md5_content = hashlib.md5(data.encode()).hexdigest()
-            headers["Content-MD5"] = md5_content
+            template = jinja_env().get_template("add_artifact_to_vf.json.j2")
+            data = template.render(artifact_name=artifact_name, artifact_label=artifact_label,
+                                   artifact_type=artifact_type, b64_artifact=b64_artifact)
+            md5_content = hashlib.md5(data.encode('UTF-8')).hexdigest()
+            content = base64.b64encode(md5_content.encode('ascii')).decode('UTF-8')
+            headers["Content-MD5"] = content
             upload_result = self.send_message('POST',
                                               'Add artifact to vf',
                                               url,

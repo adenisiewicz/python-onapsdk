@@ -708,6 +708,7 @@ def test_add_artifact_to_vf(mock_send_message, mock_load, mock_add):
     mock_add.return_value = "54321"
     result = svc.add_artifact_to_vf(vnf_name="ubuntu16test_VF 0", 
                                     artifact_type="DCAE_INVENTORY_BLUEPRINT",
+                                    artifact_label="thistest",
                                     artifact_name="clampnode.yaml",
                                     artifact="data".encode('utf-8'))
     mock_send_message.assert_called()

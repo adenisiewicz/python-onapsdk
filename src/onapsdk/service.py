@@ -13,7 +13,7 @@ from typing import Dict, Iterable, List, BinaryIO
 from zipfile import ZipFile, BadZipFile
 import base64
 import hashlib
-import os
+
 import oyaml as yaml
 
 import onapsdk.constants as const

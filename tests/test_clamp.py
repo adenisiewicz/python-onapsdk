@@ -4,7 +4,7 @@
 
 from unittest import mock
 from unittest.mock import MagicMock
-
+import os
 import json
 import pytest
 
@@ -81,6 +81,14 @@ def test_initialization():
     """Class initialization test."""
     clamp = Clamp()
     assert isinstance(clamp, Clamp)
+
+
+def test_create_cert():
+    """Test Clamp's class method."""
+    #only use this key for p12 unlock
+    Clamp.create_cert(key="China in the Spring")
+    assert Clamp._cert == ('cert.pem', 'cert.key')
+
 
 
 @mock.patch.object(Clamp, 'send_message_json')

@@ -30,11 +30,10 @@ class Clamp(Onap):
         file = _root_path +"/src/onapsdk/clamp/aaf_certificate.p12"
         with open(file, 'rb') as pkcs12_file:
             pkcs12_data = pkcs12_file.read()
-        pkcs12_password_bytes = key.encode('utf8')
-        pyo_pk = load_pkcs12(pkcs12_data, pkcs12_password_bytes)
-        cert = dump_certificate(FILETYPE_PEM, pyo_pk.get_certificate())
-        private_key = dump_privatekey(FILETYPE_PEM, pyo_pk.get_privatekey(),
-                                      "aes256", pkcs12_password_bytes)
+        pkcs12_password_bytes = key.encode('utf-8')
+        PyoP12 = load_pkcs12(pkcs12_data, pkcs12_password_bytes)
+        cert = dump_certificate(FILETYPE_PEM, PyoP12.get_certificate())
+        private_key = dump_privatekey(FILETYPE_PEM, PyoP12.get_privatekey(), "aes256", pkcs12_password_bytes)
         with open('cert.pem', 'wb') as pem_file:
             pem_file.write(cert)
         with open('cert.key', 'wb') as key_file:

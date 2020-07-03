@@ -1,10 +1,11 @@
+import json
 from collections.abc import Iterable
 from unittest import mock
 
-
 import pytest
 
-from onapsdk.sdnc.preload import PreloadInformation, VfModulePreload
+from onapsdk.sdnc.preload import NetworkPreload, PreloadInformation, VfModulePreload
+from onapsdk.so.instantiation import Subnet
 
 
 PRELOAD_INFORMATIONS = {
@@ -83,3 +84,56 @@ def test_preload_information(mock_send_message_json):
     assert isinstance(preload_information, PreloadInformation)
     assert preload_information.preload_id == "Python_ONAP_SDK_network_instance_338d5238-22fe-44d1-857a-223e2f6edd9b"
     assert preload_information.preload_type == "network"
+
+
+@mock.patch.object(NetworkPreload, "send_message_json")
+def test_network_preload(mock_send_message_json):
+    NetworkPreload.upload_network_preload(
+        mock.MagicMock(),
+        network_instance_name="test_instance",
+    )
+    mock_send_message_json.assert_called_once()
+    _, _, kwargs = mock_send_message_json.mock_calls[0]
+    assert "data" in kwargs
+    data = json.loads(kwargs["data"])
+    assert not len(data["input"]["preload-network-topology-information"]["subnets"])
+
+    mock_send_message_json.reset_mock()
+    NetworkPreload.upload_network_preload(
+        mock.MagicMock(),
+        network_instance_name="test_instance",
+        subnets=[Subnet(
+            name="test_subnet",
+            start_address="127.0.0.0",
+            gateway_address="127.0.0.1"
+        )]
+    )
+    mock_send_message_json.assert_called_once()
+    _, _, kwargs = mock_send_message_json.mock_calls[0]
+    assert "data" in kwargs
+    data = json.loads(kwargs["data"])
+    assert len(data["input"]["preload-network-topology-information"]["subnets"])
+    assert data["input"]["preload-network-topology-information"]["subnets"][0]["subnet-name"] == "test_subnet"
+    assert data["input"]["preload-network-topology-information"]["subnets"][0]["dhcp-enabled"] == "N"
+
+    mock_send_message_json.reset_mock()
+    NetworkPreload.upload_network_preload(
+        mock.MagicMock(),
+        network_instance_name="test_instance",
+        subnets=[Subnet(
+            name="test_subnet",
+            start_address="127.0.0.0",
+            gateway_address="127.0.0.1",
+            dhcp_enabled=True,
+            dhcp_start_address="192.168.0.0",
+            dhcp_end_address="192.168.0.1"
+        )]
+    )
+    mock_send_message_json.assert_called_once()
+    _, _, kwargs = mock_send_message_json.mock_calls[0]
+    assert "data" in kwargs
+    data = json.loads(kwargs["data"])
+    assert len(data["input"]["preload-network-topology-information"]["subnets"])
+    assert data["input"]["preload-network-topology-information"]["subnets"][0]["subnet-name"] == "test_subnet"
+    assert data["input"]["preload-network-topology-information"]["subnets"][0]["dhcp-start-address"] == "192.168.0.0"
+    assert data["input"]["preload-network-topology-information"]["subnets"][0]["dhcp-end-address"] == "192.168.0.1"

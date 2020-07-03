@@ -38,7 +38,7 @@ class Subnet:  # pylint: disable=too-many-instance-attributes
     role: str = None
     cidr_mask: str = "24"
     ip_version: str = "4"
-    dhcp_enabled: str = "N"
+    dhcp_enabled: bool = False
     dhcp_start_address: Optional[str] = None
     dhcp_end_address: Optional[str] = None
 
@@ -49,17 +49,14 @@ class Subnet:  # pylint: disable=too-many-instance-attributes
             values are provided if dhcp is enabled
 
         Raises:
-            ValueError: dhcp_enabled has invalid value
             ValueError: Not both dhcp_start_address
                 and dhcp_end_address values provided
 
         """
-        if self.dhcp_enabled.upper() not in ["N", "Y"]:
-            raise ValueError("dhcp_enabled must be \"N\" or \"Y\"")
-        if self.dhcp_enabled.upper() == "Y" and \
+        if self.dhcp_enabled and \
             not all([self.dhcp_start_address,
                      self.dhcp_end_address]):
-            raise ValueError("DHCP is enabled but not all start and end adress were provided")
+            raise ValueError("DHCP is enabled but not all DHCP start and end adress were provided")
 
 
 class Instantiation(OrchestrationRequest, ABC):

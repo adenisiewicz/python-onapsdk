@@ -1,5 +1,6 @@
 """A&AI business package."""
 from .customer import Customer, ServiceSubscription
+from .instance import Instance
 from .network import NetworkInstance
 from .owning_entity import OwningEntity
 from .service import ServiceInstance

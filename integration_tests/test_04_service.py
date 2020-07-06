@@ -4,7 +4,6 @@
 import os
 
 import pytest
-from unittest import mock
 
 import requests
 
@@ -15,7 +14,7 @@ from onapsdk.vf import Vf
 from onapsdk.service import Service, Vnf
 import onapsdk.constants as const
 
-'''
+
 @pytest.mark.integration
 def test_service_unknown():
     """Integration tests for Service."""
@@ -60,7 +59,7 @@ def test_service_onboard_unknown():
     svc = Service(name='test', resources=[vf])
     svc.onboard()
     assert svc.distributed
-'''
+
 @pytest.mark.integration
 def test_service_upload_tca_artifact():
     """Integration tests for Service."""

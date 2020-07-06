@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
 import os
-from zipfile import ZipFile 
+from zipfile import ZipFile
 
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
@@ -28,9 +28,9 @@ class Clamp(Onap):
         """Create certificate tuple."""
         #Must modify key from parameters to hide it
         zip_path = settings.CERT_PATH
-        with ZipFile(zip_path, 'r') as zf: 
-            zf.extract('cert.pem', cls.clamp_dir)
-            zf.extract('cert.key', cls.clamp_dir)
+        with ZipFile(zip_path, 'r') as zip_file:
+            zip_file.extract('cert.pem', cls.clamp_dir)
+            zip_file.extract('cert.key', cls.clamp_dir)
             cls._cert = (cls.clamp_dir+'cert.cert', cls.clamp_dir+'cert.key')
     
     @classmethod

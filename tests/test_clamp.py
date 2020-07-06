@@ -89,6 +89,12 @@ def test_create_cert():
     assert Clamp._cert is not None
 
 
+def test_delete_cert():
+    """Test Clamp's class method."""
+    Clamp.delete_cert()
+    assert Clamp._cert is None
+
+
 @mock.patch.object(Clamp, 'send_message_json')
 def test_check_loop_template(mock_send_message_json):
     """Test Clamp's class method."""

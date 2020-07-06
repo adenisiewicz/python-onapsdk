@@ -16,6 +16,7 @@ class Clamp(Onap):
     #class variable
     base_back_url = settings.CLAMP_URL
     _cert: tuple = None
+    clamp_dir = os.getcwd().rsplit('/onapsdk')[0]+"/src/onapsdk/clamp/"
 
     @classmethod
     def base_url(cls) -> str:
@@ -26,13 +27,21 @@ class Clamp(Onap):
     def create_cert(cls) -> None:
         """Create certificate tuple."""
         #Must modify key from parameters to hide it
-        _root_path = os.getcwd().rsplit('/onapsdk')[0]
-        clamp_dir = _root_path +"/src/onapsdk/clamp/"
-        zip_path = _root_path +"/src/onapsdk/clamp/cert.zip"
+        zip_path = settings.CERT_PATH
         with ZipFile(zip_path, 'r') as zf: 
-            zf.extract('cert.pem', clamp_dir)
-            zf.extract('cert.key', clamp_dir)
-            cls._cert = (clamp_dir+'cert.cert', clamp_dir+'cert.key')
+            zf.extract('cert.pem', cls.clamp_dir)
+            zf.extract('cert.key', cls.clamp_dir)
+            cls._cert = (cls.clamp_dir+'cert.cert', cls.clamp_dir+'cert.key')
+    
+    @classmethod
+    def delete_cert(cls) -> None:
+        """Delete certificate temporary files."""
+        try:
+            os.remove(cls.clamp_dir+"cert.key")
+            os.remove(cls.clamp_dir+"cert.pem")
+            cls._cert = None
+        except OSError as e:
+            cls._logger.error(e)
 
     @classmethod
     def check_loop_template(cls, service: Service) -> str:

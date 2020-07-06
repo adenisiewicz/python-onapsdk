@@ -1,5 +1,7 @@
 """Global settings module."""  # pylint: disable=bad-whitespace
 
+import os
+
 ######################
 #                    #
 # ONAP SERVICES URLS #
@@ -15,3 +17,11 @@ SDNC_URL    = "https://sdnc.api.simpledemo.onap.org:30267"
 SO_URL      = "http://so.api.simpledemo.onap.org:30277"
 VID_URL     = "https://vid.api.simpledemo.onap.org:30200"
 CLAMP_URL   = "https://clamp.api.simpledemo.onap.org:30258"
+
+######################
+#                    #
+#   PATH SETTINGS    #
+#                    #
+######################
+
+CERT_PATH  = os.getcwd().rsplit('/onapsdk')[0] + "/src/onapsdk/clamp/cert.zip"

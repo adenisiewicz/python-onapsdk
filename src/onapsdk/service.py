@@ -544,24 +544,29 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                                                 url)
         if request_return:
             component_instances = request_return["componentInstances"]
-            #instance = component_instances[component_instances["name"]==vnf_name]
-            #instance = [l for l in component_instances if l["name"]==vnf_name]
-            #if instance:
-            #    unique_id = instance[0]["uniqueId"]
+            instance = [l for l in component_instances if l["name"]==vnf_name]
+            if instance:
+                unique_id = instance[0]["uniqueId"]
+            '''
             for instance in component_instances:
                 if instance["name"] == vnf_name:
                     unique_id = instance["uniqueId"]
                     break
             vnf_it = 0
-            #is_vnf = [v for v in self.vnfs if v.name==vnf_name]
-            #if is_vnf:
-            #   is_vnf[0].metadata["uniqueId"] = unique_id
-            #   return unique_id
+            '''
+            is_vnf = [v for v in self.vnfs if v.name==vnf_name]
+            if is_vnf:
+                index = self.vnfs.index(is_vnf[0])
+                self.vnfs[index].metadata["uniqueId"] = unique_id
+                self._logger.error(self.vnfs[index].metadata["uniqueId"])
+                return unique_id
+            '''
             for vnf in self.vnfs:
                 if vnf.name == vnf_name:
                     self.vnfs[vnf_it].metadata["uniqueId"] = unique_id
                     return unique_id
                 vnf_it += 1
+            '''
         raise AttributeError("Couldn't find VNF")
 
     def add_artifact_to_vf(self, vnf_name: str, artifact_type: str,

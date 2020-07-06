@@ -11,7 +11,7 @@ from onapsdk.sdc import SDC
 from onapsdk.vendor import Vendor
 from onapsdk.vsp import Vsp
 from onapsdk.vf import Vf
-from onapsdk.service import Service, Vnf
+from onapsdk.service import Service
 import onapsdk.constants as const
 
 

@@ -31,7 +31,7 @@ class Clamp(Onap):
         with ZipFile(zip_path, 'r') as zip_file:
             zip_file.extract('cert.pem', cls.clamp_dir)
             zip_file.extract('cert.key', cls.clamp_dir)
-            cls._cert = (cls.clamp_dir+'cert.cert', cls.clamp_dir+'cert.key')
+            cls._cert = (cls.clamp_dir+'cert.pem', cls.clamp_dir+'cert.key')
 
     @classmethod
     def delete_cert(cls) -> None:

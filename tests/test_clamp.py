@@ -85,10 +85,8 @@ def test_initialization():
 
 def test_create_cert():
     """Test Clamp's class method."""
-    #only use this key for p12 unlock
-    Clamp.create_cert(key="China in the Spring")
-    assert Clamp._cert == ('cert.pem', 'cert.key')
-
+    Clamp.create_cert()
+    assert Clamp._cert is not None
 
 
 @mock.patch.object(Clamp, 'send_message_json')

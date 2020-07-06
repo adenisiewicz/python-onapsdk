@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
 import os
-from OpenSSL.crypto import load_pkcs12, dump_privatekey, dump_certificate, FILETYPE_PEM
+from zipfile import ZipFile 
 
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
@@ -23,22 +23,16 @@ class Clamp(Onap):
         return "{}/restservices/clds/v2".format(cls.base_back_url)
 
     @classmethod
-    def create_cert(cls, key: str) -> None:
+    def create_cert(cls) -> None:
         """Create certificate tuple."""
         #Must modify key from parameters to hide it
         _root_path = os.getcwd().rsplit('/onapsdk')[0]
-        file = _root_path +"/src/onapsdk/clamp/aaf_certificate.p12"
-        with open(file, 'rb') as pkcs12_file:
-            pkcs12_data = pkcs12_file.read()
-        pkcs12_password_bytes = key.encode('utf-8')
-        PyoP12 = load_pkcs12(pkcs12_data, pkcs12_password_bytes)
-        cert = dump_certificate(FILETYPE_PEM, PyoP12.get_certificate())
-        private_key = dump_privatekey(FILETYPE_PEM, PyoP12.get_privatekey(), "aes256", pkcs12_password_bytes)
-        with open('cert.pem', 'wb') as pem_file:
-            pem_file.write(cert)
-        with open('cert.key', 'wb') as key_file:
-            key_file.write(private_key)
-        cls._cert = ('cert.pem', 'cert.key')
+        clamp_dir = _root_path +"/src/onapsdk/clamp/"
+        zip_path = _root_path +"/src/onapsdk/clamp/cert.zip"
+        with ZipFile(zip_path, 'r') as zf: 
+            zf.extract('cert.pem', clamp_dir)
+            zf.extract('cert.key', clamp_dir)
+            cls._cert = (clamp_dir+'cert.cert', clamp_dir+'cert.key')
 
     @classmethod
     def check_loop_template(cls, service: Service) -> str:

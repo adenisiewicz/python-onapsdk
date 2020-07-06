@@ -32,7 +32,7 @@ class Clamp(Onap):
             zip_file.extract('cert.pem', cls.clamp_dir)
             zip_file.extract('cert.key', cls.clamp_dir)
             cls._cert = (cls.clamp_dir+'cert.cert', cls.clamp_dir+'cert.key')
-    
+
     @classmethod
     def delete_cert(cls) -> None:
         """Delete certificate temporary files."""
@@ -40,8 +40,8 @@ class Clamp(Onap):
             os.remove(cls.clamp_dir+"cert.key")
             os.remove(cls.clamp_dir+"cert.pem")
             cls._cert = None
-        except OSError as e:
-            cls._logger.error(e)
+        except OSError as error:
+            cls._logger.error(error)
 
     @classmethod
     def check_loop_template(cls, service: Service) -> str:

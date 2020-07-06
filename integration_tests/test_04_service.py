@@ -4,6 +4,7 @@
 import os
 
 import pytest
+from unittest import mock
 
 import requests
 
@@ -11,7 +12,7 @@ from onapsdk.sdc import SDC
 from onapsdk.vendor import Vendor
 from onapsdk.vsp import Vsp
 from onapsdk.vf import Vf
-from onapsdk.service import Service
+from onapsdk.service import Service, Vnf
 import onapsdk.constants as const
 
 
@@ -60,21 +61,20 @@ def test_service_onboard_unknown():
     svc.onboard()
     assert svc.distributed
 
+@mock.patch.object(Service, 'add_vnf_uid_to_metadata')
 @pytest.mark.integration
-def test_service_upload_tca_artifact():
+def test_service_upload_tca_artifact(mock_add):
     """Integration tests for Service."""
+    #requests.get("{}/reset".format(SDC.base_front_url))
     response = requests.post("{}/reset".format(SDC.base_front_url))
     response.raise_for_status()
-    #must create service sdk_integration in mock-sdc
-    #i'll try after with mock sdc
-    svc = Service(name="sdk_integration")
-    assert svc.unique_identifier is not None
-    #must be in check-out
-    assert svc.status == const.DRAFT
+    svc = Service(name="test")
+    svc.create()
     file = open("{}/tca_clampnode.yaml".format(os.path.dirname(os.path.abspath(__file__))), 'rb')
     data = file.read()
-    svc.add_artifact_to_vf(vnf_name="ubuntu16test_VF 0", 
-                            artifact_type="DCAE_INVENTORY_BLUEPRINT",
-                            artifact_label="test",
-                            artifact_name="tca_clampnode.yaml",
-                            artifact=data)
+    #mock
+    mock_add.return_value = "test"
+    svc.add_artifact_to_vf(vnf_name="test", 
+                           artifact_type="DCAE_INVENTORY_BLUEPRINT",
+                           artifact_name="tca_clampnode.yaml",
+                           artifact=data)

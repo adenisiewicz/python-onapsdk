@@ -556,7 +556,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                 vnf_it += 1
         raise AttributeError("Couldn't find VNF")
 
-    def add_artifact_to_vf(self, vnf_name: str, artifact_type: str, artifact_label: str,
+    def add_artifact_to_vf(self, vnf_name: str, artifact_type: str,
                            artifact_name: str, artifact: BinaryIO = None):
         """Add the TCA blueprint artifact to vf."""
         if artifact:
@@ -569,7 +569,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             headers["Accept-Encoding"] = "gzip, deflate, br"
             headers["Content-Type"] = "application/json; charset=UTF-8"
             template = jinja_env().get_template("add_artifact_to_vf.json.j2")
-            data = template.render(artifact_name=artifact_name, artifact_label=artifact_label,
+            data = template.render(artifact_name=artifact_name, artifact_label="test"+str(len(artifact_name)),
                                    artifact_type=artifact_type, b64_artifact=b64_artifact)
             md5_content = hashlib.md5(data.encode('UTF-8')).hexdigest()
             content = base64.b64encode(md5_content.encode('ascii')).decode('UTF-8')

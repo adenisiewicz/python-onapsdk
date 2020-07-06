@@ -217,6 +217,17 @@ class LoopInstance(Clamp):
             deploy = (state == success)
         return deploy
 
+    def undeploy_microservice_from_dcae(self) -> bool:
+        """Stop the deploy operation."""
+        url = "{}/loop/stop/{}".format(self.base_url, self.name)
+        response = self.send_message_json('PUT',
+                                          'Undeploy microservice from DCAE',
+                                          url,
+                                          cert=self._cert)
+        if not response:
+            return True
+        raise ValueError("Couldn't stop the microservice deploy")
+
     def delete(self):
         """Delete the loop instance."""
         self._logger.debug("Delete %s loop instance", self.name)

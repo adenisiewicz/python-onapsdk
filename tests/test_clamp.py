@@ -440,10 +440,10 @@ def test_not_submited_microservice_to_dcae(mock_send_message_json):
     mock_send_message_json.return_value = {}
     stop = loop.undeploy_microservice_from_dcae()
     mock_send_message_json.assert_called_once_with('PUT',
-                                                   'Undeploy microservice from DCAE,
+                                                   'Undeploy microservice from DCAE',
                                                    (f"{loop.base_url}/loop/stop/LOOP_test"),
                                                    cert=loop._cert)
-    assert sstop == True
+    assert stop == True
 
 
 @mock.patch.object(LoopInstance, 'send_message_json')

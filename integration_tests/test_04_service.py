@@ -73,8 +73,8 @@ def test_service_upload_tca_artifact():
     svc.create()
     file = open("{}/tca_clampnode.yaml".format(os.path.dirname(os.path.abspath(__file__))), 'rb')
     data = file.read()
-    with pytest.raises(AttributeError):
-        svc.add_artifact_to_vf(vnf_name="test", 
+    #with pytest.raises(AttributeError):
+    svc.add_artifact_to_vf(vnf_name="test", 
                                artifact_type="DCAE_INVENTORY_BLUEPRINT",
                                artifact_name="tca_clampnode.yaml",
                                artifact=data)

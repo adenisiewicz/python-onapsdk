@@ -73,8 +73,10 @@ def test_service_upload_tca_artifact():
     vsp.onboard()
     vf = Vf(name='test', vsp=vsp)
     vf.onboard()
-    svc = Service(name='test', resources=[vf])
-    svc.onboard()
+    svc = Service(name='test')
+    svc.create()
+    svc.add_resource(vf)
+    assert svc.status == const.DRAFT
     file = open("{}/tca_clampnode.yaml".format(os.path.dirname(os.path.abspath(__file__))), 'rb')
     data = file.read()
     svc.add_artifact_to_vf(vnf_name="test", 

@@ -27,21 +27,7 @@ class Clamp(Onap):
     def create_cert(cls) -> None:
         """Create certificate tuple."""
         #Must modify key from parameters to hide it
-        zip_path = settings.CERT_PATH
-        with ZipFile(zip_path, 'r') as zip_file:
-            zip_file.extract('cert.pem', cls.clamp_dir)
-            zip_file.extract('cert.key', cls.clamp_dir)
-            cls._cert = (cls.clamp_dir+'cert.pem', cls.clamp_dir+'cert.key')
-    #no need for it 
-    @classmethod
-    def delete_cert(cls) -> None:
-        """Delete certificate temporary files."""
-        try:
-            os.remove(cls.clamp_dir+"cert.key")
-            os.remove(cls.clamp_dir+"cert.pem")
-            cls._cert = None
-        except OSError as error:
-            cls._logger.error(error)
+        cls._cert = (settings.CERT_CERT, settings.CERT_KEY)
 
     @classmethod
     def check_loop_template(cls, service: Service) -> str:

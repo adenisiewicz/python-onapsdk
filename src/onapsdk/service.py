@@ -536,7 +536,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         """Give back the end of SDC path."""
         return cls.SERVICE_PATH
 
-    def add_vnf_uid_to_metadata(self, vnf_name: str):
+    def add_vnf_uid_to_metadata(self, vnf_name: str) -> str:
         """Get vnf uniqueID."""
         url = "{}/services/{}".format(self._base_create_url(), self.unique_identifier)
         request_return = self.send_message_json('GET',

@@ -51,9 +51,7 @@ class LoopInstance(Clamp):
     def loop_schema(self) -> dict:
         """Return and lazy load the details schema."""
         if not self._loop_schema:
-            #must change path
-            _root_path = os.getcwd().rsplit('/onapsdk')[0]
-            file = _root_path +"/src/onapsdk/clamp/schema_details.json"
+            file = f"{os.path.dirname(os.path.abspath(__file__))}/schema_details.json"
             with open(file, "rb") as plan:
                 json_schema = json.load(plan)
                 self._loop_schema = json_schema

@@ -14,14 +14,14 @@ class Clamp(Onap):
     """Mother Class of all CLAMP elements."""
 
     #class variable
-    base_url = settings.CLAMP_URL
+    _base_url = settings.CLAMP_URL
     _cert: tuple = None
     clamp_dir = os.getcwd().rsplit('/onapsdk')[0]+"/src/onapsdk/clamp/"
 
     @classmethod
     def base_url(cls) -> str:
         """Give back the base url of Clamp."""
-        return "{}/restservices/clds/v2".format(cls.base_url)
+        return "{}/restservices/clds/v2".format(cls._base_url)
 
     @classmethod
     def create_cert(cls) -> None:

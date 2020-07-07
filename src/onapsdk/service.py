@@ -549,9 +549,6 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                 unique_id = instance[0]["uniqueId"]
             is_vnf = [v for v in self.vnfs if v.name == vnf_name]
             if is_vnf:
-                index = self.vnfs.index(is_vnf[0])
-                self.vnfs[index].metadata["uniqueId"] = unique_id
-                self._logger.error(self.vnfs[index].metadata["uniqueId"])
                 return unique_id
         raise AttributeError("Couldn't find VNF")
 
@@ -569,8 +566,9 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             headers["Content-Type"] = "application/json; charset=UTF-8"
             template = jinja_env().get_template("add_artifact_to_vf.json.j2")
             data = template.render(artifact_name=artifact_name,
-                                   artifact_label="test"+str(len(artifact_name)),
-                                   artifact_type=artifact_type, b64_artifact=b64_artifact)
+                                   artifact_label="sdk{}".format(artifact_name),
+                                   artifact_type=artifact_type,
+                                   b64_artifact=b64_artifact)
             md5_content = hashlib.md5(data.encode('UTF-8')).hexdigest()
             content = base64.b64encode(md5_content.encode('ascii')).decode('UTF-8')
             headers["Content-MD5"] = content

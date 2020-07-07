@@ -30,7 +30,7 @@ def test_vf_unknown():
     vf.create()
     assert vf.identifier is not None
     assert vf.status == const.DRAFT
-    assert vf.version == "1.0"
+    assert vf.version == "0.1"
     vf.submit()
     assert vsp.status == const.CERTIFIED
     assert vf.version == "1.0"

@@ -24,6 +24,5 @@ CLAMP_URL   = "https://clamp.api.simpledemo.onap.org:30258"
 #                    #
 ######################
 
-#CERT_PATH  = os.getcwd().rsplit('/onapsdk')[0] + "/src/onapsdk/clamp/cert.zip"
 CERT_CERT = os.getcwd().rsplit('/onapsdk')[0]+"/src/onapsdk/configuration/cert.pem"
 CERT_KEY  = os.getcwd().rsplit('/onapsdk')[0]+"/src/onapsdk/configuration/cert.key"

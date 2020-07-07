@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
 import os
-from zipfile import ZipFile
 
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap

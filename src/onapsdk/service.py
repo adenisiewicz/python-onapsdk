@@ -547,8 +547,6 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             instance = [l for l in component_instances if l["name"] == vnf_name]
             if instance:
                 unique_id = instance[0]["uniqueId"]
-            is_vnf = [v for v in self.vnfs if v.name == vnf_name]
-            if is_vnf:
                 return unique_id
         raise AttributeError("Couldn't find VNF")
 

@@ -88,7 +88,7 @@ class LoopInstance(Clamp):
         raise ValueError("Couldn't create the instance")
 
     def add_operational_policy(self, policy_type: str, policy_version: str) -> bool:
-        """Add op policy to the loop instance."""
+        """Add operational policy to the loop instance."""
         url = "{}/loop/addOperationaPolicy/{}/policyModel/{}/{}".\
               format(self.base_url, self.name, policy_type, policy_version)
         add_response = self.send_message_json('PUT',
@@ -99,10 +99,10 @@ class LoopInstance(Clamp):
         if (add_response and (len(add_response["operationalPolicies"]) > nb_policies)):
             self.details = add_response
             return True
-        raise ValueError("Couldn't add the op policy")
+        raise ValueError("Couldn't add the operational policy")
 
     def remove_operational_policy(self, policy_type: str, policy_version: str) -> dict:
-        """Remove op policy from the loop instance."""
+        """Remove operational policy from the loop instance."""
         url = "{}/loop/removeOperationaPolicy/{}/policyModel/{}/{}".\
               format(self.base_url, self.name, policy_type, policy_version)
         response = self.send_message_json('PUT',
@@ -113,7 +113,7 @@ class LoopInstance(Clamp):
         return response
 
     def update_microservice_policy(self) -> None:
-        """Add TCA config to microservice."""
+        """Update microservice policy configuration."""
         url = "{}/loop/updateMicroservicePolicy/{}".format(self.base_url, self.name)
         template = jinja_env().get_template("clamp_add_tca_config.json.j2")
         data = template.render(LOOP_name=self.name)
@@ -153,7 +153,7 @@ class LoopInstance(Clamp):
         return data
 
     def add_op_policy_config(self, func, **kwargs) ->None:
-        """Add op policy config."""
+        """Add operational policy config."""
         data = func(**kwargs)
         url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url, self.name)
         upload_result = self.send_message('POST',

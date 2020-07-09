@@ -178,60 +178,55 @@ class LoopInstance(Clamp):
 
         """
         url = "{}/loop/{}/{}".format(self.base_url, action, self.name)
-        policy_action = self.send_message_json('PUT',
-                                               '{} policy'.format(action),
-                                               url,
-                                               cert=self._cert)
+        policy_action = self.send_message('PUT',
+                                          '{} policy'.format(action),
+                                          url,
+                                          cert=self._cert)
         action_done = False
-        if policy_action:
-            self.validate_details()
-            old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-            self.details = self._update_loop_details()
-            self.validate_details()
-            new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-            if new_state != old_state and not(action != "stop" and new_state == "SENT"):
-                action_done = True
+        self.validate_details()
+        old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+        self.details = self._update_loop_details()
+        self.validate_details()
+        new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+        if new_state != old_state and not(action != "stop" and new_state == "SENT"):
+            action_done = True
         return action_done
 
     def deploy_microservice_to_dcae(self) -> bool:
         """Execute the deploy operation on the loop instance."""
         url = "{}/loop/deploy/{}".format(self.base_url, self.name)
-        response = self.send_message_json('PUT',
-                                          'Deploy microservice to DCAE',
-                                          url,
-                                          cert=self._cert)
+        response = self.send_message('PUT',
+                                     'Deploy microservice to DCAE',
+                                     url,
+                                     cert=self._cert)
         deploy = False
-        if response:
+        self.validate_details()
+        state = self.details["components"]["DCAE"]["componentState"]["stateName"]
+        failure = "MICROSERVICE_INSTALLATION_FAILED"
+        success = "MICROSERVICE_INSTALLED_SUCCESSFULLY"
+        while state not in (success, failure):
+            #modify the time sleep for loop refresh
+            time.sleep(0)
+            self.details = self._update_loop_details()
             self.validate_details()
             state = self.details["components"]["DCAE"]["componentState"]["stateName"]
-            failure = "MICROSERVICE_INSTALLATION_FAILED"
-            success = "MICROSERVICE_INSTALLED_SUCCESSFULLY"
-            while state not in (success, failure):
-                #modify the time sleep for loop refresh
-                time.sleep(0)
-                self.details = self._update_loop_details()
-                self.validate_details()
-                state = self.details["components"]["DCAE"]["componentState"]["stateName"]
-            deploy = (state == success)
+        deploy = (state == success)
         return deploy
 
-    def undeploy_microservice_from_dcae(self) -> bool:
+    def undeploy_microservice_from_dcae(self) -> None:
         """Stop the deploy operation."""
-        url = "{}/loop/stop/{}".format(self.base_url, self.name)
-        response = self.send_message_json('PUT',
-                                          'Undeploy microservice from DCAE',
-                                          url,
-                                          cert=self._cert)
-        if not response:
-            return True
-        raise ValueError("Couldn't stop the microservice deploy")
+        url = "{}/loop/undeploy/{}".format(self.base_url, self.name)
+        response = self.send_message('PUT',
+                                     'Undeploy microservice from DCAE',
+                                     url,
+                                     cert=self._cert)
 
     def delete(self):
         """Delete the loop instance."""
         self._logger.debug("Delete %s loop instance", self.name)
         url = "{}/loop/delete/{}".format(self.base_url, self.name)
-        request = self.send_message_json('PUT',
-                                         'Delete loop instance',
-                                         url,
-                                         cert=self._cert)
+        request = self.send_message('PUT',
+                                    'Delete loop instance',
+                                    url,
+                                    cert=self._cert)
         return request

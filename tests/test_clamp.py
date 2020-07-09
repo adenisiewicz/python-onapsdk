@@ -357,34 +357,32 @@ NOT_SUBMITED_POLICY = {
 
 
 @mock.patch.object(LoopInstance, '_update_loop_details')
-@mock.patch.object(LoopInstance, 'send_message_json')
-def test_submit_policy(mock_send_message_json, mock_update):
+@mock.patch.object(LoopInstance, 'send_message')
+def test_submit_policy(mock_send_message, mock_update):
     """Test submit policies to policy engine."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message_json.return_value = True
     mock_update.return_value = SUBMITED_POLICY
     action = loop.act_on_loop_policy("submit")
-    mock_send_message_json.assert_called_once_with('PUT',
-                                                   'submit policy',
-                                                   (f"{loop.base_url}/loop/submit/LOOP_test"),
-                                                   cert=loop._cert)
+    mock_send_message.assert_called_once_with('PUT',
+                                            'submit policy',
+                                            (f"{loop.base_url}/loop/submit/LOOP_test"),
+                                            cert=loop._cert)
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT_AND_DEPLOYED"
     assert action
 
 
 @mock.patch.object(LoopInstance, '_update_loop_details')
-@mock.patch.object(LoopInstance, 'send_message_json')
-def test_not_submited_policy(mock_send_message_json, mock_update):
+@mock.patch.object(LoopInstance, 'send_message')
+def test_not_submited_policy(mock_send_message, mock_update):
     """Test submit policies to policy engine."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message_json.return_value = True
     mock_update.return_value = NOT_SUBMITED_POLICY
     action = loop.act_on_loop_policy("submit")
-    mock_send_message_json.assert_called_once_with('PUT',
-                                                   'submit policy',
-                                                   (f"{loop.base_url}/loop/submit/LOOP_test"),
-                                                   cert=loop._cert)
+    mock_send_message.assert_called_once_with('PUT',
+                                            'submit policy',
+                                            (f"{loop.base_url}/loop/submit/LOOP_test"),
+                                            cert=loop._cert)
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT"
     assert not action
@@ -412,54 +410,51 @@ NOT_SUBMITED = {
 
 
 @mock.patch.object(LoopInstance, '_update_loop_details')
-@mock.patch.object(LoopInstance, 'send_message_json')
-def test_not_submited_microservice_to_dcae(mock_send_message_json, mock_update):
+@mock.patch.object(LoopInstance, 'send_message')
+def test_submited_microservice_to_dcae(mock_send_message, mock_update):
     """Test deploy microservice to DCAE."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message_json.return_value = True
     mock_update.return_value = SUBMITED
     deploy = loop.deploy_microservice_to_dcae()
-    mock_send_message_json.assert_called_once_with('PUT',
-                                                   'Deploy microservice to DCAE',
-                                                   (f"{loop.base_url}/loop/deploy/LOOP_test"),
-                                                   cert=loop._cert)
+    mock_send_message.assert_called_once_with('PUT',
+                                            'Deploy microservice to DCAE',
+                                            (f"{loop.base_url}/loop/deploy/LOOP_test"),
+                                            cert=loop._cert)
     assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLED_SUCCESSFULLY"
-    assert deploy == True
+    assert deploy
 
 
-@mock.patch.object(LoopInstance, 'send_message_json')
-def test_stop_microservice_from_dcae(mock_send_message_json):
+@mock.patch.object(LoopInstance, '_update_loop_details')
+@mock.patch.object(LoopInstance, 'send_message')
+def test_not_submited_microservice_to_dcae(mock_send_message, mock_update):
+    """Test deploy microservice to DCAE."""
+    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
+    mock_update.return_value = NOT_SUBMITED
+    deploy = loop.deploy_microservice_to_dcae()
+    mock_send_message.assert_called_once_with('PUT',
+                                            'Deploy microservice to DCAE',
+                                            (f"{loop.base_url}/loop/deploy/LOOP_test"),
+                                            cert=loop._cert)
+    assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLATION_FAILED"
+    assert not deploy
+
+
+@mock.patch.object(LoopInstance, 'send_message')
+def test_undeploy_microservice_from_dcae(mock_send_message):
     """Test stop microservice."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message_json.return_value = {}
-    stop = loop.undeploy_microservice_from_dcae()
-    mock_send_message_json.assert_called_once_with('PUT',
-                                                   'Undeploy microservice from DCAE',
-                                                   (f"{loop.base_url}/loop/stop/LOOP_test"),
-                                                   cert=loop._cert)
-    assert stop == True
+    request = loop.undeploy_microservice_from_dcae()
+    mock_send_message.assert_called_once_with('PUT',
+                                            'Undeploy microservice from DCAE',
+                                            (f"{loop.base_url}/loop/undeploy/LOOP_test"),
+                                            cert=loop._cert)
 
 
-@mock.patch.object(LoopInstance, 'send_message_json')
-def test_cant_stop_microservice_from_dcae(mock_send_message_json):
-    """Test stop microservice."""
+@mock.patch.object(LoopInstance, 'send_message')
+def test_delete(mock_send_message):
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message_json.return_value = {"error": "can't stop microservice"}
-    with pytest.raises(ValueError):
-        stop = loop.undeploy_microservice_from_dcae()
-        mock_send_message_json.assert_called_once_with('PUT',
-                                                    'Undeploy microservice from DCAE',
-                                                    (f"{loop.base_url}/loop/stop/LOOP_test"),
-                                                    cert=loop._cert)
-
-
-@mock.patch.object(LoopInstance, 'send_message_json')
-def test_delete(mock_send_message_json):
-    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message_json.return_value = {}
     request = loop.delete()
-    mock_send_message_json.assert_called_once_with('PUT',
-                                                   'Delete loop instance',
-                                                   (f"{loop.base_url}/loop/delete/{loop.name}"),
-                                                   cert=loop._cert)
-    assert request == {}
+    mock_send_message.assert_called_once_with('PUT',
+                                            'Delete loop instance',
+                                            (f"{loop.base_url}/loop/delete/{loop.name}"),
+                                            cert=loop._cert)

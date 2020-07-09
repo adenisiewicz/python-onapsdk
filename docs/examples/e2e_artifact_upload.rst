@@ -38,7 +38,9 @@ E2E Upload of an artifact
     vf.onboard()
 
     logger.info("******** Create Service *******")
-    svc = Service(name=SERVICENAME, resources=[vf])
+    svc = Service(name=SERVICENAME)
+    svc.create()
+    svc.add_resource(vf)
 
     logger.info("******** Extract Artifact Data *******")
     data = open(ARTIFACT_FILE_PATH).read()
@@ -48,4 +50,9 @@ E2E Upload of an artifact
                            artifact_type=ARTIFACT_TYPE,
                            artifact_name=ARTIFACT_NAME,
                            artifact=data)
- 
+    
+    logger.info("******** Distribute Service *******")
+    svc.checkin()
+    svc.certify()
+    svc.distribute()
+

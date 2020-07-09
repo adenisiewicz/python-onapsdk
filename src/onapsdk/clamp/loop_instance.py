@@ -178,10 +178,10 @@ class LoopInstance(Clamp):
 
         """
         url = "{}/loop/{}/{}".format(self.base_url, action, self.name)
-        policy_action = self.send_message('PUT',
-                                          '{} policy'.format(action),
-                                          url,
-                                          cert=self._cert)
+        self.send_message('PUT',
+                          '{} policy'.format(action),
+                          url,
+                          cert=self._cert)
         action_done = False
         self.validate_details()
         old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
@@ -195,10 +195,10 @@ class LoopInstance(Clamp):
     def deploy_microservice_to_dcae(self) -> bool:
         """Execute the deploy operation on the loop instance."""
         url = "{}/loop/deploy/{}".format(self.base_url, self.name)
-        response = self.send_message('PUT',
-                                     'Deploy microservice to DCAE',
-                                     url,
-                                     cert=self._cert)
+        self.send_message('PUT',
+                          'Deploy microservice to DCAE',
+                          url,
+                          cert=self._cert)
         deploy = False
         self.validate_details()
         state = self.details["components"]["DCAE"]["componentState"]["stateName"]
@@ -216,10 +216,10 @@ class LoopInstance(Clamp):
     def undeploy_microservice_from_dcae(self) -> None:
         """Stop the deploy operation."""
         url = "{}/loop/undeploy/{}".format(self.base_url, self.name)
-        response = self.send_message('PUT',
-                                     'Undeploy microservice from DCAE',
-                                     url,
-                                     cert=self._cert)
+        self.send_message('PUT',
+                          'Undeploy microservice from DCAE',
+                          url,
+                          cert=self._cert)
 
     def delete(self):
         """Delete the loop instance."""

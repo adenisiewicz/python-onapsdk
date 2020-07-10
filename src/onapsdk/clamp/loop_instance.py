@@ -7,6 +7,7 @@ import os
 import json
 from jsonschema import validate, ValidationError
 
+from onapsdk.configuration import settings
 from onapsdk.clamp.clamp_element import Clamp
 from onapsdk.utils.jinja import jinja_env
 
@@ -38,7 +39,7 @@ class LoopInstance(Clamp):
 
     def _update_loop_details(self) -> dict:
         """Update loop details."""
-        url = "{}/loop/{}".format(self.base_url, self.name)
+        url = "{}/loop/{}".format(self.base_url(), self.name)
         loop_details = self.send_message_json('GET',
                                               'Get loop details',
                                               url,
@@ -73,7 +74,7 @@ class LoopInstance(Clamp):
     def create(self) -> bool:
         """Create instance and load loop details."""
         url = "{}/loop/create/{}?templateName={}".\
-              format(self.base_url, self.name, self.template)
+              format(self.base_url(), self.name, self.template)
         instance_details = self.send_message_json('POST',
                                                   'Create Loop Instance',
                                                   url,
@@ -88,7 +89,7 @@ class LoopInstance(Clamp):
     def add_operational_policy(self, policy_type: str, policy_version: str) -> bool:
         """Add operational policy to the loop instance."""
         url = "{}/loop/addOperationaPolicy/{}/policyModel/{}/{}".\
-              format(self.base_url, self.name, policy_type, policy_version)
+              format(self.base_url(), self.name, policy_type, policy_version)
         add_response = self.send_message_json('PUT',
                                               'Create Operational Policy',
                                               url,
@@ -102,7 +103,7 @@ class LoopInstance(Clamp):
     def remove_operational_policy(self, policy_type: str, policy_version: str) -> dict:
         """Remove operational policy from the loop instance."""
         url = "{}/loop/removeOperationaPolicy/{}/policyModel/{}/{}".\
-              format(self.base_url, self.name, policy_type, policy_version)
+              format(self.base_url(), self.name, policy_type, policy_version)
         response = self.send_message_json('PUT',
                                           'Remove Operational Policy',
                                           url,
@@ -112,7 +113,7 @@ class LoopInstance(Clamp):
 
     def update_microservice_policy(self) -> None:
         """Update microservice policy configuration."""
-        url = "{}/loop/updateMicroservicePolicy/{}".format(self.base_url, self.name)
+        url = "{}/loop/updateMicroservicePolicy/{}".format(self.base_url(), self.name)
         template = jinja_env().get_template("clamp_add_tca_config.json.j2")
         data = template.render(LOOP_name=self.name)
         upload_result = self.send_message('POST',
@@ -153,7 +154,7 @@ class LoopInstance(Clamp):
     def add_op_policy_config(self, func, **kwargs) ->None:
         """Add operational policy config."""
         data = func(**kwargs)
-        url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url, self.name)
+        url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url(), self.name)
         upload_result = self.send_message('POST',
                                           'ADD operational policy config',
                                           url,
@@ -177,7 +178,7 @@ class LoopInstance(Clamp):
             action state : failed or done
 
         """
-        url = "{}/loop/{}/{}".format(self.base_url, action, self.name)
+        url = "{}/loop/{}/{}".format(self.base_url(), action, self.name)
         self.send_message('PUT',
                           '{} policy'.format(action),
                           url,
@@ -194,7 +195,7 @@ class LoopInstance(Clamp):
 
     def deploy_microservice_to_dcae(self) -> bool:
         """Execute the deploy operation on the loop instance."""
-        url = "{}/loop/deploy/{}".format(self.base_url, self.name)
+        url = "{}/loop/deploy/{}".format(self.base_url(), self.name)
         self.send_message('PUT',
                           'Deploy microservice to DCAE',
                           url,
@@ -215,7 +216,7 @@ class LoopInstance(Clamp):
 
     def undeploy_microservice_from_dcae(self) -> None:
         """Stop the deploy operation."""
-        url = "{}/loop/undeploy/{}".format(self.base_url, self.name)
+        url = "{}/loop/undeploy/{}".format(self.base_url(), self.name)
         self.send_message('PUT',
                           'Undeploy microservice from DCAE',
                           url,
@@ -224,7 +225,7 @@ class LoopInstance(Clamp):
     def delete(self):
         """Delete the loop instance."""
         self._logger.debug("Delete %s loop instance", self.name)
-        url = "{}/loop/delete/{}".format(self.base_url, self.name)
+        url = "{}/loop/delete/{}".format(self.base_url(), self.name)
         request = self.send_message('PUT',
                                     'Delete loop instance',
                                     url,

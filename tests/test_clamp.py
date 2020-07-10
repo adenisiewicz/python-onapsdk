@@ -157,7 +157,7 @@ def test_update_loop_details(mock_send_message_json):
     mock_send_message_json.return_value = LOOP_DETAILS
     loop.details = loop._update_loop_details()
     mock_send_message_json.assert_called_once_with('GET', 'Get loop details',
-         (f"{loop.base_url}/loop/test"),
+         (f"{loop.base_url()}/loop/test"),
          cert=loop._cert)
     assert loop.details == LOOP_DETAILS
 
@@ -170,7 +170,7 @@ def test_not_update_loop_details(mock_send_message_json):
     with pytest.raises(ValueError):
         loop._update_loop_details()
         mock_send_message_json.assert_called_once_with('POST', 'Create Loop Instance',
-            (f"{instance.base_url}/loop/create/test?templateName=template"),
+            (f"{instance.base_url()}/loop/create/test?templateName=template"),
             cert=instance._cert)
 
 
@@ -188,7 +188,7 @@ def test_create(mock_send_message_json):
     mock_send_message_json.return_value = LOOP_DETAILS
     instance.create()
     mock_send_message_json.assert_called_once_with('POST', 'Create Loop Instance',
-         (f"{instance.base_url}/loop/create/test?templateName=template"),
+         (f"{instance.base_url()}/loop/create/test?templateName=template"),
          cert=instance._cert)
     assert instance.name == "LOOP_test"
     assert len(instance.details["microServicePolicies"]) > 0
@@ -202,7 +202,7 @@ def test_create_none(mock_send_message_json):
     with pytest.raises(ValueError):
         instance.create()
         mock_send_message_json.assert_called_once_with('POST', 'Create Loop Instance',
-            (f"{instance.base_url}/loop/create/test?templateName=template"),
+            (f"{instance.base_url()}/loop/create/test?templateName=template"),
             cert=instance._cert)
 
 
@@ -222,7 +222,7 @@ def test_add_operational_policy(mock_send_message_json):
     mock_send_message_json.return_value = LOOP_DETAILS
     loop.add_operational_policy(policy_type="FrequencyLimiter", policy_version="1.0.0")
     mock_send_message_json.assert_called_once_with('PUT', 'Create Operational Policy',
-        (f"{loop.base_url}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"),
+        (f"{loop.base_url()}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"),
         cert=loop._cert)
     assert loop.name == "LOOP_test"
     assert len(loop.details["operationalPolicies"]) > 0
@@ -246,7 +246,7 @@ def test_not_add_operational_policy(mock_send_message_json):
         #mistaken policy version
         loop.add_operational_policy(policy_type="FrequencyLimiter", policy_version="not_correct")
         mock_send_message_json.assert_called_once_with('PUT', 'Create Operational Policy',
-            (f"{loop.base_url}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/not_correct"),
+            (f"{loop.base_url()}/loop/addOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/not_correct"),
             cert=loop._cert)
         assert len(loop.details["operationalPolicies"]) == 0
 
@@ -268,7 +268,7 @@ def test_remove_operational_policy(mock_send_message_json, mock_update):
     }
     loop.remove_operational_policy(policy_type="FrequencyLimiter", policy_version="1.0.0")
     mock_send_message_json.assert_called_once_with('PUT', 'Remove Operational Policy',
-        (f"{loop.base_url}/loop/removeOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"),
+        (f"{loop.base_url()}/loop/removeOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"),
         cert=loop._cert)
     assert len(loop.details["operationalPolicies"]) == 0
 
@@ -283,7 +283,7 @@ def test_update_microservice_policy(mock_send_message):
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"
     assert description == "ADD TCA config"
-    assert url == (f"{loop.base_url}/loop/updateMicroservicePolicy/{loop.name}")
+    assert url == (f"{loop.base_url()}/loop/updateMicroservicePolicy/{loop.name}")
 
 
 @mock.patch.object(LoopInstance, 'send_message')
@@ -305,7 +305,7 @@ def test_add_drools_policy_config(mock_send_message):
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"
     assert description == "ADD operational policy config"
-    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
+    assert url == (f"{loop.base_url()}/loop/updateOperationalPolicies/{loop.name}")
 
 
 @mock.patch.object(LoopInstance, 'send_message')
@@ -318,7 +318,7 @@ def test_add_frequency_policy_config(mock_send_message):
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"
     assert description == "ADD operational policy config"
-    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
+    assert url == (f"{loop.base_url()}/loop/updateOperationalPolicies/{loop.name}")
 
 
 @mock.patch.object(LoopInstance, 'send_message')
@@ -332,7 +332,7 @@ def test_add_op_policy_config_error(mock_send_message):
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"
     assert description == "ADD operational policy config"
-    assert url == (f"{loop.base_url}/loop/updateOperationalPolicies/{loop.name}")
+    assert url == (f"{loop.base_url()}/loop/updateOperationalPolicies/{loop.name}")
 
 
 SUBMITED_POLICY = {
@@ -365,7 +365,7 @@ def test_submit_policy(mock_send_message, mock_update):
     action = loop.act_on_loop_policy("submit")
     mock_send_message.assert_called_once_with('PUT',
                                             'submit policy',
-                                            (f"{loop.base_url}/loop/submit/LOOP_test"),
+                                            (f"{loop.base_url()}/loop/submit/LOOP_test"),
                                             cert=loop._cert)
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT_AND_DEPLOYED"
@@ -381,7 +381,7 @@ def test_not_submited_policy(mock_send_message, mock_update):
     action = loop.act_on_loop_policy("submit")
     mock_send_message.assert_called_once_with('PUT',
                                             'submit policy',
-                                            (f"{loop.base_url}/loop/submit/LOOP_test"),
+                                            (f"{loop.base_url()}/loop/submit/LOOP_test"),
                                             cert=loop._cert)
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT"
@@ -418,7 +418,7 @@ def test_submited_microservice_to_dcae(mock_send_message, mock_update):
     deploy = loop.deploy_microservice_to_dcae()
     mock_send_message.assert_called_once_with('PUT',
                                             'Deploy microservice to DCAE',
-                                            (f"{loop.base_url}/loop/deploy/LOOP_test"),
+                                            (f"{loop.base_url()}/loop/deploy/LOOP_test"),
                                             cert=loop._cert)
     assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLED_SUCCESSFULLY"
     assert deploy
@@ -433,7 +433,7 @@ def test_not_submited_microservice_to_dcae(mock_send_message, mock_update):
     deploy = loop.deploy_microservice_to_dcae()
     mock_send_message.assert_called_once_with('PUT',
                                             'Deploy microservice to DCAE',
-                                            (f"{loop.base_url}/loop/deploy/LOOP_test"),
+                                            (f"{loop.base_url()}/loop/deploy/LOOP_test"),
                                             cert=loop._cert)
     assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLATION_FAILED"
     assert not deploy
@@ -446,7 +446,7 @@ def test_undeploy_microservice_from_dcae(mock_send_message):
     request = loop.undeploy_microservice_from_dcae()
     mock_send_message.assert_called_once_with('PUT',
                                             'Undeploy microservice from DCAE',
-                                            (f"{loop.base_url}/loop/undeploy/LOOP_test"),
+                                            (f"{loop.base_url()}/loop/undeploy/LOOP_test"),
                                             cert=loop._cert)
 
 
@@ -456,5 +456,5 @@ def test_delete(mock_send_message):
     request = loop.delete()
     mock_send_message.assert_called_once_with('PUT',
                                             'Delete loop instance',
-                                            (f"{loop.base_url}/loop/delete/{loop.name}"),
+                                            (f"{loop.base_url()}/loop/delete/{loop.name}"),
                                             cert=loop._cert)

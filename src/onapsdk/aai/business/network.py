@@ -124,7 +124,7 @@ class NetworkInstance(Instance):  # pylint: disable=too-many-instance-attributes
             str: Human readable network instance representation
 
         """
-        return (f"NetowrkInstance(network_id={self.network_id}, "
+        return (f"NetworkInstance(network_id={self.network_id}, "
                 f"network_name={self.network_name}, "
                 f"is_bound_to_vpn={self.is_bound_to_vpn}, "
                 f"is_provider_network={self.is_provider_network}, "

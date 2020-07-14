@@ -9,7 +9,7 @@ from io import BytesIO, TextIOWrapper
 from os import makedirs
 import time
 import re
-from typing import Dict, Iterable, List, Callable, Union, Any
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Union
 from zipfile import ZipFile, BadZipFile
 from requests import Response
 
@@ -17,6 +17,7 @@ import oyaml as yaml
 
 import onapsdk.constants as const
 from onapsdk.sdc.sdc_resource import SdcResource
+from onapsdk.sdc.properties import Input, Property
 from onapsdk.utils.configuration import (components_needing_distribution,
                                          tosca_path)
 from onapsdk.utils.headers_creator import headers_sdc_creator
@@ -304,6 +305,58 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                     properties=values["properties"]
                 ))
         return self._vf_modules
+
+    @property
+    def properties(self) -> Iterator[Property]:
+        """Service properties.
+
+        Iterate service properties.
+
+        Yields:
+            Property: Service property
+
+        """
+        for property_data in self.send_message_json(\
+                "GET",
+                f"Get {self.name} service properties",
+                (f"{self._base_create_url()}/services/"
+                 f"{self.unique_identifier}/properties"),
+                exception=AttributeError):
+            yield Property(
+                service=self,
+                unique_id=property_data["uniqueId"],
+                name=property_data["name"],
+                property_type=property_data["type"],
+                parent_unique_id=property_data["parentUniqueId"],
+                value=property_data.get("value"),
+                description=property_data.get("description"),
+                get_input_values=property_data.get("getInputValues"),
+            )
+
+    @property
+    def inputs(self) -> Iterator[Input]:
+        """Service inputs.
+
+        Iterate service inputs.
+
+        Yields:
+            Iterator[Input]: Service input
+
+        """
+        for input_data in self.send_message_json(\
+                "GET",
+                f"Get {self.name} service inputs",
+                (f"{self._base_create_url()}/services/"
+                 f"{self.unique_identifier}/filteredDataByParams?"
+                 "include=inputs"),
+                exception=AttributeError).get("inputs", []):
+
+            yield Input(
+                unique_id=input_data["uniqueId"],
+                input_type=input_data["type"],
+                name=input_data["name"],
+                default_value=input_data.get("defaultValue")
+            )
 
     def create(self) -> None:
         """Create the Service in SDC if not already existing."""

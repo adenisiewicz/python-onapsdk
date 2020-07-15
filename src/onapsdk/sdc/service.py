@@ -12,7 +12,6 @@ import re
 from typing import Dict, Iterable, List, Callable, Union, Any, BinaryIO
 from zipfile import ZipFile, BadZipFile
 import base64
-import hashlib
 from requests import Response
 
 import oyaml as yaml
@@ -606,7 +605,8 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                                                 'Get vnf unique ID',
                                                 url)
         if request_return:
-            for instance in filter(lambda x: x["name"] == vnf_name, request_return["componentInstances"]):
+            for instance in filter(lambda x: x["name"] == vnf_name,
+                                   request_return["componentInstances"]):
                 return instance["uniqueId"]
         raise AttributeError("Couldn't find VNF")
 
@@ -635,10 +635,10 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         headers = headers_sdc_artifact_upload(base_header=self.headers,
                                               data=data)
         upload_result = self.send_message('POST',
-                                          'Add artifact to vf',
-                                          url,
-                                          headers=headers,
-                                          data=data)
+                                        'Add artifact to vf',
+                                        url,
+                                        headers=headers,
+                                        data=data)
         if upload_result:
             self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
                               vnf_name)

@@ -635,10 +635,10 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         headers = headers_sdc_artifact_upload(base_header=self.headers,
                                               data=data)
         upload_result = self.send_message('POST',
-                                        'Add artifact to vf',
-                                        url,
-                                        headers=headers,
-                                        data=data)
+                                          'Add artifact to vf',
+                                          url,
+                                          headers=headers,
+                                          data=data)
         if upload_result:
             self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
                               vnf_name)

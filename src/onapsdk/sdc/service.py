@@ -21,7 +21,7 @@ import onapsdk.constants as const
 from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.utils.configuration import (components_needing_distribution,
                                          tosca_path)
-from onapsdk.utils.headers_creator import headers_sdc_creator
+from onapsdk.utils.headers_creator import headers_sdc_creator, headers_sdc_artifact_upload
 from onapsdk.utils.jinja import jinja_env
 
 
@@ -585,48 +585,63 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         """Give back the end of SDC path."""
         return cls.SERVICE_PATH
 
-    def add_vnf_uid_to_metadata(self, vnf_name: str) -> str:
-        """Get vnf uniqueID."""
-        url = "{}/services/{}".format(self._base_create_url(), self.unique_identifier)
+    def get_vnf_unique_id(self, vnf_name: str) -> str:
+        """
+        Get vnf uniqueID.
+
+        Get vnf uniqueID from service vnf in sdc.
+
+        Args:
+            vnf_name (str): the vnf from which we extract the unique ID
+
+        Returns:
+            the vnf unique ID
+
+        Raises:
+            AttributeError: Couldn't find VNF
+
+        """
+        url = f"{self._base_create_url()}/services/{self.unique_identifier}"
         request_return = self.send_message_json('GET',
                                                 'Get vnf unique ID',
                                                 url)
         if request_return:
-            component_instances = request_return["componentInstances"]
-            instance = [l for l in component_instances if l["name"] == vnf_name]
-            if instance:
-                unique_id = instance[0]["uniqueId"]
-                return unique_id
+            for instance in filter(lambda x: x["name"] == vnf_name, request_return["componentInstances"]):
+                return instance["uniqueId"]
         raise AttributeError("Couldn't find VNF")
 
     def add_artifact_to_vf(self, vnf_name: str, artifact_type: str,
                            artifact_name: str, artifact: BinaryIO = None):
-        """Add the TCA blueprint artifact to vf."""
-        if artifact:
-            missing_identifier = self.add_vnf_uid_to_metadata(vnf_name)
-            url = "{}/services/{}/resourceInstance/{}/artifacts".\
-                format(self._base_create_url(), self.unique_identifier, missing_identifier)
-            b64_artifact = base64.b64encode(artifact)
-            headers = self.headers.copy()
-            headers["Accept"] = "application/json, text/plain, */*"
-            headers["Accept-Encoding"] = "gzip, deflate, br"
-            headers["Content-Type"] = "application/json; charset=UTF-8"
-            template = jinja_env().get_template("add_artifact_to_vf.json.j2")
-            data = template.render(artifact_name=artifact_name,
-                                   artifact_label="sdk{}".format(artifact_name),
-                                   artifact_type=artifact_type,
-                                   b64_artifact=b64_artifact)
-            md5_content = hashlib.md5(data.encode('UTF-8')).hexdigest()
-            content = base64.b64encode(md5_content.encode('ascii')).decode('UTF-8')
-            headers["Content-MD5"] = content
-            upload_result = self.send_message('POST',
-                                              'Add artifact to vf',
-                                              url,
-                                              headers=headers,
+        """
+        Add artifact to vf.
+
+        Add artifact to vf using payload data.
+
+        Args:
+            vnf_name (str): the vnf which we want to add the artifact
+            artifact_type (str): all SDC artifact types are supported (DCAE_*, HEAT_*, ...)
+            artifact_name (str): the artifact file name including its extension
+            artifact (str): binary data to upload
+
+        """
+        missing_identifier = self.get_vnf_unique_id(vnf_name)
+        url = (f"{self._base_create_url()}/services/{self.unique_identifier}/"
+               f"resourceInstance/{missing_identifier}/artifacts")
+        template = jinja_env().get_template("add_artifact_to_vf.json.j2")
+        data = template.render(artifact_name=artifact_name,
+                               artifact_label=f"sdk{artifact_name}",
+                               artifact_type=artifact_type,
+                               b64_artifact=base64.b64encode(artifact))
+        headers = headers_sdc_artifact_upload(base_header=self.headers,
                                               data=data)
-            if upload_result:
-                self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
-                                  vnf_name)
-            else:
-                self._logger.error(("an error occured during file upload for blueprint Artifact"
-                                    "to VNF %s"), vnf_name)
+        upload_result = self.send_message('POST',
+                                          'Add artifact to vf',
+                                          url,
+                                          headers=headers,
+                                          data=data)
+        if upload_result:
+            self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
+                              vnf_name)
+        else:
+            self._logger.error(("an error occured during file upload for blueprint Artifact"
+                                "to VNF %s"), vnf_name)

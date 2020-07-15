@@ -7,7 +7,6 @@ import os
 import json
 from jsonschema import validate, ValidationError
 
-from onapsdk.configuration import settings
 from onapsdk.clamp.clamp_element import Clamp
 from onapsdk.utils.jinja import jinja_env
 

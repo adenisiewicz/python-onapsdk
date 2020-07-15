@@ -634,14 +634,13 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                                b64_artifact=base64.b64encode(artifact))
         headers = headers_sdc_artifact_upload(base_header=self.headers,
                                               data=data)
-        upload_result = self.send_message('POST',
-                                          'Add artifact to vf',
-                                          url,
-                                          headers=headers,
-                                          data=data)
-        if upload_result:
-            self._logger.info("Files for blueprint artifact %s have been uploaded to VNF",
-                              vnf_name)
-        else:
+        try:
+            self.send_message('POST',
+                              'Add artifact to vf',
+                              url,
+                              headers=headers,
+                              data=data,
+                              exception=ValueError)
+        except ValueError:
             self._logger.error(("an error occured during file upload for blueprint Artifact"
                                 "to VNF %s"), vnf_name)

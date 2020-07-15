@@ -5,13 +5,14 @@
 from typing import Dict
 
 import time
+from onapsdk.sdc.properties import ResourceWithInputsMixin
 from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.sdc.vsp import Vsp
 import onapsdk.constants as const
 from onapsdk.utils.headers_creator import headers_sdc_creator
 
 
-class Vf(SdcResource):
+class Vf(SdcResource, ResourceWithInputsMixin):
     """
     ONAP Vf Object used for SDC operations.
 
@@ -42,6 +43,18 @@ class Vf(SdcResource):
         self.name: str = name or "ONAP-test-VF"
         self.vsp: Vsp = vsp or None
         self._time_wait: int = 10
+
+    @property
+    def resource_inputs_url(self) -> str:
+        """Vf inputs url.
+
+        Returns:
+            str: Vf inputs url
+
+        """
+        return (f"{self._base_create_url()}/resources/"
+                f"{self.unique_identifier}/filteredDataByParams?"
+                "include=inputs")
 
     def onboard(self) -> None:
         """Onboard the VF in SDC."""

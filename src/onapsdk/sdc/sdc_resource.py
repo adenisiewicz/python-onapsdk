@@ -3,11 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 """SDC Element module."""
 import logging
-from typing import Any, Dict, List
 from abc import ABC
+from typing import Any, Dict, Iterator, List
+
+from simplejson.errors import JSONDecodeError
 
 import onapsdk.constants as const
 from onapsdk.sdc import SDC
+from onapsdk.sdc.properties import Property
 from onapsdk.utils.headers_creator import (headers_sdc_creator,
                                            headers_sdc_tester)
 
@@ -334,3 +337,46 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
     def _sdc_path(cls) -> None:
         """Give back the end of SDC path."""
         return cls.RESOURCE_PATH
+
+    @property
+    def properties(self) -> Iterator[Property]:
+        """SDC resource properties.
+
+        Iterate resource properties.
+
+        Yields:
+            Property: Resource property
+
+        """
+        # That's ugly - we should separate `exception`
+        # in send_message and send_message_json into
+        # two parameters I think: one for API error
+        # response and another for invalid response JSON
+        # format. In this case if resource has no
+        # properties API returns empty response (sic!)
+        # instead of eg. empty list. That's of course
+        # SDC API issue, but I don't think they will
+        # fix that because GUI already works using that.
+        response = self.send_message(\
+            "GET",
+            f"Get {self.name} resource properties",
+            (f"{self._base_create_url()}/services/"
+             f"{self.unique_identifier}/properties"),
+            exception=AttributeError)
+        try:
+            response_json = response.json()
+            print(response_json)
+        except JSONDecodeError:
+            self._logger.exception("API response is empty.")
+            response_json = []
+        for property_data in response_json:
+            yield Property(
+                sdc_resource=self,
+                unique_id=property_data["uniqueId"],
+                name=property_data["name"],
+                property_type=property_data["type"],
+                parent_unique_id=property_data["parentUniqueId"],
+                value=property_data.get("value"),
+                description=property_data.get("description"),
+                get_input_values=property_data.get("getInputValues"),
+            )

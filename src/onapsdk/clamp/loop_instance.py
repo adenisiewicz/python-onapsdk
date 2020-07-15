@@ -93,6 +93,8 @@ class LoopInstance(Clamp):
                                               'Create Operational Policy',
                                               url,
                                               cert=self._cert)
+        if self.details["operationalPolicies"] is None:
+            self.details["operationalPolicies"] = []
         nb_policies = len(self.details["operationalPolicies"])
         if (add_response and (len(add_response["operationalPolicies"]) > nb_policies)):
             self.details = add_response

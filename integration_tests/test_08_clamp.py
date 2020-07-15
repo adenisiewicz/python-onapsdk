@@ -49,11 +49,11 @@ def test_Loop_customization():
     response.raise_for_status()
     loop = LoopInstance(template=loop_template, name="intance01", details={})
     details = loop.create()
-    loop.name = "LOOP_" #doesn t change in mock-clamp neither looptemplate
+    assert details
     loop.update_microservice_policy()
     new_details = loop._update_loop_details()
-    assert new_details != details
-    #add op policy MinMax that already exists
-    #added = loop.add_operational_policy(policy_type="onap.policies.controlloop.MinMax",
-    #                                    policy_version="1.0.0")
-    #assert added
+    assert new_details
+    #add op policy Guard that already exists
+    added = loop.add_operational_policy(policy_type="onap.policies.controlloop.Guard",
+                                        policy_version="1.0.0")
+    assert added

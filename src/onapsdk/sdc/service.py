@@ -644,3 +644,4 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
         except ValueError:
             self._logger.error(("an error occured during file upload for blueprint Artifact"
                                 "to VNF %s"), vnf_name)
+            raise ValueError("Couldn't upload the artifact")

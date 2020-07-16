@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Service properties module."""
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -17,18 +16,50 @@ class Input:
     default_value: Optional[Any] = None
 
 
-@dataclass
-class Property:  # pylint: disable=too-many-instance-attributes
-    """Service property dataclass."""
+class Property:  # pylint: disable=too-many-instance-attributes, too-few-public-methods
+    """Service property class."""
 
-    sdc_resource: "SdcResource"
-    unique_id: str
-    name: str
-    property_type: str
-    parent_unique_id: str
-    value: Optional[Any] = None
-    description: Optional[str] = None
-    get_input_values: Optional[List[Dict[str, str]]] = None
+    def __init__(self,  # pylint: disable=too-many-arguments
+                 name: str,
+                 property_type: str,
+                 description: Optional[str] = None,
+                 unique_id: Optional[str] = None,
+                 parent_unique_id: Optional[str] = None,
+                 sdc_resource: Optional["SdcResource"] = None,
+                 value: Optional[Any] = None,
+                 get_input_values: Optional[List[Dict[str, str]]] = None,
+                 declare_input: Optional[bool] = False) -> None:
+        """Property class initialization.
+
+        Args:
+            property_type (str): [description]
+            description (Optional[str], optional): [description]. Defaults to None.
+            unique_id (Optional[str], optional): [description]. Defaults to None.
+            parent_unique_id (Optional[str], optional): [description]. Defaults to None.
+            sdc_resource (Optional[, optional): [description]. Defaults to None.
+            value (Optional[Any], optional): [description]. Defaults to None.
+            get_input_values (Optional[List[Dict[str, str]]], optional): [description].
+                Defaults to None.
+            declare_input (Optional[bool], optional): [description]. Defaults to False.
+        """
+        self.name: str = name
+        self.property_type: str = property_type
+        self.description: str = description
+        self.unique_id: str = unique_id
+        self.parent_unique_id: str = parent_unique_id
+        self.sdc_resource: "SdcResource" = sdc_resource
+        self.value: Any = value
+        self.get_input_values: List[Dict[str, str]] = get_input_values
+        self.declare_input: bool = declare_input
+
+    def __repr__(self) -> str:
+        """Property object human readable representation.
+
+        Returns:
+            str: Property human readable representation
+
+        """
+        return f"Property(name={self.name}, property_type={self.property_type})"
 
     @property
     def input(self) -> Input:
@@ -38,6 +69,8 @@ class Property:  # pylint: disable=too-many-instance-attributes
             Returns None if property has no associated input.
 
         Raises:
+            AttributeError: Input has no associated SdcResource
+
             AttributeError: Input for given property does not exits.
                 It shouldn't ever happen, but it's possible if after you
                 get property object someone delete input.
@@ -46,6 +79,8 @@ class Property:  # pylint: disable=too-many-instance-attributes
             Input: Property input object.
 
         """
+        if not self.sdc_resource:
+            raise AttributeError("Property has no associated SdcResource")
         if not self.get_input_values:
             return None
         try:
@@ -53,52 +88,3 @@ class Property:  # pylint: disable=too-many-instance-attributes
                                self.sdc_resource.inputs))
         except StopIteration:
             raise AttributeError("Property input does not exist")
-
-
-class ResourceWithInputsMixin(ABC):
-    """Resource with input mixin.
-
-    That mixin can be used by resource class which can have inputs
-        for it's properties.
-
-    """
-
-    @property
-    @abstractmethod
-    def resource_inputs_url(self) -> str:
-        """Resource inputs url.
-
-        Abstract method which should be implemented by subclasses
-            and returns url which point to resource inputs.
-
-        Raises:
-            NotImplementedError: Method not implemented by subclass
-
-        Returns:
-            str: Resource inputs url
-
-        """
-        raise NotImplementedError
-
-    @property
-    def inputs(self) -> Iterator[Input]:
-        """SDC resource inputs.
-
-        Iterate resource inputs.
-
-        Yields:
-            Iterator[Input]: Resource input
-
-        """
-        for input_data in self.send_message_json(\
-                "GET",
-                f"Get {self.name} resource inputs",
-                self.resource_inputs_url,
-                exception=AttributeError).get("inputs", []):
-
-            yield Input(
-                unique_id=input_data["uniqueId"],
-                input_type=input_data["type"],
-                name=input_data["name"],
-                default_value=input_data.get("defaultValue")
-            )

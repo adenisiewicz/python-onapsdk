@@ -13,6 +13,7 @@ import oyaml as yaml
 import pytest
 
 import onapsdk.constants as const
+from onapsdk.sdc.properties import Property
 from onapsdk.sdc.service import Service
 from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.utils.headers_creator import headers_sdc_tester
@@ -735,3 +736,19 @@ def test_tosca_model(mock_send):
                                       "https://sdc.api.be.simpledemo.onap.org:30204/sdc/v1/catalog/services/toto/toscaModel",
                                       exception=mock.ANY,
                                       headers={'Content-Type': 'application/json', 'Accept': 'application/octet-stream', 'USER_ID': 'cs0008', 'Authorization': 'Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=', 'X-ECOMP-InstanceID': 'onapsdk'})
+
+@mock.patch.object(Service, "send_message_json")
+def test_add_properties(mock_send_message_json):
+    service = Service(name="test")
+    service._identifier = "toto"
+    service._unique_identifier = "toto"
+    service._status = const.CERTIFIED
+    with pytest.raises(AttributeError):
+        service.add_property(Property(name="test", property_type="string"))
+    service._status = const.DRAFT
+    service.add_property(Property(name="test", property_type="string"))
+    mock_send_message_json.assert_called_once()
+
+    mock_send_message_json.reset_mock()
+    service.add_property(Property(name="test", property_type="string", declare_input=True))
+    assert mock_send_message_json.call_count == 2

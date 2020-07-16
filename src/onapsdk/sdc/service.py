@@ -16,7 +16,7 @@ from requests import Response
 import oyaml as yaml
 
 import onapsdk.constants as const
-from onapsdk.sdc.properties import ResourceWithInputsMixin
+from onapsdk.sdc.properties import Property
 from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.utils.configuration import (components_needing_distribution,
                                          tosca_path)
@@ -79,7 +79,7 @@ class Network(NodeTemplate):  # pylint: disable=too-few-public-methods
     """Network dataclass."""
 
 
-class Service(SdcResource, ResourceWithInputsMixin):  # pylint: disable=too-many-instance-attributes
+class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
     """
     ONAP Service Object used for SDC operations.
 
@@ -103,7 +103,7 @@ class Service(SdcResource, ResourceWithInputsMixin):  # pylint: disable=too-many
     headers = headers_sdc_creator(SdcResource.headers)
 
     def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,
-                 resources: List[SdcResource] = None):
+                 resources: List[SdcResource] = None, properties: List[Property] = None):
         """
         Initialize service object.
 
@@ -114,7 +114,7 @@ class Service(SdcResource, ResourceWithInputsMixin):  # pylint: disable=too-many
             resources (List[SdcResource], optional): list of SDC resources
 
         """
-        super().__init__(sdc_values=sdc_values)
+        super().__init__(sdc_values=sdc_values, properties=properties)
         self.name: str = name or "ONAP-test-Service"
         self.distribution_status = None
         if sdc_values:

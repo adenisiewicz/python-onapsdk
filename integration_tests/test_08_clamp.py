@@ -51,13 +51,20 @@ def test_Loop_customization():
     details = loop.create()
     assert details
     loop.update_microservice_policy()
-    #add op policy FrequencyLimiter that already exists
+    #add op policy FrequencyLimiter that already exists in clamp
     added = loop.add_operational_policy(policy_type="onap.policies.controlloop.guard.common.FrequencyLimiter",
                                         policy_version="1.0.0")
     assert added
     #only frequency configuration is available in mock clamp
     loop.add_op_policy_config(loop.add_frequency_limiter, limit=1)
-    #the schema validator passes
     submit = loop.act_on_loop_policy(action="submit")
-    #the error will occur because policies are not configured
     assert submit
+    stop = loop.act_on_loop_policy(action="stop")
+    assert stop
+    restart = loop.act_on_loop_policy(action="restart")
+    assert restart
+    deploy = loop.deploy_microservice_to_dcae()
+    assert deploy
+    loop.undeploy_microservice_from_dcae()
+    new_details = loop._update_loop_details()
+    assert new_details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_UNINSTALLED_SUCCESSFULLY"

@@ -60,7 +60,7 @@
                 "VFModule": {
                   "type": "object",
                   "properties": {
-                    "resourcecID": {
+                    "resourceID": {
                       "type": "object",
                       "properties": {
                         "vfModuleModelName": {
@@ -89,7 +89,7 @@
                     }
                   },
                   "required": [
-                    "resourcecID"
+                    "resourceID"
                   ]
                 }
               },

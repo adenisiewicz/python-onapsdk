@@ -53,8 +53,8 @@ LOOP_DETAILS = {
     "modelService" : {
         "resourceDetails": {
             "VFModule" : {
-                "resourcecID" : {
-                    "vfModuleModelName" : "resourcecID",
+                "resourceID" : {
+                    "vfModuleModelName" : "resourceID",
                     "vfModuleModelInvariantUUID" : "InvariantUUID",
                     "vfModuleModelUUID" : "UUID",
                     "vfModuleModelVersion" : "1.0",

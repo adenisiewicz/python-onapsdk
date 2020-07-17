@@ -74,6 +74,48 @@ LOOP_DETAILS = {
         }
     ]
 }
+
+#for policy deploy to policy engine
+SUBMITED_POLICY = {
+        "components" : {
+        "POLICY" : {
+            "componentState" : {
+                "stateName" : "SENT_AND_DEPLOYED"
+            }
+        }
+    }
+}
+
+NOT_SUBMITED_POLICY = {
+        "components" : {
+        "POLICY" : {
+            "componentState" : {
+                "stateName" : "SENT"
+            }
+        }
+    }
+}
+
+#for the deploy to DCAE
+SUBMITED = {
+        "components" : {
+        "DCAE" : {
+            "componentState" : {
+                "stateName" : "MICROSERVICE_INSTALLED_SUCCESSFULLY"
+            }
+        }
+    }
+}
+
+NOT_SUBMITED = {
+        "components" : {
+        "DCAE" : {
+            "componentState" : {
+                "stateName" : "MICROSERVICE_INSTALLATION_FAILED"
+            }
+        }
+    }
+}
 #end of examples
 
 
@@ -212,7 +254,7 @@ def test_add_operational_policy(mock_send_message_json):
     loop = LoopInstance(template="template", name="LOOP_test", details={})
     loop.details = {
         "name" : "LOOP_test",
-        "operationalPolicies" : [],
+        "operationalPolicies" : None,
         "microServicePolicies" : [
             {
                 "name" : "MICROSERVICE_test"
@@ -335,27 +377,6 @@ def test_add_op_policy_config_error(mock_send_message):
     assert url == (f"{loop.base_url()}/loop/updateOperationalPolicies/{loop.name}")
 
 
-SUBMITED_POLICY = {
-        "components" : {
-        "POLICY" : {
-            "componentState" : {
-                "stateName" : "SENT_AND_DEPLOYED"
-            }
-        }
-    }
-}
-
-NOT_SUBMITED_POLICY = {
-        "components" : {
-        "POLICY" : {
-            "componentState" : {
-                "stateName" : "SENT"
-            }
-        }
-    }
-}
-
-
 @mock.patch.object(LoopInstance, '_update_loop_details')
 @mock.patch.object(LoopInstance, 'send_message')
 def test_submit_policy(mock_send_message, mock_update):
@@ -388,27 +409,6 @@ def test_not_submited_policy(mock_send_message, mock_update):
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT"
     assert not action
-
-
-SUBMITED = {
-        "components" : {
-        "DCAE" : {
-            "componentState" : {
-                "stateName" : "MICROSERVICE_INSTALLED_SUCCESSFULLY"
-            }
-        }
-    }
-}
-
-NOT_SUBMITED = {
-        "components" : {
-        "DCAE" : {
-            "componentState" : {
-                "stateName" : "MICROSERVICE_INSTALLATION_FAILED"
-            }
-        }
-    }
-}
 
 
 @mock.patch.object(LoopInstance, '_update_loop_details')

@@ -139,8 +139,8 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
             time.sleep(self._time_wait)
             self.onboard()
         elif self.status == const.DRAFT:
-            if not self.resources:
-                raise ValueError("No resources were given")
+            if not any([self.resources, self._properties_to_add]):
+                raise ValueError("No resources nor properties were given")
             for resource in self.resources:
                 self.add_resource(resource)
             for property_to_add in self._properties_to_add:

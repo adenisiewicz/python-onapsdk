@@ -34,7 +34,7 @@ def test_Loop_creation():
     loop_template = Clamp.check_loop_template(service=svc)
     response = requests.post("{}/reset".format(Clamp._base_url))
     response.raise_for_status()
-    loop = LoopInstance(template=loop_template, name="intance01", details={})
+    loop = LoopInstance(template=loop_template, name="instance01", details={})
     details = loop.create()
     assert details
 
@@ -47,7 +47,7 @@ def test_Loop_customization():
     loop_template = Clamp.check_loop_template(service=svc)
     response = requests.post("{}/reset".format(Clamp._base_url))
     response.raise_for_status()
-    loop = LoopInstance(template=loop_template, name="intance01", details={})
+    loop = LoopInstance(template=loop_template, name="instance01", details={})
     details = loop.create()
     assert details
     loop.update_microservice_policy()

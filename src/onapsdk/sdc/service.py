@@ -143,6 +143,8 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                 raise ValueError("No resources were given")
             for resource in self.resources:
                 self.add_resource(resource)
+            for property_to_add in self._properties_to_add:
+                self.add_property(property_to_add)
             self.checkin()
             time.sleep(self._time_wait)
             self.onboard()
@@ -315,8 +317,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
 
         """
         return (f"{self._base_create_url()}/services/"
-                f"{self.unique_identifier}/filteredDataByParams?"
-                "include=inputs")
+                f"{self.unique_identifier}")
 
     def create(self) -> None:
         """Create the Service in SDC if not already existing."""

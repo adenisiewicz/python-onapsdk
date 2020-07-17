@@ -80,7 +80,7 @@ class Network(NodeTemplate):  # pylint: disable=too-few-public-methods
     """Network dataclass."""
 
 
-class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
+class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too-many-public-methods
     """
     ONAP Service Object used for SDC operations.
 

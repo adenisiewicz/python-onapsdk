@@ -119,17 +119,17 @@ class LoopInstance(Clamp):
         url = "{}/loop/updateMicroservicePolicy/{}".format(self.base_url(), self.name)
         template = jinja_env().get_template("clamp_add_tca_config.json.j2")
         data = template.render(LOOP_name=self.name)
-        upload_result = self.send_message('POST',
-                                          'ADD TCA config',
-                                          url,
-                                          data=data,
-                                          cert=self._cert)
-        if upload_result:
-            self._logger.info("Files for TCA config %s have been uploaded to loop's microservice",
-                              self.name)
-        else:
+        try:
+            upload_result = self.send_message('POST',
+                                              'ADD TCA config',
+                                              url,
+                                              data=data,
+                                              cert=self._cert,
+                                              exception=ValueError)
+        except  ValueError:
             self._logger.error(("an error occured during file upload for TCA config to loop's"
                                 " microservice %s"), self.name)
+            raise ValueError("Couldn't update microservice policy")
 
     def add_drools_conf(self) -> dict:
         """Add drools configuration."""
@@ -162,7 +162,8 @@ class LoopInstance(Clamp):
                                           'ADD operational policy config',
                                           url,
                                           data=data,
-                                          cert=self._cert)
+                                          cert=self._cert,
+                                          exception=ValueError)
         if upload_result:
             self._logger.info(("Files for op policy config %s have been uploaded to loop's"
                                "Op policy"), self.name)
@@ -185,7 +186,8 @@ class LoopInstance(Clamp):
         self.send_message('PUT',
                           '{} policy'.format(action),
                           url,
-                          cert=self._cert)
+                          cert=self._cert,
+                          exception=ValueError)
         action_done = False
         self.validate_details()
         old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
@@ -202,14 +204,15 @@ class LoopInstance(Clamp):
         self.send_message('PUT',
                           'Deploy microservice to DCAE',
                           url,
-                          cert=self._cert)
+                          cert=self._cert,
+                          exception=ValueError)
         deploy = False
         self.validate_details()
         state = self.details["components"]["DCAE"]["componentState"]["stateName"]
         failure = "MICROSERVICE_INSTALLATION_FAILED"
         success = "MICROSERVICE_INSTALLED_SUCCESSFULLY"
         while state not in (success, failure):
-            #modify the time sleep for loop refresh
+            #modify the time sleep for loop refresh approximately 6 seconds
             time.sleep(0)
             self.details = self._update_loop_details()
             self.validate_details()
@@ -223,7 +226,8 @@ class LoopInstance(Clamp):
         self.send_message('PUT',
                           'Undeploy microservice from DCAE',
                           url,
-                          cert=self._cert)
+                          cert=self._cert,
+                          exception=ValueError)
 
     def delete(self):
         """Delete the loop instance."""
@@ -232,5 +236,6 @@ class LoopInstance(Clamp):
         request = self.send_message('PUT',
                                     'Delete loop instance',
                                     url,
-                                    cert=self._cert)
+                                    cert=self._cert,
+                                    exception=ValueError)
         return request

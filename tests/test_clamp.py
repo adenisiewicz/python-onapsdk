@@ -366,7 +366,8 @@ def test_submit_policy(mock_send_message, mock_update):
     mock_send_message.assert_called_once_with('PUT',
                                             'submit policy',
                                             (f"{loop.base_url()}/loop/submit/LOOP_test"),
-                                            cert=loop._cert)
+                                            cert=loop._cert,
+                                            exception=ValueError)
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT_AND_DEPLOYED"
     assert action
@@ -382,7 +383,8 @@ def test_not_submited_policy(mock_send_message, mock_update):
     mock_send_message.assert_called_once_with('PUT',
                                             'submit policy',
                                             (f"{loop.base_url()}/loop/submit/LOOP_test"),
-                                            cert=loop._cert)
+                                            cert=loop._cert,
+                                            exception=ValueError)
     mock_update.assert_called_once()
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT"
     assert not action
@@ -419,7 +421,8 @@ def test_submited_microservice_to_dcae(mock_send_message, mock_update):
     mock_send_message.assert_called_once_with('PUT',
                                             'Deploy microservice to DCAE',
                                             (f"{loop.base_url()}/loop/deploy/LOOP_test"),
-                                            cert=loop._cert)
+                                            cert=loop._cert,
+                                            exception=ValueError)
     assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLED_SUCCESSFULLY"
     assert deploy
 
@@ -434,7 +437,8 @@ def test_not_submited_microservice_to_dcae(mock_send_message, mock_update):
     mock_send_message.assert_called_once_with('PUT',
                                             'Deploy microservice to DCAE',
                                             (f"{loop.base_url()}/loop/deploy/LOOP_test"),
-                                            cert=loop._cert)
+                                            cert=loop._cert,
+                                            exception=ValueError)
     assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLATION_FAILED"
     assert not deploy
 
@@ -447,7 +451,8 @@ def test_undeploy_microservice_from_dcae(mock_send_message):
     mock_send_message.assert_called_once_with('PUT',
                                             'Undeploy microservice from DCAE',
                                             (f"{loop.base_url()}/loop/undeploy/LOOP_test"),
-                                            cert=loop._cert)
+                                            cert=loop._cert,
+                                            exception=ValueError)
 
 
 @mock.patch.object(LoopInstance, 'send_message')
@@ -457,4 +462,5 @@ def test_delete(mock_send_message):
     mock_send_message.assert_called_once_with('PUT',
                                             'Delete loop instance',
                                             (f"{loop.base_url()}/loop/delete/{loop.name}"),
-                                            cert=loop._cert)
+                                            cert=loop._cert,
+                                            exception=ValueError)

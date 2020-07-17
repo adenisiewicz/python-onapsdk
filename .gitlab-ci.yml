@@ -65,7 +65,7 @@
         alias: so.api.simpledemo.onap.org
       - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-aai:latest
         alias: aai.api.sparky.simpledemo.onap.org
-        - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-clamp:latest
+      - name: registry.gitlab.com/orange-opensource/lfn/onap/mock_servers/mock-clamp:latest
         alias: clamp.api.simpledemo.onap.org
     script:
       - pip install .

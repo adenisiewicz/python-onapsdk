@@ -56,7 +56,7 @@ class LoopInstance(Clamp):
                                               cert=self._cert)
         if loop_details:
             return loop_details
-        raise ValueError("Couldn't get the appropriate details")
+        raise ValueError("Couldn't get the appropriate status")
 
     @property
     def loop_schema(self) -> dict:
@@ -162,10 +162,19 @@ class LoopInstance(Clamp):
         data = template.render(entity_ids=entity_ids, LOOP_name=self.name)
         return data
 
+    def add_minmax_config(self, name:str) -> None:
+        """Add MinMax operational policy config."""
+        #preload is the list of operational policies
+        self.details = self._update_loop_details()
+        template = jinja_env().get_template("clamp_MinMax_config.json.j2")
+        data = template.render(name=name)
+        return data
+
     def add_frequency_limiter(self, limit: int = 1) -> None:
         """Add frequency limiter config."""
         template = jinja_env().get_template("clamp_add_frequency.json.j2")
-        data = template.render(LOOP_name=self.name, limit=limit)
+        data = template.render(LOOP_name=self.name,
+                               limit=limit)
         return data
 
     def add_op_policy_config(self, func, **kwargs) ->None:
@@ -176,8 +185,7 @@ class LoopInstance(Clamp):
                                           'ADD operational policy config',
                                           url,
                                           data=data,
-                                          cert=self._cert,
-                                          exception=ValueError)
+                                          cert=self._cert)
         if upload_result:
             self._logger.info(("Files for op policy config %s have been uploaded to loop's"
                                "Op policy"), self.name)
@@ -204,7 +212,7 @@ class LoopInstance(Clamp):
                           exception=ValueError)
         self.validate_details()
         old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-        self.details = self._update_loop_details()
+        self.details = self.refresh_status()
         self.validate_details()
         new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
         action_done = (new_state != old_state and not(action != "stop" and new_state == "SENT"))

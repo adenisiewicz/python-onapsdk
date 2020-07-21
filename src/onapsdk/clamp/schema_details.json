@@ -87,10 +87,7 @@
                         "vfModuleModelCustomizationUUID"
                       ]
                     }
-                  },
-                  "required": [
-                    "resourceID"
-                  ]
+                  }
                 }
               },
               "required": [

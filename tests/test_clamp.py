@@ -38,6 +38,13 @@ POLICIES = [
 
 LOOP_DETAILS = {
     "name" : "LOOP_test",
+    "globalPropertiesJson": {
+        "dcaeDeployParameters" : {
+            "uniqueBlueprintParameters" : {
+                "policy_id" : "Microservice12345"
+            }
+        }
+    },
     "components" : {
         "POLICY" : {
             "componentState" : {
@@ -230,7 +237,7 @@ def test_create(mock_send_message_json):
     mock_send_message_json.return_value = LOOP_DETAILS
     instance.create()
     mock_send_message_json.assert_called_once_with('POST', 'Create Loop Instance',
-         (f"{instance.base_url()}/loop/create/test?templateName=template"),
+         (f"{instance.base_url()}/loop/create/LOOP_test?templateName=template"),
          cert=instance._cert)
     assert instance.name == "LOOP_test"
     assert len(instance.details["microServicePolicies"]) > 0
@@ -411,12 +418,12 @@ def test_not_submited_policy(mock_send_message, mock_update):
     assert not action
 
 
-@mock.patch.object(LoopInstance, '_update_loop_details')
+@mock.patch.object(LoopInstance, 'refresh_status')
 @mock.patch.object(LoopInstance, 'send_message')
-def test_submited_microservice_to_dcae(mock_send_message, mock_update):
+def test_submited_microservice_to_dcae(mock_send_message, mock_refresh):
     """Test deploy microservice to DCAE."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_update.return_value = SUBMITED
+    mock_refresh.return_value = SUBMITED
     deploy = loop.deploy_microservice_to_dcae()
     mock_send_message.assert_called_once_with('PUT',
                                             'Deploy microservice to DCAE',
@@ -427,12 +434,12 @@ def test_submited_microservice_to_dcae(mock_send_message, mock_update):
     assert deploy
 
 
-@mock.patch.object(LoopInstance, '_update_loop_details')
+@mock.patch.object(LoopInstance, 'refresh_status')
 @mock.patch.object(LoopInstance, 'send_message')
-def test_not_submited_microservice_to_dcae(mock_send_message, mock_update):
+def test_not_submited_microservice_to_dcae(mock_send_message, mock_refresh):
     """Test deploy microservice to DCAE."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_update.return_value = NOT_SUBMITED
+    mock_refresh.return_value = NOT_SUBMITED
     deploy = loop.deploy_microservice_to_dcae()
     mock_send_message.assert_called_once_with('PUT',
                                             'Deploy microservice to DCAE',

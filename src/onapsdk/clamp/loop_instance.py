@@ -46,6 +46,17 @@ class LoopInstance(Clamp):
         if loop_details:
             return loop_details
         raise ValueError("Couldn't get the appropriate details")
+    
+    def refresh_status(self) -> dict:
+        """Reshresh loop status."""
+        url = "{}/loop/getstatus/{}".format(self.base_url(), self.name)
+        loop_details = self.send_message_json('GET',
+                                              'Get loop status',
+                                              url,
+                                              cert=self._cert)
+        if loop_details:
+            return loop_details
+        raise ValueError("Couldn't get the appropriate details")
 
     @property
     def loop_schema(self) -> dict:
@@ -74,6 +85,7 @@ class LoopInstance(Clamp):
 
     def create(self) -> bool:
         """Create instance and load loop details."""
+        self.name = "LOOP_" + self.name
         url = "{}/loop/create/{}?templateName={}".\
               format(self.base_url(), self.name, self.template)
         instance_details = self.send_message_json('POST',
@@ -81,7 +93,6 @@ class LoopInstance(Clamp):
                                                   url,
                                                   cert=self._cert)
         if  instance_details:
-            self.name = "LOOP_" + self.name
             self.details = instance_details
             if len(self.details["microServicePolicies"]) > 0:
                 return True
@@ -118,7 +129,10 @@ class LoopInstance(Clamp):
         """Update microservice policy configuration."""
         url = "{}/loop/updateMicroservicePolicy/{}".format(self.base_url(), self.name)
         template = jinja_env().get_template("clamp_add_tca_config.json.j2")
-        data = template.render(LOOP_name=self.name)
+        microservice_name = self.details["globalPropertiesJson"]["dcaeDeployParameters"]\
+                                        ["uniqueBlueprintParameters"]["policy_id"]
+        data = template.render(name=microservice_name,
+                               LOOP_name=self.name)
         try:
             upload_result = self.send_message('POST',
                                               'ADD TCA config',
@@ -184,18 +198,16 @@ class LoopInstance(Clamp):
         """
         url = "{}/loop/{}/{}".format(self.base_url(), action, self.name)
         self.send_message('PUT',
-                          '{} policy'.format(action),
+                          f'{action} policy',
                           url,
                           cert=self._cert,
                           exception=ValueError)
-        action_done = False
         self.validate_details()
         old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
         self.details = self._update_loop_details()
         self.validate_details()
         new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-        if new_state != old_state and not(action != "stop" and new_state == "SENT"):
-            action_done = True
+        action_done = (new_state != old_state and not(action != "stop" and new_state == "SENT"))
         return action_done
 
     def deploy_microservice_to_dcae(self) -> bool:
@@ -214,7 +226,7 @@ class LoopInstance(Clamp):
         while state not in (success, failure):
             #modify the time sleep for loop refresh approximately 6 seconds
             time.sleep(0)
-            self.details = self._update_loop_details()
+            self.details = self.refresh_status()
             self.validate_details()
             state = self.details["components"]["DCAE"]["componentState"]["stateName"]
         deploy = (state == success)

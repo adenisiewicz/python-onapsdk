@@ -46,7 +46,7 @@ class LoopInstance(Clamp):
         if loop_details:
             return loop_details
         raise ValueError("Couldn't get the appropriate details")
-    
+
     def refresh_status(self) -> dict:
         """Reshresh loop status."""
         url = "{}/loop/getstatus/{}".format(self.base_url(), self.name)
@@ -162,7 +162,7 @@ class LoopInstance(Clamp):
         data = template.render(entity_ids=entity_ids, LOOP_name=self.name)
         return data
 
-    def add_minmax_config(self, name:str) -> None:
+    def add_minmax_config(self, name: str) -> None:
         """Add MinMax operational policy config."""
         #preload is the list of operational policies
         self.details = self._update_loop_details()

@@ -148,9 +148,9 @@ class LoopInstance(Clamp):
     def extract_operational_policy_name(self, policy_type: str) -> str:
         """Return operational policy name for a closed loop and a given policy."""
         for policy in filter(lambda x: x["policyModel"]["policyAcronym"] == policy_type,
-                                   self.details["operationalPolicies"]):
+                             self.details["operationalPolicies"]):
             return  policy["name"]
-        raise ValueError("Couldn't load the operational policy name")
+        raise ValueError("Couldn't load thhe operational policy name")
 
     def add_drools_conf(self) -> dict:
         """Add drools configuration."""

@@ -145,7 +145,14 @@ class LoopInstance(Clamp):
                                 " microservice %s"), self.name)
             raise ValueError("Couldn't update microservice policy")
 
-    def add_drools_conf(self, name: str) -> dict:
+    def extract_operational_policy_name(self, policy_type: str) -> str:
+        """Return operational policy name for a closed loop and a given policy."""
+        for policy in filter(lambda x: x["policyModel"]["policyAcronym"] == policy_type,
+                                   self.details["operationalPolicies"]):
+            return  policy["name"]
+        raise ValueError("Couldn't load the operational policy name")
+
+    def add_drools_conf(self) -> dict:
         """Add drools configuration."""
         self.validate_details()
         vfmodule_dicts = self.details["modelService"]["resourceDetails"]["VFModule"]
@@ -159,7 +166,7 @@ class LoopInstance(Clamp):
             entity_ids["modelVersion"] = vfmodule["vfModuleModelVersion"]
             entity_ids["modelCustomizationId"] = vfmodule["vfModuleModelCustomizationUUID"]
         template = jinja_env().get_template("clamp_add_drools_policy.json.j2")
-        data = template.render(name=name,
+        data = template.render(name=self.extract_operational_policy_name("Drools"),
                                resourceID=entity_ids["resourceID"],
                                modelInvariantId=entity_ids["modelInvariantId"],
                                modelVersionId=entity_ids["modelVersionId"],
@@ -169,18 +176,18 @@ class LoopInstance(Clamp):
                                LOOP_name=self.name)
         return data
 
-    def add_minmax_config(self, name: str) -> None:
+    def add_minmax_config(self) -> None:
         """Add MinMax operational policy config."""
         #must configure start/end time and min/max instances in json file
-        self.details = self._update_loop_details()
         template = jinja_env().get_template("clamp_MinMax_config.json.j2")
-        data = template.render(name=name)
+        data = template.render(name=self.extract_operational_policy_name("MinMax"))
         return data
 
-    def add_frequency_limiter(self, name: str, limit: int = 1) -> None:
+    def add_frequency_limiter(self, limit: int = 1) -> None:
         """Add frequency limiter config."""
         template = jinja_env().get_template("clamp_add_frequency.json.j2")
-        data = template.render(name=name,
+        data = template.render(name=self.extract_operational_policy_name("FrequencyLimiter"),
+                               LOOP_name=self.name,
                                limit=limit)
         return data
 

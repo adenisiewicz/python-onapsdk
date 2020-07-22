@@ -349,7 +349,7 @@ def test_add_drools_policy_config(mock_send_message):
     """Test Loop Instance add op policy configuration."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
     mock_send_message.return_value = True
-    loop.add_op_policy_config(loop.add_drools_conf)
+    loop.add_op_policy_config(loop.add_drools_conf, name="test_drools")
     mock_send_message.assert_called_once() 
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"
@@ -362,7 +362,7 @@ def test_add_frequency_policy_config(mock_send_message):
     """Test Loop Instance add op policy configuration."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
     mock_send_message.return_value = True
-    loop.add_op_policy_config(loop.add_frequency_limiter, limit=1)
+    loop.add_op_policy_config(loop.add_frequency_limiter, name="test_frequency")
     mock_send_message.assert_called_once() 
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"
@@ -376,7 +376,7 @@ def test_add_op_policy_config_error(mock_send_message):
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
     mock_send_message.return_value = False
     #if u put a non cong function 
-    loop.add_op_policy_config(loop.add_frequency_limiter)
+    loop.add_op_policy_config(loop.add_frequency_limiter, name="test_frequency")
     mock_send_message.assert_called_once() 
     method, description, url = mock_send_message.call_args[0]
     assert method == "POST"

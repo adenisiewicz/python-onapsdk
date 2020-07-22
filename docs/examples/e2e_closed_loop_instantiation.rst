@@ -16,10 +16,10 @@ E2E Instantiation of a Closed Loop
 
     #Constants
     SERVICE_NAME = "Test_SDK"
-    POLICY_NAME = "MinMax"
+    POLICY_NAME = ["MinMax", "FrequencyLimiter"]
     LOOP_INSTANCE_NAME = "instance01"
-    OPERATIONAL_POLICY_NAME = "OPERATIONAL_" + SERVICE_NAME + POLICY_NAME
-
+    MINMAX_NAME = "OPERATIONAL_" + SERVICE_NAME + POLICY_NAME[0]
+    FREQUENCY_NAME = "OPERATIONAL_" + SERVICE_NAME + POLICY_NAME[1]
 
     Clamp.set_proxy({ 'http': 'socks5h://127.0.0.1:8080', 'https': 'socks5h://127.0.0.1:8080'})
     Service.set_proxy({ 'http': 'socks5h://127.0.0.1:8080', 'https': 'socks5h://127.0.0.1:8080'})
@@ -50,8 +50,11 @@ E2E Instantiation of a Closed Loop
     logger.info("******** POLICIES CHECK *******")
     logger.info("*******************************")
 
-    policy_exists = Clamp.check_policies(policy_name=POLICY_NAME,
+    minmax_exists = Clamp.check_policies(policy_name=POLICY_NAME[0],
                                             req_policies=30)
+    frequency_exists = Clamp.check_policies(policy_name=POLICY_NAME[1],
+                                            req_policies=30)
+    policy_exists = (minmax_exists and frequency_exists)
     if not policy_exists:
         logger.error("Couldn't load the policy %s", POLICY_NAME)
         exit(1)
@@ -71,20 +74,19 @@ E2E Instantiation of a Closed Loop
     loop._update_loop_details()
     loop.update_microservice_policy()
 
-    #add works well but the configuration isn't working
-    logger.info("******** ADD OPERATIONAL POLICY *******")
+    logger.info("******** ADD OPERATIONAL POLICY MINMAX *******")
     added = loop.add_operational_policy(policy_type="onap.policies.controlloop.guard.common.MinMax",
                                         policy_version="1.0.0")
 
-    logger.info("******** CONFIGURE OPERATIONAL POLICY *******")
-    loop.add_op_policy_config(loop.add_minmax_config, name=OPERATIONAL_POLICY_NAME)
+    logger.info("******** CONFIGURE OPERATIONAL POLICY MINMAX *******")
+    loop.add_op_policy_config(loop.add_minmax_config, name=MINMAX_NAME)
 
-    logger.info("******** ADD OPERATIONAL POLICY *******")
-    added = loop.add_operational_policy(policy_type="onap.policies.controlloop.guard.common.MinMax",
+    logger.info("******** ADD FREQUENCY POLICY *******")
+    added = loop.add_operational_policy(policy_type="onap.policies.controlloop.guard.common.FrequencyLimiter",
                                         policy_version="1.0.0")
 
-    logger.info("******** CONFIGURE OPERATIONAL POLICY *******")
-    loop.add_op_policy_config(loop.add_minmax_config, name=OPERATIONAL_POLICY_NAME)
+    logger.info("******** CONFIGURE FREQUENCY POLICY *******")
+    loop.add_op_policy_config(loop.add_frequency_limiter, name=FREQUENCY_NAME)
 
     logger.info("******** SUBMIT POLICIES TO PE *******")
     submit = loop.act_on_loop_policy(action="submit")
@@ -95,8 +97,7 @@ E2E Instantiation of a Closed Loop
     else:
         logger.error("An error occured while submitting the loop instance")
         exit(1)
-    """
-    #deploy not working in  clamp UI
+
     logger.info("******** DEPLOY LOOP INSTANCE *******")
     deploy = loop.deploy_microservice_to_dcae()
     if submit:
@@ -105,8 +106,5 @@ E2E Instantiation of a Closed Loop
         logger.error("An error occured while deploying the loop instance")
         exit(2)
 
-    #works well
     logger.info("******** DELETE LOOP INSTANCE *******")
     loop.delete()
-    #An error will occur related to CLAMP problems but the loop still is deleted
-    """

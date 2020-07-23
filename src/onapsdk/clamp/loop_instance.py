@@ -102,7 +102,7 @@ class LoopInstance(Clamp):
             ValidationError : error occured while validating the loop status
 
         Returns:
-            schema validation status (True, False) 
+            schema validation status (True, False)
 
         """
         try:
@@ -338,7 +338,7 @@ class LoopInstance(Clamp):
         Execute the deploy operation on the loop instance.
 
         Returns:
-            loop deploy on DCAE status (True, False) 
+            loop deploy on DCAE status (True, False)
 
         """
         url = "{}/loop/deploy/{}".format(self.base_url(), self.name)

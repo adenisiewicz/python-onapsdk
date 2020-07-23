@@ -300,13 +300,11 @@ def test_not_add_operational_policy(mock_send_message_json):
         assert len(loop.details["operationalPolicies"]) == 0
 
 
-@mock.patch.object(LoopInstance, '_update_loop_details')
 @mock.patch.object(LoopInstance, 'send_message_json')
-def test_remove_operational_policy(mock_send_message_json, mock_update):
+def test_remove_operational_policy(mock_send_message_json):
     """Test remove an op policy."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_send_message_json.return_value = {"name" : "LOOP_test"}
-    mock_update.return_value = {
+    mock_send_message_json.return_value = {
         "name" : "LOOP_test",
         "operationalPolicies" : [],
         "microServicePolicies" : [
@@ -318,7 +316,8 @@ def test_remove_operational_policy(mock_send_message_json, mock_update):
     loop.remove_operational_policy(policy_type="FrequencyLimiter", policy_version="1.0.0")
     mock_send_message_json.assert_called_once_with('PUT', 'Remove Operational Policy',
         (f"{loop.base_url()}/loop/removeOperationaPolicy/{loop.name}/policyModel/FrequencyLimiter/1.0.0"),
-        cert=loop._cert)
+        cert=loop._cert,
+        exception=ValueError)
     assert len(loop.details["operationalPolicies"]) == 0
 
 

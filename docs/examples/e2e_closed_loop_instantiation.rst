@@ -18,8 +18,6 @@ E2E Instantiation of a Closed Loop
     SERVICE_NAME = "Test_SDK"
     POLICY_NAME = ["MinMax", "FrequencyLimiter"]
     LOOP_INSTANCE_NAME = "instance01"
-    MINMAX_NAME = "OPERATIONAL_" + SERVICE_NAME + POLICY_NAME[0]
-    FREQUENCY_NAME = "OPERATIONAL_" + SERVICE_NAME + POLICY_NAME[1]
 
     Clamp.set_proxy({ 'http': 'socks5h://127.0.0.1:8080', 'https': 'socks5h://127.0.0.1:8080'})
     Service.set_proxy({ 'http': 'socks5h://127.0.0.1:8080', 'https': 'socks5h://127.0.0.1:8080'})
@@ -79,14 +77,14 @@ E2E Instantiation of a Closed Loop
                                         policy_version="1.0.0")
 
     logger.info("******** CONFIGURE OPERATIONAL POLICY MINMAX *******")
-    loop.add_op_policy_config(loop.add_minmax_config, name=MINMAX_NAME)
+    loop.add_op_policy_config(loop.add_minmax_config)
 
     logger.info("******** ADD FREQUENCY POLICY *******")
     added = loop.add_operational_policy(policy_type="onap.policies.controlloop.guard.common.FrequencyLimiter",
                                         policy_version="1.0.0")
 
     logger.info("******** CONFIGURE FREQUENCY POLICY *******")
-    loop.add_op_policy_config(loop.add_frequency_limiter, name=FREQUENCY_NAME)
+    loop.add_op_policy_config(loop.add_frequency_limiter)
 
     logger.info("******** SUBMIT POLICIES TO PE *******")
     submit = loop.act_on_loop_policy(action="submit")
@@ -100,7 +98,7 @@ E2E Instantiation of a Closed Loop
 
     logger.info("******** DEPLOY LOOP INSTANCE *******")
     deploy = loop.deploy_microservice_to_dcae()
-    if submit:
+    if deploy:
         logger.info("Loop instance %s successfully deployed on DCAE !!", LOOP_INSTANCE_NAME)
     else:
         logger.error("An error occured while deploying the loop instance")

@@ -37,7 +37,16 @@ class LoopInstance(Clamp):
         self._details = details
 
     def _update_loop_details(self) -> dict:
-        """Update loop details."""
+        """
+        Update loop details.
+
+        Raises:
+            ValueError : error occured while loading the loop details
+
+        Returns:
+            the dictionnary of loop details
+
+        """
         url = "{}/loop/{}".format(self.base_url(), self.name)
         loop_details = self.send_message_json('GET',
                                               'Get loop details',
@@ -48,7 +57,16 @@ class LoopInstance(Clamp):
         raise ValueError("Couldn't get the appropriate details")
 
     def refresh_status(self) -> dict:
-        """Reshresh loop status."""
+        """
+        Reshresh loop status.
+
+        Raises:
+            ValueError : error occured while refreshing the loop status
+
+        Returns:
+            the dictionnary of loop details
+
+        """
         url = "{}/loop/getstatus/{}".format(self.base_url(), self.name)
         loop_details = self.send_message_json('GET',
                                               'Get loop status',
@@ -60,7 +78,13 @@ class LoopInstance(Clamp):
 
     @property
     def loop_schema(self) -> dict:
-        """Return and lazy load the details schema."""
+        """
+        Return and lazy load the details schema.
+
+        Returns:
+            schema to be respected to accede to loop details
+
+        """
         if not self._loop_schema:
             #relative path doesn't work
             _root = os.getcwd().rsplit('/onapsdk')[0]
@@ -71,7 +95,16 @@ class LoopInstance(Clamp):
         return self._loop_schema
 
     def validate_details(self) -> bool:
-        """Validate Loop Instance details."""
+        """
+        Validate Loop Instance details.
+
+        Raises:
+            ValidationError : error occured while validating the loop status
+
+        Returns:
+            schema validation status (True, False) 
+
+        """
         try:
             validate(self.details, self.loop_schema)
         except ValidationError as error:
@@ -84,7 +117,16 @@ class LoopInstance(Clamp):
         return True
 
     def create(self) -> bool:
-        """Create instance and load loop details."""
+        """
+        Create instance and load loop details.
+
+        Raises:
+            ValueError : error occured while creating the loop
+
+        Returns:
+            loop creation status (True, False)
+
+        """
         self.name = "LOOP_" + self.name
         url = "{}/loop/create/{}?templateName={}".\
               format(self.base_url(), self.name, self.template)
@@ -99,7 +141,20 @@ class LoopInstance(Clamp):
         raise ValueError("Couldn't create the instance")
 
     def add_operational_policy(self, policy_type: str, policy_version: str) -> bool:
-        """Add operational policy to the loop instance."""
+        """
+        Add operational policy to the loop instance.
+
+        Args:
+            policy_type (str): the full policy model type
+            policy_version (str): policy version
+
+        Raises:
+            ValueError : Couldn't add the operational policy
+
+        Returns:
+            operational policy add status (True, False)
+
+        """
         url = "{}/loop/addOperationaPolicy/{}/policyModel/{}/{}".\
               format(self.base_url(), self.name, policy_type, policy_version)
         add_response = self.send_message_json('PUT',
@@ -114,19 +169,34 @@ class LoopInstance(Clamp):
             return True
         raise ValueError("Couldn't add the operational policy")
 
-    def remove_operational_policy(self, policy_type: str, policy_version: str) -> dict:
-        """Remove operational policy from the loop instance."""
+    def remove_operational_policy(self, policy_type: str, policy_version: str) -> None:
+        """
+        Remove operational policy from the loop instance.
+
+        Args:
+            policy_type (str): the full policy model type
+            policy_version (str): policy version
+
+        """
         url = "{}/loop/removeOperationaPolicy/{}/policyModel/{}/{}".\
               format(self.base_url(), self.name, policy_type, policy_version)
         response = self.send_message_json('PUT',
                                           'Remove Operational Policy',
                                           url,
-                                          cert=self._cert)
-        self.details = self._update_loop_details()
-        return response
+                                          cert=self._cert,
+                                          exception=ValueError)
+        self.details = response
 
     def update_microservice_policy(self) -> None:
-        """Update microservice policy configuration."""
+        """
+        Update microservice policy configuration.
+
+        Update microservice policy configuration using payload data.
+
+        Raises:
+            ValueError : Couldn't update microservice policy
+
+        """
         url = "{}/loop/updateMicroservicePolicy/{}".format(self.base_url(), self.name)
         template = jinja_env().get_template("clamp_add_tca_config.json.j2")
         microservice_name = self.details["globalPropertiesJson"]["dcaeDeployParameters"]\
@@ -146,7 +216,19 @@ class LoopInstance(Clamp):
             raise ValueError("Couldn't update microservice policy")
 
     def extract_operational_policy_name(self, policy_type: str) -> str:
-        """Return operational policy name for a closed loop and a given policy."""
+        """
+        Return operational policy name for a closed loop and a given policy.
+
+        Args:
+            policy_type (str): the policy acronym
+
+        Raises:
+            ValueError : Couldn't load thhe operational policy name
+
+        Returns:
+            Operational policy name in the loop details after adding a policy
+
+        """
         for policy in filter(lambda x: x["policyModel"]["policyAcronym"] == policy_type,
                              self.details["operationalPolicies"]):
             return  policy["name"]
@@ -191,9 +273,24 @@ class LoopInstance(Clamp):
                                limit=limit)
         return data
 
-    def add_op_policy_config(self, func, **kwargs) ->None:
-        """Add operational policy config."""
+    def add_op_policy_config(self, func, **kwargs) -> None:
+        """
+        Add operational policy configuration.
+
+        Add operation policy configuration using payload data.
+
+        Args:
+            func (function): policy configuration function in (add_drools_conf,
+                                                               add_minmax_config,
+                                                               add_frequency_limiter)
+
+        Raises:
+            ValueError : Couldn't load the payload data properly from configuration
+
+        """
         data = func(**kwargs)
+        if not data:
+            raise ValueError("Couldn't load the payload data properly from configuration")
         if self.operational_policies:
             self.operational_policies = self.operational_policies[:-1] + ","
             data = data[1:]
@@ -237,7 +334,13 @@ class LoopInstance(Clamp):
         return action_done
 
     def deploy_microservice_to_dcae(self) -> bool:
-        """Execute the deploy operation on the loop instance."""
+        """
+        Execute the deploy operation on the loop instance.
+
+        Returns:
+            loop deploy on DCAE status (True, False) 
+
+        """
         url = "{}/loop/deploy/{}".format(self.base_url(), self.name)
         self.send_message('PUT',
                           'Deploy microservice to DCAE',

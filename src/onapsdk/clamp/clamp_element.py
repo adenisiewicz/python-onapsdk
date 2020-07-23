@@ -30,7 +30,19 @@ class Clamp(Onap):
 
     @classmethod
     def check_loop_template(cls, service: Service) -> str:
-        """Return loop template name if exists."""
+        """
+        Return loop template name if exists.
+
+        Args:
+            service (Service): the distributed sdc service with tca blueprint artifact
+
+        Raises:
+            ValueError : Template not found
+
+        Returns:
+            if required template exists in CLAMP or not
+
+        """
         url = "{}/templates/".format(cls.base_url())
         template_list = cls.send_message_json('GET',
                                               'Get Loop Templates',
@@ -43,7 +55,17 @@ class Clamp(Onap):
 
     @classmethod
     def check_policies(cls, policy_name: str, req_policies: int = 30) -> bool:
-        """Ensure that a policy is stored in CLAMP."""
+        """
+        Ensure that a policy is stored in CLAMP.
+
+        Args:
+            policy_name (str): policy acronym
+            req_policies (int): number of required policies in CLAMP
+
+        Returns:
+            if required policy exists in CLAMP or not
+
+        """
         url = "{}/policyToscaModels/".format(cls.base_url())
         policies = cls.send_message_json('GET',
                                          'Get stocked policies',

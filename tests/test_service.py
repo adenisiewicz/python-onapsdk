@@ -33,6 +33,77 @@ ARTIFACTS = {
 }
 
 
+COMPONENTS = {
+    "componentInstances":[
+        {
+            "actualComponentUid":"374f0a98-a280-43f1-9e6c-00b436782ce7",
+            "createdFromCsar":True,
+            "uniqueId":"bcfa7544-6e3d-4666-93b1-c5973356d069.374f0a98-a280-43f1-9e6c-00b436782ce7.abstract_vsn",
+            "normalizedName":"abstract_vsn",
+            "name":"abstract_vsn",
+            "originType":"CVFC",
+            "customizationUUID":"971043e1-495b-4b75-901e-3d09baed7521",
+            "componentUid":"374f0a98-a280-43f1-9e6c-00b436782ce7",
+            "componentVersion":"1.0",
+            "toscaComponentName":"org.openecomp.resource.vfc.11111cvfc.abstract.abstract.nodes.vsn",
+            "componentName":"11111-nodes.vsnCvfc"
+        }
+    ]
+}
+
+
+COMPONENT = {
+    "metadata":{
+        "uniqueId":"374f0a98-a280-43f1-9e6c-00b436782ce7",
+        "name":"11111-nodes.vsnCvfc",
+        "version":"1.0",
+        "isHighestVersion":True,
+        "creationDate":1594898496259,
+        "lastUpdateDate":1594898496325,
+        "description":"Complex node type that is used as nested type in VF",
+        "lifecycleState":"CERTIFIED",
+        "tags":[
+            "11111-nodes.vsnCvfc"
+        ],
+        "icon":"defaulticon",
+        "normalizedName":"11111nodesvsncvfc",
+        "systemName":"11111NodesVsncvfc",
+        "contactId":"cs0008",
+        "allVersions":{
+            "1.0":"374f0a98-a280-43f1-9e6c-00b436782ce7"
+        },
+        "isDeleted":None,
+        "projectCode":None,
+        "csarUUID":None,
+        "csarVersion":None,
+        "importedToscaChecksum":None,
+        "invariantUUID":"3c027ba1-8d3a-4b59-9394-d748fec5e42c",
+        "componentType":"RESOURCE",
+        "name":"Generic",
+        "normalizedName":"generic",
+        "uniqueId":"resourceNewCategory.generic",
+        "icons":None,
+        "creatorUserId":"cs0008",
+        "creatorFullName":"Carlos Santana",
+        "lastUpdaterUserId":"cs0008",
+        "lastUpdaterFullName":"Carlos Santana",
+        "archiveTime":0,
+        "vendorName":"mj",
+        "vendorRelease":"1.0",
+        "resourceVendorModelNumber":"",
+        "resourceType":"CVFC",
+        "isAbstract":None,
+        "cost":None,
+        "licenseType":None,
+        "toscaResourceName":"org.openecomp.resource.vfc.11111cvfc.abstract.abstract.nodes.vsn",
+        "derivedFrom":None,
+        "uuid":"59f05bfb-ccea-4857-8799-6acff59e6344",
+        "archived":False,
+        "vspArchived":False
+    }
+}
+
+
 def test_init_no_name():
     """Check init with no names."""
     svc = Service()
@@ -793,6 +864,19 @@ def test_add_properties(mock_send_message_json):
     service.add_property(Property(name="test", property_type="string"))
     mock_send_message_json.assert_called_once()
 
+@mock.patch.object(Service, "send_message_json")
+def test_service_components(mock_send_message_json):
+    service = Service(name="test")
+    service.unique_identifier = "toto"
+
+    mock_send_message_json.return_value = {}
+    assert len(list(service.components)) == 0
+
     mock_send_message_json.reset_mock()
-    service.add_property(Property(name="test", property_type="string", declare_input=True))
+    mock_send_message_json.side_effect = [COMPONENTS, COMPONENT]
+    components = list(service.components)
+    assert len(components) == 1
     assert mock_send_message_json.call_count == 2
+    component = components[0]
+    assert component.actual_component_uid == "374f0a98-a280-43f1-9e6c-00b436782ce7"
+    assert component.sdc_resource.unique_uuid == "3c027ba1-8d3a-4b59-9394-d748fec5e42c"

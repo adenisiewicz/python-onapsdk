@@ -17,7 +17,7 @@ from requests import Response
 import oyaml as yaml
 
 import onapsdk.constants as const
-from onapsdk.sdc.properties import Property
+from onapsdk.sdc.properties import NestedInput, Property
 from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.utils.configuration import (components_needing_distribution,
                                          tosca_path)
@@ -101,10 +101,10 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
     """
 
     SERVICE_PATH = "services"
-    headers = headers_sdc_creator(SdcResource.headers)
 
-    def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,
-                 resources: List[SdcResource] = None, properties: List[Property] = None):
+    def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,  # pylint: disable=too-many-arguments
+                 resources: List[SdcResource] = None, properties: List[Property] = None,
+                 inputs: Union[Property, NestedInput] = None):
         """
         Initialize service object.
 
@@ -115,7 +115,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
             resources (List[SdcResource], optional): list of SDC resources
 
         """
-        super().__init__(sdc_values=sdc_values, properties=properties)
+        super().__init__(sdc_values=sdc_values, properties=properties, inputs=inputs)
         self.name: str = name or "ONAP-test-Service"
         self.distribution_status = None
         if sdc_values:
@@ -146,6 +146,8 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
                 self.add_resource(resource)
             for property_to_add in self._properties_to_add:
                 self.add_property(property_to_add)
+            for input_to_add in self._inputs_to_add:
+                self.declare_input(input_to_add)
             self.checkin()
             time.sleep(self._time_wait)
             self.onboard()
@@ -308,6 +310,17 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
                     properties=values["properties"]
                 ))
         return self._vf_modules
+
+    @property
+    def properties_url(self) -> str:
+        """Properties url.
+
+        Returns:
+            str: SdcResource properties url
+
+        """
+        return (f"{self._base_create_url()}/services/"
+                f"{self.unique_identifier}/filteredDataByParams?include=properties")
 
     @property
     def resource_inputs_url(self) -> str:

@@ -5,11 +5,13 @@
                 "type":""
             }
         },
-        "type": "{{ property.property_type }}",
         "name": "{{ property.name }}",
         {% if property.description %}
         "description": "{{ property.description }}",
         {% endif %}
-        "value": "{{ property.value }}"
+        {% if property.value %}
+        "value": "{{ property.value }}",
+        {% endif %}
+        "type": "{{ property.property_type }}"
     }
 }

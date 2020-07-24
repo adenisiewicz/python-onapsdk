@@ -361,7 +361,3 @@ def test_add_properties(mock_send_message_json):
     vf._status = const.DRAFT
     vf.add_property(Property(name="test", property_type="string"))
     mock_send_message_json.assert_called_once()
-
-    mock_send_message_json.reset_mock()
-    vf.add_property(Property(name="test", property_type="string", declare_input=True))
-    assert mock_send_message_json.call_count == 2

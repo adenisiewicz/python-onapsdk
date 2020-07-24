@@ -14,6 +14,15 @@ class Input:
     input_type: str
     name: str
     default_value: Optional[Any] = None
+    value: Optional[Any] = None
+
+
+@dataclass
+class NestedInput:
+    """Dataclass used for nested input declaration."""
+
+    sdc_resource: "SdcResource"
+    input_obj: Input
 
 
 class Property:  # pylint: disable=too-many-instance-attributes, too-few-public-methods
@@ -27,8 +36,7 @@ class Property:  # pylint: disable=too-many-instance-attributes, too-few-public-
                  parent_unique_id: Optional[str] = None,
                  sdc_resource: Optional["SdcResource"] = None,
                  value: Optional[Any] = None,
-                 get_input_values: Optional[List[Dict[str, str]]] = None,
-                 declare_input: Optional[bool] = False) -> None:
+                 get_input_values: Optional[List[Dict[str, str]]] = None) -> None:
         """Property class initialization.
 
         Args:
@@ -40,7 +48,6 @@ class Property:  # pylint: disable=too-many-instance-attributes, too-few-public-
             value (Optional[Any], optional): [description]. Defaults to None.
             get_input_values (Optional[List[Dict[str, str]]], optional): [description].
                 Defaults to None.
-            declare_input (Optional[bool], optional): [description]. Defaults to False.
         """
         self.name: str = name
         self.property_type: str = property_type
@@ -48,9 +55,8 @@ class Property:  # pylint: disable=too-many-instance-attributes, too-few-public-
         self.unique_id: str = unique_id
         self.parent_unique_id: str = parent_unique_id
         self.sdc_resource: "SdcResource" = sdc_resource
-        self.value: Any = value
+        self._value: Any = value
         self.get_input_values: List[Dict[str, str]] = get_input_values
-        self.declare_input: bool = declare_input
 
     def __repr__(self) -> str:
         """Property object human readable representation.
@@ -60,6 +66,18 @@ class Property:  # pylint: disable=too-many-instance-attributes, too-few-public-
 
         """
         return f"Property(name={self.name}, property_type={self.property_type})"
+
+    def __eq__(self, obj: "Property") -> bool:
+        """Check if two Property object are equal.
+
+        Args:
+            obj (Property): Object to compare
+
+        Returns:
+            bool: True if objects are equal, False otherwise
+
+        """
+        return self.name == obj.name and self.property_type == obj.property_type
 
     @property
     def input(self) -> Input:
@@ -88,3 +106,19 @@ class Property:  # pylint: disable=too-many-instance-attributes, too-few-public-
                                self.sdc_resource.inputs))
         except StopIteration:
             raise AttributeError("Property input does not exist")
+
+    @property
+    def value(self) -> Any:
+        """Value property.
+
+        Get property value.
+
+        Returns:
+            Any: Property value
+
+        """
+        return self._value
+
+    @value.setter
+    def value(self, val: Any) -> Any:
+        self._value = val

@@ -9,7 +9,6 @@ from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.sdc.properties import Property
 from onapsdk.sdc.vsp import Vsp
 import onapsdk.constants as const
-from onapsdk.utils.headers_creator import headers_sdc_creator
 
 
 class Vf(SdcResource):
@@ -27,8 +26,6 @@ class Vf(SdcResource):
         unique_identifier (str): Yet Another ID, just to puzzle us...
 
     """
-
-    headers = headers_sdc_creator(SdcResource.headers)
 
     def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,
                  vsp: Vsp = None, properties: List[Property] = None):

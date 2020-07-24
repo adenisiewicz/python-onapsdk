@@ -4,13 +4,12 @@
 """SDC Element module."""
 import logging
 from abc import ABC
-from typing import Any, Dict, Iterator, List
-
-from simplejson.errors import JSONDecodeError
+from typing import Any, Dict, Iterator, List, Union
 
 import onapsdk.constants as const
 from onapsdk.sdc import SDC
-from onapsdk.sdc.properties import Input, Property
+from onapsdk.sdc.component import Component
+from onapsdk.sdc.properties import Input, NestedInput, Property
 from onapsdk.utils.headers_creator import (headers_sdc_creator,
                                            headers_sdc_tester)
 from onapsdk.utils.jinja import jinja_env
@@ -24,9 +23,11 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
     RESOURCE_PATH = 'resources'
     ACTION_TEMPLATE = 'sdc_resource_action.json.j2'
     ACTION_METHOD = 'POST'
+    headers = headers_sdc_creator(SDC.headers)
 
     def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,
-                 properties: List[Property] = None):
+                 properties: List[Property] = None,
+                 inputs: Union[Property, NestedInput] = None):
         """Initialize the object."""
         super().__init__()
         self.name: str = name
@@ -34,6 +35,7 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
         self._unique_identifier: str = None
         self._resource_type: str = "resources"
         self._properties_to_add: List[Property] = properties or []
+        self._inputs_to_add: Union[Property, NestedInput] = inputs or []
         if sdc_values:
             self._logger.debug("SDC values given, using them")
             self.identifier = sdc_values['uuid']
@@ -349,6 +351,17 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
             str: SdcResource properties url
 
         """
+        return (f"{self._base_create_url()}/resources/"
+                f"{self.unique_identifier}/filteredDataByParams?include=properties")
+
+    @property
+    def add_property_url(self) -> str:
+        """Add property url.
+
+        Returns:
+            str: Url used to add property
+
+        """
         return (f"{self._base_create_url()}/services/"
                 f"{self.unique_identifier}/properties")
 
@@ -362,26 +375,11 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
             Property: Resource property
 
         """
-        # That's ugly - we should separate `exception`
-        # in send_message and send_message_json into
-        # two parameters I think: one for API error
-        # response and another for invalid response JSON
-        # format. In this case if resource has no
-        # properties API returns empty response (sic!)
-        # instead of eg. empty list. That's of course
-        # SDC API issue, but I don't think they will
-        # fix that because GUI already works using that.
-        response = self.send_message(\
-            "GET",
-            f"Get {self.name} resource properties",
-            self.properties_url,
-            exception=AttributeError)
-        try:
-            response_json = response.json()
-        except JSONDecodeError:
-            self._logger.exception("API response is empty.")
-            response_json = []
-        for property_data in response_json:
+        for property_data in self.send_message_json(\
+                "GET",
+                f"Get {self.name} resource properties",
+                self.properties_url,
+                exception=AttributeError).get("properties", []):
             yield Property(
                 sdc_resource=self,
                 unique_id=property_data["uniqueId"],
@@ -432,27 +430,144 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
                 default_value=input_data.get("defaultValue")
             )
 
-    def declare_input(self, property_to_input_declare: Property) -> None:
-        """Declare input for given property.
-
-        Call SDC FE API to declare input for given property.
-            It's going to be regular input declared.
+    def get_input(self, input_name: str) -> Input:
+        """Get input by it's name.
 
         Args:
-            property_to_input_declare (Property): Property to declare input
+            input_name (str): Input name
+
+        Raises:
+            AttributeError: Resource doesn't have input with given name
+
+        Returns:
+            Input: Found input object
 
         """
-        self._logger.debug("Declare input for created property")
+        for input_obj in self.inputs:
+            if input_obj.name == input_name:
+                return input_obj
+        raise AttributeError("SDC resource has no %s input" % input_name)
+
+    @property
+    def components(self) -> Iterator[Component]:
+        """Resource components.
+
+        Iterate resource components.
+
+        Yields:
+            Component: Resource component object
+
+        """
+        for component_instance in self.send_message_json(\
+                "GET",
+                f"Get {self.name} resource inputs",
+                f"{self.resource_inputs_url}/filteredDataByParams?include=componentInstances",
+                exception=AttributeError).get("componentInstances", []):
+            sdc_resource: "SdcResource" = SdcResource.import_from_sdc(self.send_message_json(\
+                "GET",
+                f"Get {self.name} component's SDC resource metadata",
+                (f"{self.base_front_url}/sdc1/feProxy/rest/v1/catalog/resources/"
+                 f"{component_instance['actualComponentUid']}/"
+                 "filteredDataByParams?include=metadata"),
+                exception=AttributeError)["metadata"])
+            yield Component.create_from_api_response(api_response=component_instance,
+                                                     sdc_resource=sdc_resource)
+
+    def is_own_property(self, property_to_check: Property) -> bool:
+        """Check if given property is one of the resource's properties.
+
+        Args:
+            property_to_check (Property): Property to check
+
+        Returns:
+            bool: True if resource has given property, False otherwise
+
+        """
+        return any((
+            prop == property_to_check for prop in self.properties
+        ))
+
+    def get_component(self, sdc_resource: "SdcResource") -> Component:
+        """Get resource's component.
+
+        Get component by SdcResource object.
+
+        Args:
+            sdc_resource (SdcResource): Component's SdcResource
+
+        Raises:
+            AttributeError: Component with given SdcResource does not exist
+
+        Returns:
+            Component: Component object
+
+        """
+        for component in self.components:
+            if component.sdc_resource.name == sdc_resource.name:
+                return component
+        raise AttributeError("SDC resource %s is not a component" % sdc_resource.name)
+
+    def declare_input_for_own_property(self, property_obj: Property) -> None:
+        """Declare input for resource's property.
+
+        For each property input can be declared.
+
+        Args:
+            property_obj (Property): Property to declare input
+
+        """
+        self._logger.debug("Declare input for SDC resource property")
         self.send_message_json("POST",
-                               f"Declare new input for {property_to_input_declare.name} property",
+                               f"Declare new input for {property_obj.name} property",
                                f"{self.resource_inputs_url}/create/inputs",
-                               data=jinja_env().get_template(
+                               data=jinja_env().get_template(\
                                    "sdc_resource_add_input.json.j2").\
-                                       render(
+                                       render(\
                                            sdc_resource=self,
-                                           property=property_to_input_declare
-                                       ),
+                                           property=property_obj),
                                exception=ValueError)
+
+    def declare_nested_input(self,
+                             nested_input: NestedInput) -> None:
+        """Declare nested input for SDC resource.
+
+        Nested input is an input of one of the components.
+
+        Args:
+            nested_input (NestedInput): Nested input object
+
+        """
+        self._logger.debug("Declare input for SDC resource's component property")
+        component: Component = self.get_component(nested_input.sdc_resource)
+        self.send_message_json("POST",
+                               f"Declare new input for {nested_input.input_obj.name} input",
+                               f"{self.resource_inputs_url}/create/inputs",
+                               data=jinja_env().get_template(\
+                                   "sdc_resource_add_nested_input.json.j2").\
+                                       render(\
+                                           sdc_resource=self,
+                                           component=component,
+                                           input=nested_input.input_obj),
+                               exception=ValueError)
+
+    def declare_input(self, input_to_declare: Union[Property, NestedInput]) -> None:
+        """Declare input for given property or nested input object.
+
+        Call SDC FE API to declare input for given property.
+
+        Args:
+            input_declaration (Union[Property, NestedInput]): Property to declare input
+                or NestedInput object
+
+        """
+        self._logger.debug("Declare input")
+        if isinstance(input_to_declare, Property):
+            if self.is_own_property(input_to_declare):
+                self.declare_input_for_own_property(input_to_declare)
+            else:
+                raise ValueError("Given property is not SDC resource property")
+        else:
+            self.declare_nested_input(input_to_declare)
 
     def add_property(self, property_to_add: Property) -> None:
         """Add property to resource.
@@ -471,12 +586,10 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
         self._logger.debug("Add property to sdc resource")
         self.send_message_json("POST",
                                f"Declare new property for {self.name} sdc resource",
-                               self.properties_url,
+                               self.add_property_url,
                                data=jinja_env().get_template(
                                    "sdc_resource_add_property.json.j2").\
                                     render(
                                         property=property_to_add
                                     ),
                                exception=ValueError)
-        if property_to_add.declare_input:
-            self.declare_input(property_to_add)

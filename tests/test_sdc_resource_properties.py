@@ -4,6 +4,8 @@ from unittest import mock
 
 import pytest
 
+from onapsdk.sdc.properties import Property
+from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.sdc.service import Service
 from onapsdk.sdc.vf import Vf
 from onapsdk.sdc.vl import Vl
@@ -312,8 +314,8 @@ INPUTS = {
 }
 
 
-PROPERTIES = [
-    {
+PROPERTIES = {
+    "properties": [{
         'uniqueId': '4a84415b-4580-4a78-aa33-501f0cd3d079.llllll', 
         'type': 'integer', 
         'required': False, 
@@ -778,12 +780,12 @@ PROPERTIES = [
         'version': None, 
         'ownerId': '4a84415b-4580-4a78-aa33-501f0cd3d079', 
         'empty': False
-    }
-]
+    }]
+}
 
 
-VL_PROPERTIES = [
-    {
+VL_PROPERTIES = {
+    "properties": [{
         'uniqueId': 'd37cd65e-9842-4490-9343-a1a874e6b52a.network_role', 
         'type': 'string', 
         'required': False, 
@@ -817,8 +819,8 @@ VL_PROPERTIES = [
         'version': None, 
         'ownerId': '1af9771b-0f79-4e98-8747-30fd06da85cb', 
         'empty': False
-    }
-]
+    }]
+}
 
 
 @mock.patch.object(Service, "send_message_json")
@@ -828,16 +830,10 @@ def test_service_properties(mock_send, mock_send_json):
     service = Service(name="test")
     service.unique_identifier = "toto"
 
-    response_mock = mock.MagicMock()
-    response_mock.json.side_effect = JSONDecodeError("msg", "doc", 1)
-    mock_send.return_value = response_mock
+    mock_send_json.return_value = {}
     assert len(list(service.properties)) == 0
 
-    response_mock.json.side_effect = None
-    response_mock.json.return_value = {}
-    assert len(list(service.properties)) == 0
-
-    response_mock.json.return_value = PROPERTIES
+    mock_send_json.return_value = PROPERTIES
     properties_list = list(service.properties)
     assert len(properties_list) == 4
     prop1, prop2, prop3, prop4 = properties_list
@@ -925,21 +921,14 @@ def test_service_inputs(mock_send_json):
 
 
 @mock.patch.object(Vf, "send_message_json")
-@mock.patch.object(Vf, "send_message")
-def test_vf_properties(mock_send, mock_send_json):
+def test_vf_properties(mock_send_json):
     vf = Vf(name="test")
     vf.unique_identifier = "toto"
 
-    response_mock = mock.MagicMock()
-    response_mock.json.side_effect = JSONDecodeError("msg", "doc", 1)
-    mock_send.return_value = response_mock
+    mock_send_json.return_value = {}
     assert len(list(vf.properties)) == 0
 
-    response_mock.json.side_effect = None
-    response_mock.json.return_value = {}
-    assert len(list(vf.properties)) == 0
-
-    response_mock.json.return_value = PROPERTIES
+    mock_send_json.return_value = PROPERTIES
     properties_list = list(vf.properties)
     assert len(properties_list) == 4
     prop1, prop2, prop3, prop4 = properties_list
@@ -992,23 +981,17 @@ def test_vf_properties(mock_send, mock_send_json):
         prop4.input
 
 
-@mock.patch.object(Vl, "send_message")
+@mock.patch.object(Vl, "send_message_json")
 @mock.patch.object(Vl, "exists")
-def test_vl_properties(mock_exists, mock_send):
+def test_vl_properties(mock_exists, mock_send_json):
     mock_exists.return_value = True
     vl = Vl(name="test")
     vl.unique_identifier = "toto"
 
-    response_mock = mock.MagicMock()
-    response_mock.json.side_effect = JSONDecodeError("msg", "doc", 1)
-    mock_send.return_value = response_mock
+    mock_send_json.return_value = {}
     assert len(list(vl.properties)) == 0
 
-    response_mock.json.side_effect = None
-    response_mock.json.return_value = {}
-    assert len(list(vl.properties)) == 0
-
-    response_mock.json.return_value = VL_PROPERTIES
+    mock_send_json.return_value = VL_PROPERTIES
     properties_list = list(vl.properties)
     assert len(properties_list) == 1
     prop = properties_list[0]
@@ -1022,3 +1005,20 @@ def test_vl_properties(mock_exists, mock_send):
     assert prop.description == "Unique label that defines the role that this network performs. example: vce oam network, vnat sr-iov1 network\n"
     assert prop.get_input_values is None
     assert prop.input is None
+
+
+@mock.patch.object(SdcResource, "send_message_json")
+def test_sdc_resource_is_own_property(mock_send_json):
+    sdc_resource = SdcResource(name="test")
+    sdc_resource.unique_identifier = "toto"
+    mock_send_json.return_value = PROPERTIES
+    prop1 = Property(
+        name="llllll",
+        property_type="integer"
+    )
+    prop2 = Property(
+        name="test2",
+        property_type="string"
+    )
+    assert sdc_resource.is_own_property(prop1)
+    assert not sdc_resource.is_own_property(prop2)

@@ -8,6 +8,8 @@ import pytest
 
 import onapsdk.constants as const
 from onapsdk.onap_service import OnapService
+from onapsdk.sdc.component import Component
+from onapsdk.sdc.properties import Input, NestedInput, Property
 from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.sdc.vf import Vf
 from onapsdk.utils.headers_creator import headers_sdc_tester
@@ -26,7 +28,10 @@ def test_class_variables():
     assert SdcResource.base_back_url == "https://sdc.api.be.simpledemo.onap.org:30204"
     assert SdcResource.headers == {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "Authorization": "Basic YWFpOktwOGJKNFNYc3pNMFdYbGhhazNlSGxjc2UyZ0F3ODR2YW9HR21KdlV5MlU=",
+            "USER_ID": "cs0008",
+            "X-ECOMP-InstanceID": "onapsdk"
         }
 
 @mock.patch.object(Vf, 'created')
@@ -274,3 +279,75 @@ def test_update_informations_from_sdc_creation_distribitution_state(mock_parse):
     assert sdcResource.version == "v12"
     assert sdcResource.unique_identifier == "5678"
     mock_parse.assert_called_once_with("state", 'trez', mock.ANY)
+
+@mock.patch.object(SdcResource, "is_own_property")
+@mock.patch.object(SdcResource, "declare_input_for_own_property")
+@mock.patch.object(SdcResource, "declare_nested_input")
+def test_declare_input(mock_nested, mock_own, mock_is_own):
+    sdc_resource = SdcResource()
+    prop = Property(name="test", property_type="test")
+    mock_is_own.return_value = False
+    with pytest.raises(ValueError):
+        sdc_resource.declare_input(prop)
+    mock_is_own.return_value = True
+    sdc_resource.declare_input(prop)
+    mock_own.assert_called_once()
+    mock_nested.assert_not_called()
+
+    mock_nested.reset_mock()
+    mock_own.reset_mock()
+    sdc_resource.declare_input(NestedInput(sdc_resource=mock.MagicMock(), input_obj=mock.MagicMock()))
+    mock_own.assert_not_called()
+    mock_nested.assert_called_once()
+
+@mock.patch.object(SdcResource, "send_message_json")
+@mock.patch.object(SdcResource, "get_component")
+@mock.patch.object(SdcResource, "resource_inputs_url", new_callable=mock.PropertyMock)
+def test_declare_nested_input(mock_resource_inputs, mock_get_component, mock_send_json):
+    sdc_resource = SdcResource()
+    sdc_resource.unique_identifier = "toto"
+    mock_resource_inputs.return_value = "test"
+    sdc_resource.declare_input(NestedInput(sdc_resource=mock.MagicMock(), input_obj=mock.MagicMock()))
+    mock_get_component.assert_called_once()
+    mock_send_json.assert_called_once()
+
+@mock.patch.object(SdcResource, "inputs", new_callable=mock.PropertyMock)
+def test_get_input(mock_inputs):
+    sdc_resource = SdcResource()
+
+    mock_inputs.return_value = [
+        Input(unique_id="123",
+              input_type="integer",
+              name="test"),
+        Input(unique_id="321",
+              input_type="string",
+              name="test2")
+    ]
+    assert sdc_resource.get_input("test")
+    assert sdc_resource.get_input("test2")
+    with pytest.raises(AttributeError):
+        sdc_resource.get_input("test3")
+
+@mock.patch.object(SdcResource, "components", new_callable=mock.PropertyMock)
+def test_get_component(mock_components):
+    sdc_resource = SdcResource()
+
+    mock_components.return_value = [
+        Component(
+            created_from_csar=False,
+            actual_component_uid="123",
+            unique_id="123",
+            normalized_name="123",
+            name="123",
+            origin_type="123",
+            customization_uuid="123",
+            tosca_component_name="123",
+            component_name="123",
+            component_uid="123",
+            component_version="123",
+            sdc_resource=SdcResource(name="test")
+        )
+    ]
+    assert sdc_resource.get_component(SdcResource(name="test"))
+    with pytest.raises(AttributeError):
+        sdc_resource.get_component(SdcResource(name="test2"))

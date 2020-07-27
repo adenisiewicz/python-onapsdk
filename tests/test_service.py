@@ -11,14 +11,25 @@ import shutil
 
 import oyaml as yaml
 import pytest
+from typing import BinaryIO
 
 import onapsdk.constants as const
-from onapsdk.service import Service
-from onapsdk.sdc_resource import SdcResource
+from onapsdk.sdc.service import Service
+from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.utils.headers_creator import headers_sdc_tester
 from onapsdk.utils.headers_creator import headers_sdc_governor
 from onapsdk.utils.headers_creator import headers_sdc_operator
 from onapsdk.utils.headers_creator import headers_sdc_creator
+
+
+ARTIFACTS = {
+    "componentInstances" : [
+        {
+            "uniqueId" : "test_unique_id",
+            "name" : "ubuntu16test_VF 0"
+        }
+    ]                 
+}
 
 
 def test_init_no_name():
@@ -691,6 +702,49 @@ def test_vnf_vf_modules_two():
         assert vnf.node_template_type == "org.openecomp.resource.vf.VfwclVfwsnkVf"
         assert vnf.vf_module
         assert vnf.vf_module.name == "vfwcl_vfwsnkvf0..VfwclVfwsnkVf..base_vfw..module-0"
+
+
+@mock.patch.object(Service, 'send_message_json')
+def test_get_vnf_unique_id(mock_send):
+    """Test Service get Vnf uid with One Vf"""
+    svc = Service()
+    svc.unique_identifier = "service_unique_identifier"
+    mock_send.return_value = ARTIFACTS
+    unique_id = svc.get_vnf_unique_id(vnf_name="ubuntu16test_VF 0")
+    mock_send.assert_called_once_with(
+        'GET', 'Get vnf unique ID',
+        f"https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/{svc.unique_identifier}")
+    assert unique_id == 'test_unique_id'
+
+
+@mock.patch.object(Service, 'get_vnf_unique_id')
+@mock.patch.object(Service, 'load')
+@mock.patch.object(Service, 'send_message')
+def test_add_artifact_to_vf(mock_send_message, mock_load, mock_add):
+    """Test Service add artifact"""
+    svc = Service()
+    mock_add.return_value = "54321"
+    result = svc.add_artifact_to_vf(vnf_name="ubuntu16test_VF 0", 
+                                    artifact_type="DCAE_INVENTORY_BLUEPRINT",
+                                    artifact_name="clampnode.yaml",
+                                    artifact="data".encode('utf-8'))
+    mock_send_message.assert_called()
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "POST"
+    assert description == "Add artifact to vf"
+    assert url == ("https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/services/"
+                    f"{svc.unique_identifier}/resourceInstance/54321/artifacts")
+
+
+def test_service_networks():
+    service = Service(name="test")
+    with open(Path(Path(__file__).resolve().parent, "data/service-TestServiceFyx-template.yml"), "r") as service_file:
+        service._tosca_template = yaml.safe_load(service_file.read())
+    assert len(service.networks) == 1
+
+    network = service.networks[0]
+    assert network.name == "NeutronNet 0"
+    assert network.node_template_type == "org.openecomp.resource.vl.nodes.heat.network.neutron.Net"
 
 @mock.patch.object(Service, '_unzip_csar_file')
 def test_tosca_template_no_tosca_model(mock_unzip):

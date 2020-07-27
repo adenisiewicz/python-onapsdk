@@ -6,7 +6,7 @@ import os
 
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
-from onapsdk.service import Service
+from onapsdk.sdc.service import Service
 
 
 class Clamp(Onap):

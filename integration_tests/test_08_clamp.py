@@ -7,7 +7,7 @@ import pytest
 
 import requests
 
-from onapsdk.service import Service
+from onapsdk.sdc.service import Service
 from onapsdk.clamp.clamp_element import Clamp
 from onapsdk.clamp.loop_instance import LoopInstance
 

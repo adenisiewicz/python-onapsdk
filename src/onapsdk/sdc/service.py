@@ -629,7 +629,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes
                f"resourceInstance/{missing_identifier}/artifacts")
         template = jinja_env().get_template("add_artifact_to_vf.json.j2")
         data = template.render(artifact_name=artifact_name,
-                               artifact_label=f"sdk{artifact_name}",
+                               artifact_label=f"sdk{artifact_name[:-5]}",#rm file extension
                                artifact_type=artifact_type,
                                b64_artifact=base64.b64encode(artifact))
         headers = headers_sdc_artifact_upload(base_header=self.headers,

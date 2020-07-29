@@ -17,7 +17,7 @@ from onapsdk.utils.jinja import jinja_env
 
 # For an unknown reason, pylint keeps seeing _unique_uuid and
 # _unique_identifier as attributes along with unique_uuid and unique_identifier
-class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
+class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes, too-many-public-methods
     """Mother Class of all SDC resources."""
 
     RESOURCE_PATH = 'resources'
@@ -391,6 +391,24 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
                 get_input_values=property_data.get("getInputValues"),
             )
 
+    def get_property(self, property_name: str) -> Property:
+        """Get resource property by it's name.
+
+        Args:
+            property_name (str): property name
+
+        Raises:
+            AttributeError: Resource has no property with given name
+
+        Returns:
+            Property: Resource's property object
+
+        """
+        for property_obj in self.properties:
+            if property_obj.name == property_name:
+                return property_obj
+        raise AttributeError("Resource has no property with %s name" % property_name)
+
     @property
     def resource_inputs_url(self) -> str:
         """Resource inputs url.
@@ -471,7 +489,42 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
                  "filteredDataByParams?include=metadata"),
                 exception=AttributeError)["metadata"])
             yield Component.create_from_api_response(api_response=component_instance,
-                                                     sdc_resource=sdc_resource)
+                                                     sdc_resource=sdc_resource,
+                                                     parent_sdc_resource=self)
+
+    def get_component_properties_url(self, component: "Component") -> str:
+        """Url to get component's properties.
+
+        This method is here because component can have different url when
+            it's a component of another SDC resource type, eg. for service and
+            for VF components have different urls.
+
+        Args:
+            component (Component): Component object to prepare url for
+
+        Returns:
+            str: Component's properties url
+
+        """
+        return (f"{self.resource_inputs_url}/"
+                f"componentInstances/{component.unique_id}/properties")
+
+    def get_component_properties_value_set_url(self, component: "Component") -> str:
+        """Url to set component property value.
+
+        This method is here because component can have different url when
+            it's a component of another SDC resource type, eg. for service and
+            for VF components have different urls.
+
+        Args:
+            component (Component): Component object to prepare url for
+
+        Returns:
+            str: Component's properties url
+
+        """
+        return (f"{self.resource_inputs_url}/"
+                f"resourceInstance/{component.unique_id}/properties")
 
     def is_own_property(self, property_to_check: Property) -> bool:
         """Check if given property is one of the resource's properties.
@@ -593,3 +646,29 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes
                                         property=property_to_add
                                     ),
                                exception=ValueError)
+
+    def set_property_value(self, property_obj: Property, value: Any) -> None:
+        """Set property value.
+
+        Set given value to resource property
+
+        Args:
+            property_obj (Property): Property object
+            value (Any): Property value to set
+
+        """
+        if not self.is_own_property(property_obj):
+            raise ValueError("Given property is not a resource's property")
+        self._logger.debug("Set %s property value", property_obj.name)
+        self.send_message_json("PUT",
+                               f"Set {property_obj.name} value to {value}",
+                               self.add_property_url,
+                               data=jinja_env().get_template(
+                                   "sdc_resource_set_property_value.json.j2").\
+                                    render(
+                                        sdc_resource=self,
+                                        property=property_obj,
+                                        value=value
+                                    ),
+                               exception=ValueError
+                               )

@@ -142,12 +142,7 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
         elif self.status == const.DRAFT:
             if not any([self.resources, self._properties_to_add]):
                 raise ValueError("No resources nor properties were given")
-            for resource in self.resources:
-                self.add_resource(resource)
-            for property_to_add in self._properties_to_add:
-                self.add_property(property_to_add)
-            for input_to_add in self._inputs_to_add:
-                self.declare_input(input_to_add)
+            self.declare_resources_and_properties()
             self.checkin()
             time.sleep(self._time_wait)
             self.onboard()
@@ -371,6 +366,19 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
             return None
         self._logger.error("Service is not in Draft mode")
         return None
+
+    def declare_resources_and_properties(self) -> None:
+        """Delcare resources and properties.
+
+        It declares also inputs.
+
+        """
+        for resource in self.resources:
+            self.add_resource(resource)
+        for property_to_add in self._properties_to_add:
+            self.add_property(property_to_add)
+        for input_to_add in self._inputs_to_add:
+            self.declare_input(input_to_add)
 
     def checkin(self) -> None:
         """Checkin Service."""
@@ -672,3 +680,37 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
             self._logger.error(("an error occured during file upload for an Artifact"
                                 "to VNF %s"), vnf_name)
             raise ValueError("Couldn't upload the artifact")
+
+    def get_component_properties_url(self, component: "Component") -> str:
+        """Url to get component's properties.
+
+        This method is here because component can have different url when
+            it's a component of another SDC resource type, eg. for service and
+            for VF components have different urls.
+
+        Args:
+            component (Component): Component object to prepare url for
+
+        Returns:
+            str: Component's properties url
+
+        """
+        return (f"{self.resource_inputs_url}/"
+                f"componentInstances/{component.unique_id}/{component.actual_component_uid}/inputs")
+
+    def get_component_properties_value_set_url(self, component: "Component") -> str:
+        """Url to set component property value.
+
+        This method is here because component can have different url when
+            it's a component of another SDC resource type, eg. for service and
+            for VF components have different urls.
+
+        Args:
+            component (Component): Component object to prepare url for
+
+        Returns:
+            str: Component's properties url
+
+        """
+        return (f"{self.resource_inputs_url}/"
+                f"resourceInstance/{component.unique_id}/inputs")

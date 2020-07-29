@@ -1022,3 +1022,28 @@ def test_sdc_resource_is_own_property(mock_send_json):
     )
     assert sdc_resource.is_own_property(prop1)
     assert not sdc_resource.is_own_property(prop2)
+
+@mock.patch.object(SdcResource, "properties", new_callable=mock.PropertyMock)
+@mock.patch.object(SdcResource, "send_message_json")
+def test_sdc_resource_set_property_value(mock_send_message_json, mock_sdc_resource_properties):
+    sdc_resource = SdcResource(name="test")
+    sdc_resource.unique_identifier = "toto"
+
+    mock_sdc_resource_properties.return_value = [
+        Property(name="test",
+                 property_type="string",
+                 sdc_resource=sdc_resource)
+    ]
+    with pytest.raises(ValueError):
+        sdc_resource.set_property_value(Property(name="test2",
+                                                 property_type="integer",
+                                                 sdc_resource=sdc_resource),
+                                        value="lalala")
+    prop = sdc_resource.get_property(property_name="test")
+    assert prop.name == "test"
+    assert prop.property_type == "string"
+    assert not prop.value
+
+    prop.value = "test"
+    mock_send_message_json.assert_called_once()
+    assert prop.value == "test"

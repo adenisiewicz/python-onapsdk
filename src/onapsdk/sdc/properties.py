@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Service properties module."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 
@@ -121,4 +121,45 @@ class Property:  # pylint: disable=too-many-instance-attributes, too-few-public-
 
     @value.setter
     def value(self, val: Any) -> Any:
+        if self.sdc_resource:
+            self.sdc_resource.set_property_value(self, val)
+        self._value = val
+
+
+@dataclass
+class ComponentProperty:
+    """Component property dataclass.
+
+    Component properties are inputs objects in SDC, but in logic
+        it's a property.
+
+    """
+
+    unique_id: str
+    property_type: str
+    name: str
+    component: "Component"
+    _value: Optional[Any] = field(repr=False, default=None)
+
+    @property
+    def value(self) -> Any:
+        """Property value getter.
+
+        Returns:
+            Any: Property value
+
+        """
+        return self._value
+
+    @value.setter
+    def value(self, val: Any) -> None:
+        """Property value setter.
+
+        Set value both in an object and in SDC using it's HTTP API.
+
+        Args:
+            val (Any): Property value to set
+
+        """
+        self.component.set_property_value(self, val)
         self._value = val

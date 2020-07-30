@@ -27,7 +27,7 @@ class Vf(SdcResource):
 
     """
 
-    def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,
+    def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,  # pylint: disable=too-many-arguments
                  vsp: Vsp = None, properties: List[Property] = None,
                  inputs: Union[Property, NestedInput] = None):
         """

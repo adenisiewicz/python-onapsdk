@@ -13,9 +13,34 @@ class Input:
     unique_id: str
     input_type: str
     name: str
-    default_value: Optional[Any] = None
-    value: Optional[Any] = None
+    sdc_resource: "SdcResource"
+    _default_value: Optional[Any] = field(repr=False, default=None)
 
+    @property
+    def default_value(self) -> Any:
+        """Input default value.
+
+        Returns:
+            Any: Input default value
+
+        """
+        return self._default_value
+
+    @default_value.setter
+    def default_value(self, value: Any) -> None:
+        """Set input default value.
+
+        Use related sdc_resource "set_input_default_value"
+            method to set default value in SDC. We use that
+            because different types of SDC resources has different
+            urls to call SDC API.
+
+        Args:
+            value (Any): Default value to set
+
+        """
+        self.sdc_resource.set_input_default_value(self, value)
+        self._default_value = value
 
 @dataclass
 class NestedInput:

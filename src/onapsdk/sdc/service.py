@@ -328,6 +328,17 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
         return (f"{self._base_create_url()}/services/"
                 f"{self.unique_identifier}")
 
+    @property
+    def set_input_default_value_url(self) -> str:
+        """Url to set input default value.
+
+        Returns:
+            str: SDC API url used to set input default value
+
+        """
+        return (f"{self._base_create_url()}/services/"
+                f"{self.unique_identifier}/update/inputs")
+
     def create(self) -> None:
         """Create the Service in SDC if not already existing."""
         self._create("service_create.json.j2", name=self.name)

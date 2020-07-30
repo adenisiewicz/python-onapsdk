@@ -353,10 +353,12 @@ def test_get_input(mock_inputs):
     mock_inputs.return_value = [
         Input(unique_id="123",
               input_type="integer",
-              name="test"),
+              name="test",
+              sdc_resource=sdc_resource),
         Input(unique_id="321",
               input_type="string",
-              name="test2")
+              name="test2",
+              sdc_resource=sdc_resource)
     ]
     assert sdc_resource.get_input("test")
     assert sdc_resource.get_input("test2")

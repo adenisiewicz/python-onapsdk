@@ -366,6 +366,17 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes, to
                 f"{self.unique_identifier}/properties")
 
     @property
+    def set_input_default_value_url(self) -> str:
+        """Url to set input default value.
+
+        Returns:
+            str: SDC API url used to set input default value
+
+        """
+        return (f"{self._base_create_url()}/resources/"
+                f"{self.unique_identifier}/update/inputs")
+
+    @property
     def properties(self) -> Iterator[Property]:
         """SDC resource properties.
 
@@ -445,7 +456,8 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes, to
                 unique_id=input_data["uniqueId"],
                 input_type=input_data["type"],
                 name=input_data["name"],
-                default_value=input_data.get("defaultValue")
+                sdc_resource=self,
+                _default_value=input_data.get("defaultValue")
             )
 
     def get_input(self, input_name: str) -> Input:
@@ -669,6 +681,30 @@ class SdcResource(SDC, ABC):  # pylint: disable=too-many-instance-attributes, to
                                         sdc_resource=self,
                                         property=property_obj,
                                         value=value
+                                    ),
+                               exception=ValueError
+                               )
+
+    def set_input_default_value(self, input_obj: Input, default_value: Any) -> None:
+        """Set input default value.
+
+        Set given value as input default value
+
+        Args:
+            input_obj (Input): Input object
+            value (Any): Default value to set
+
+        """
+        self._logger.debug("Set %s input default value", input_obj.name)
+        self.send_message_json("POST",
+                               f"Set {input_obj.name} default value to {default_value}",
+                               self.set_input_default_value_url,
+                               data=jinja_env().get_template(
+                                   "sdc_resource_set_input_default_value.json.j2").\
+                                    render(
+                                        sdc_resource=self,
+                                        input=input_obj,
+                                        default_value=default_value
                                     ),
                                exception=ValueError
                                )

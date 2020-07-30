@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from onapsdk.sdc.properties import Property
+from onapsdk.sdc.properties import Input, Property
 from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.sdc.service import Service
 from onapsdk.sdc.vf import Vf
@@ -1047,3 +1047,22 @@ def test_sdc_resource_set_property_value(mock_send_message_json, mock_sdc_resour
     prop.value = "test"
     mock_send_message_json.assert_called_once()
     assert prop.value == "test"
+
+@mock.patch.object(SdcResource, "inputs", new_callable=mock.PropertyMock)
+@mock.patch.object(SdcResource, "send_message_json")
+def test_sdc_resource_input_default_value(mock_send_message_json, mock_inputs):
+    sdc_resource = SdcResource(name="test")
+    sdc_resource.unique_identifier = "toto"
+
+    mock_inputs.return_value = [
+        Input(unique_id="123",
+              input_type="integer",
+              name="test",
+              sdc_resource=sdc_resource)
+    ]
+    assert sdc_resource.get_input("test")
+    input_obj = sdc_resource.get_input("test")
+    assert not input_obj.default_value
+    input_obj.default_value = "123"
+    mock_send_message_json.assert_called_once()
+    assert input_obj.default_value == "123"

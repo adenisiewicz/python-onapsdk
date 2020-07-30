@@ -992,3 +992,17 @@ def test_component_property_set_value(mock_component_properties):
 
     prop1.value = "123"
     mock_sdc_resource.send_message_json.assert_called_once()
+
+@mock.patch.object(Service, "add_resource")
+@mock.patch.object(Service, "add_property")
+@mock.patch.object(Service, "declare_input")
+def test_declare_resources_and_properties(mock_declare_input, mock_add_property, mock_add_resource):
+
+    service = Service(name="test",
+                      resources=[SdcResource()],
+                      properties=[Property(name="test", property_type="string")],
+                      inputs=[Property(name="test", property_type="string")])
+    service.declare_resources_and_properties()
+    mock_add_resource.assert_called_once()
+    mock_add_property.assert_called_once()
+    mock_declare_input.assert_called_once()

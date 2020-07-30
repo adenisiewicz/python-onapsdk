@@ -67,10 +67,11 @@ def test_vf_properties():
         os.path.dirname(os.path.abspath(__file__))), 'rb'))
     vsp.vendor = vendor
     vsp.onboard()
+    prop = Property(name="test1", property_type="string", value="123")
     vf = Vf(name="test", vsp=vsp, properties=[
-        Property(name="test1", property_type="string", value="123"),
-        Property(name="test2", property_type="integer", declare_input=True)
-    ])
+        prop,
+        Property(name="test2", property_type="integer")],
+        inputs=[prop])
     vf.onboard()
     vf_properties = list(vf.properties)
     vf_inputs = list(vf.inputs)

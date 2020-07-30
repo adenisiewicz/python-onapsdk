@@ -99,10 +99,11 @@ def test_service_properties():
     vsp.onboard()
     vf = Vf(name='test', vsp=vsp)
     vf.onboard()
-    svc = Service(name='test', resources=[vf], properties=[
+    properties = [
         Property(name="test1", property_type="string", value="123"),
-        Property(name="test2", property_type="integer", declare_input=True)
-    ])
+        Property(name="test2", property_type="integer")
+    ]
+    svc = Service(name='test', resources=[vf], properties=properties, inputs=[properties[1]])
     svc.onboard()
     service_properties = list(svc.properties)
     service_inputs = list(svc.inputs)

@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Vf module."""
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import time
 from onapsdk.sdc.sdc_resource import SdcResource
-from onapsdk.sdc.properties import Property
+from onapsdk.sdc.properties import NestedInput, Property
 from onapsdk.sdc.vsp import Vsp
 import onapsdk.constants as const
 
@@ -28,7 +28,8 @@ class Vf(SdcResource):
     """
 
     def __init__(self, name: str = None, sdc_values: Dict[str, str] = None,
-                 vsp: Vsp = None, properties: List[Property] = None):
+                 vsp: Vsp = None, properties: List[Property] = None,
+                 inputs: Union[Property, NestedInput] = None):
         """
         Initialize vf object.
 
@@ -36,7 +37,7 @@ class Vf(SdcResource):
             name (optional): the name of the vf
 
         """
-        super().__init__(sdc_values=sdc_values, properties=properties)
+        super().__init__(sdc_values=sdc_values, properties=properties, inputs=inputs)
         self.name: str = name or "ONAP-test-VF"
         self.vsp: Vsp = vsp or None
         self._time_wait: int = 10
@@ -63,6 +64,8 @@ class Vf(SdcResource):
         elif self.status == const.DRAFT:
             for property_to_add in self._properties_to_add:
                 self.add_property(property_to_add)
+            for input_to_add in self._inputs_to_add:
+                self.declare_input(input_to_add)
             self.submit()
             time.sleep(self._time_wait)
             self.onboard()

@@ -50,20 +50,22 @@ Onboard a VF with properties assignement
 
    # We assume here that the VSP has been already onboarded
    vsp = Vsp(name="myVSP")
+   property_1 = Property(
+      name="prop1",
+      property_type="string",
+      value="test"
+   )
+   property_2 = Property(
+      name="prop2",
+      property_type="integer"
+   )
    vf = Vf(name="myVF",
            vsp=vsp,
            properties=[
-              Property(
-                 name="prop1",
-                 property_type="string",
-                 value="test"
-              ),
-              Property(
-                 name="prop2",
-                 property_type="integer",
-                 declare_input=True
-              )
-           ])
+              property_1,
+              property_2
+           ],
+           inputs=[property_1])
    vf.onboard()
 
 Onboard a Service
@@ -90,20 +92,23 @@ Onboard a Service with properties assignement
 
    # We assume here that the VF has been already onboarded
    vf = Vf(name="myVF")
+   property_1 = Property(
+      name="prop1",
+      property_type="string",
+      value="test"
+   )
+   property_2 = Property(
+      name="prop2",
+      property_type="integer",
+      declare_input=True
+   )
    service = Service(name="myService",
                      resources=[vf],
                      properties=[
-                        Property(
-                           name="prop1",
-                           property_type="string",
-                           value="test"
-                        ),
-                        Property(
-                           name="prop2",
-                           property_type="integer",
-                           declare_input=True
-                        )
-                     ])
+                        property_1,
+                        property_2
+                     ],
+                     inputs=[property_1])
    service.onboard()
 
 Onboard a Service with VL

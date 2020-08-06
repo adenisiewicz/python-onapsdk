@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Control Loop module."""
-import time
 import os
 import json
 from jsonschema import validate, ValidationError
@@ -133,10 +132,6 @@ class LoopInstance(Clamp):
                                                   cert=self._cert)
         if  instance_details:
             self.details = instance_details
-            '''
-            if len(self.details["microServicePolicies"]) > 0:
-                return True
-            '''
         else:
             raise ValueError("Couldn't create the instance")
 
@@ -161,7 +156,7 @@ class LoopInstance(Clamp):
         if self.details["operationalPolicies"] is None:
             self.details["operationalPolicies"] = []
         if (add_response and (len(add_response["operationalPolicies"]) > len(
-            self.details["operationalPolicies"]))):
+                self.details["operationalPolicies"]))):
             self.details = add_response
         else:
             raise ValueError("Couldn't add the operational policy")
@@ -343,7 +338,6 @@ class LoopInstance(Clamp):
                           url,
                           cert=self._cert,
                           exception=ValueError)
-        deploy = False
         self.validate_details()
         state = self.details["components"]["DCAE"]["componentState"]["stateName"]
         failure = "MICROSERVICE_INSTALLATION_FAILED"
@@ -352,7 +346,7 @@ class LoopInstance(Clamp):
             self.refresh_status()
             self.validate_details()
             state = self.details["components"]["DCAE"]["componentState"]["stateName"]
-        return (state == success)
+        return state == success
 
     def undeploy_microservice_from_dcae(self) -> None:
         """Stop the deploy operation."""
@@ -367,8 +361,8 @@ class LoopInstance(Clamp):
         """Delete the loop instance."""
         self._logger.debug("Delete %s loop instance", self.name)
         url = "{}/loop/delete/{}".format(self.base_url(), self.name)
-        request = self.send_message('PUT',
-                                    'Delete loop instance',
-                                    url,
-                                    cert=self._cert,
-                                    exception=ValueError)
+        self.send_message('PUT',
+                          'Delete loop instance',
+                          url,
+                          cert=self._cert,
+                          exception=ValueError)

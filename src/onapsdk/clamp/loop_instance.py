@@ -18,7 +18,15 @@ class LoopInstance(Clamp):
     _loop_schema = None
     operational_policies = ""
     def __init__(self, template: str, name: str, details: dict) -> None:
-        """Initialize the object."""
+        """
+        Initialize loop instance object.
+
+        Args:
+            template (str): template from which we build the loop
+            name (str) : loop creation name
+            details (dict) : dictionnary containing all loop details
+
+        """
         super().__init__()
         self.template = template
         self.name = name
@@ -47,7 +55,7 @@ class LoopInstance(Clamp):
             the dictionnary of loop details
 
         """
-        url = "{}/loop/{}".format(self.base_url(), self.name)
+        url = f"{self.base_url()}/loop/{self.name}"
         loop_details = self.send_message_json('GET',
                                               'Get loop details',
                                               url,
@@ -56,25 +64,23 @@ class LoopInstance(Clamp):
             return loop_details
         raise ValueError("Couldn't get the appropriate details")
 
-    def refresh_status(self) -> dict:
+    def refresh_status(self) -> None:
         """
         Reshresh loop status.
 
         Raises:
             ValueError : error occured while refreshing the loop status
 
-        Returns:
-            the dictionnary of loop details
-
         """
-        url = "{}/loop/getstatus/{}".format(self.base_url(), self.name)
+        url = f"{self.base_url()}/loop/getstatus/{self.name}"
         loop_details = self.send_message_json('GET',
                                               'Get loop status',
                                               url,
                                               cert=self._cert)
         if loop_details:
-            return loop_details
-        raise ValueError("Couldn't get the appropriate status")
+            self.details = loop_details
+        else:
+            raise ValueError("Couldn't get the appropriate status")
 
     @property
     def loop_schema(self) -> dict:
@@ -86,20 +92,15 @@ class LoopInstance(Clamp):
 
         """
         if not self._loop_schema:
-            #relative path doesn't work
             _root = os.getcwd().rsplit('/onapsdk')[0]
             schema_file = _root +"/src/onapsdk/clamp/schema_details.json"
             with open(schema_file, "rb") as plan:
-                json_schema = json.load(plan)
-                self._loop_schema = json_schema
+                self._loop_schema = json.load(plan)
         return self._loop_schema
 
     def validate_details(self) -> bool:
         """
         Validate Loop Instance details.
-
-        Raises:
-            ValidationError : error occured while validating the loop status
 
         Returns:
             schema validation status (True, False)
@@ -116,31 +117,30 @@ class LoopInstance(Clamp):
             return False
         return True
 
-    def create(self) -> bool:
+    def create(self) -> None:
         """
         Create instance and load loop details.
 
         Raises:
             ValueError : error occured while creating the loop
 
-        Returns:
-            loop creation status (True, False)
-
         """
         self.name = "LOOP_" + self.name
-        url = "{}/loop/create/{}?templateName={}".\
-              format(self.base_url(), self.name, self.template)
+        url = f"{self.base_url()}/loop/create/{self.name}?templateName={self.template}"
         instance_details = self.send_message_json('POST',
                                                   'Create Loop Instance',
                                                   url,
                                                   cert=self._cert)
         if  instance_details:
             self.details = instance_details
+            '''
             if len(self.details["microServicePolicies"]) > 0:
                 return True
-        raise ValueError("Couldn't create the instance")
+            '''
+        else:
+            raise ValueError("Couldn't create the instance")
 
-    def add_operational_policy(self, policy_type: str, policy_version: str) -> bool:
+    def add_operational_policy(self, policy_type: str, policy_version: str) -> None:
         """
         Add operational policy to the loop instance.
 
@@ -151,23 +151,20 @@ class LoopInstance(Clamp):
         Raises:
             ValueError : Couldn't add the operational policy
 
-        Returns:
-            operational policy add status (True, False)
-
         """
-        url = "{}/loop/addOperationaPolicy/{}/policyModel/{}/{}".\
-              format(self.base_url(), self.name, policy_type, policy_version)
+        url = (f"{self.base_url()}/loop/addOperationaPolicy/{self.name}/"
+               f"policyModel/{policy_type}/{policy_version}")
         add_response = self.send_message_json('PUT',
                                               'Create Operational Policy',
                                               url,
                                               cert=self._cert)
         if self.details["operationalPolicies"] is None:
             self.details["operationalPolicies"] = []
-        nb_policies = len(self.details["operationalPolicies"])
-        if (add_response and (len(add_response["operationalPolicies"]) > nb_policies)):
+        if (add_response and (len(add_response["operationalPolicies"]) > len(
+            self.details["operationalPolicies"]))):
             self.details = add_response
-            return True
-        raise ValueError("Couldn't add the operational policy")
+        else:
+            raise ValueError("Couldn't add the operational policy")
 
     def remove_operational_policy(self, policy_type: str, policy_version: str) -> None:
         """
@@ -178,14 +175,13 @@ class LoopInstance(Clamp):
             policy_version (str): policy version
 
         """
-        url = "{}/loop/removeOperationaPolicy/{}/policyModel/{}/{}".\
-              format(self.base_url(), self.name, policy_type, policy_version)
-        response = self.send_message_json('PUT',
-                                          'Remove Operational Policy',
-                                          url,
-                                          cert=self._cert,
-                                          exception=ValueError)
-        self.details = response
+        url = (f"{self.base_url()}/loop/removeOperationaPolicy/"
+               f"{self.name}/policyModel/{policy_type}/{policy_version}")
+        self.details = self.send_message_json('PUT',
+                                              'Remove Operational Policy',
+                                              url,
+                                              cert=self._cert,
+                                              exception=ValueError)
 
     def update_microservice_policy(self) -> None:
         """
@@ -197,7 +193,7 @@ class LoopInstance(Clamp):
             ValueError : Couldn't update microservice policy
 
         """
-        url = "{}/loop/updateMicroservicePolicy/{}".format(self.base_url(), self.name)
+        url = f"{self.base_url()}/loop/updateMicroservicePolicy/{self.name}"
         template = jinja_env().get_template("clamp_add_tca_config.json.j2")
         microservice_name = self.details["globalPropertiesJson"]["dcaeDeployParameters"]\
                                         ["uniqueBlueprintParameters"]["policy_id"]
@@ -262,16 +258,14 @@ class LoopInstance(Clamp):
         """Add MinMax operational policy config."""
         #must configure start/end time and min/max instances in json file
         template = jinja_env().get_template("clamp_MinMax_config.json.j2")
-        data = template.render(name=self.extract_operational_policy_name("MinMax"))
-        return data
+        return template.render(name=self.extract_operational_policy_name("MinMax"))
 
     def add_frequency_limiter(self, limit: int = 1) -> None:
         """Add frequency limiter config."""
         template = jinja_env().get_template("clamp_add_frequency.json.j2")
-        data = template.render(name=self.extract_operational_policy_name("FrequencyLimiter"),
+        return template.render(name=self.extract_operational_policy_name("FrequencyLimiter"),
                                LOOP_name=self.name,
                                limit=limit)
-        return data
 
     def add_op_policy_config(self, func, **kwargs) -> None:
         """
@@ -295,18 +289,20 @@ class LoopInstance(Clamp):
             self.operational_policies = self.operational_policies[:-1] + ","
             data = data[1:]
         self.operational_policies += data
-        url = "{}/loop/updateOperationalPolicies/{}".format(self.base_url(), self.name)
+        url = f"{self.base_url()}/loop/updateOperationalPolicies/{self.name}"
         upload_result = self.send_message('POST',
                                           'ADD operational policy config',
                                           url,
                                           data=self.operational_policies,
-                                          cert=self._cert)
+                                          cert=self._cert,
+                                          exception=ValueError)
         if upload_result:
             self._logger.info(("Files for op policy config %s have been uploaded to loop's"
                                "Op policy"), self.name)
         else:
             self._logger.error(("an error occured during file upload for config to loop's"
                                 " Op policy %s"), self.name)
+            raise ValueError("Couldn't add the operational policy configuration")
 
     def act_on_loop_policy(self, action: str) -> bool:
         """
@@ -319,7 +315,7 @@ class LoopInstance(Clamp):
             action state : failed or done
 
         """
-        url = "{}/loop/{}/{}".format(self.base_url(), action, self.name)
+        url = f"{self.base_url()}/loop/{action}/{self.name}"
         self.send_message('PUT',
                           f'{action} policy',
                           url,
@@ -327,7 +323,7 @@ class LoopInstance(Clamp):
                           exception=ValueError)
         self.validate_details()
         old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-        self.details = self.refresh_status()
+        self.refresh_status()
         self.validate_details()
         new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
         action_done = (new_state != old_state and not(action != "stop" and new_state == "SENT"))
@@ -341,7 +337,7 @@ class LoopInstance(Clamp):
             loop deploy on DCAE status (True, False)
 
         """
-        url = "{}/loop/deploy/{}".format(self.base_url(), self.name)
+        url = f"{self.base_url()}/loop/deploy/{self.name}"
         self.send_message('PUT',
                           'Deploy microservice to DCAE',
                           url,
@@ -353,24 +349,21 @@ class LoopInstance(Clamp):
         failure = "MICROSERVICE_INSTALLATION_FAILED"
         success = "MICROSERVICE_INSTALLED_SUCCESSFULLY"
         while state not in (success, failure):
-            #modify the time sleep for loop refresh approximately 6 seconds
-            time.sleep(0)
-            self.details = self.refresh_status()
+            self.refresh_status()
             self.validate_details()
             state = self.details["components"]["DCAE"]["componentState"]["stateName"]
-        deploy = (state == success)
-        return deploy
+        return (state == success)
 
     def undeploy_microservice_from_dcae(self) -> None:
         """Stop the deploy operation."""
-        url = "{}/loop/undeploy/{}".format(self.base_url(), self.name)
+        url = f"{self.base_url()}/loop/undeploy/{self.name}"
         self.send_message('PUT',
                           'Undeploy microservice from DCAE',
                           url,
                           cert=self._cert,
                           exception=ValueError)
 
-    def delete(self):
+    def delete(self) -> None:
         """Delete the loop instance."""
         self._logger.debug("Delete %s loop instance", self.name)
         url = "{}/loop/delete/{}".format(self.base_url(), self.name)
@@ -379,4 +372,3 @@ class LoopInstance(Clamp):
                                     url,
                                     cert=self._cert,
                                     exception=ValueError)
-        return request

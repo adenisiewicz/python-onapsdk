@@ -48,13 +48,10 @@ def test_Loop_customization():
     response = requests.post("{}/reset".format(Clamp._base_url))
     response.raise_for_status()
     loop = LoopInstance(template=loop_template, name="instance01", details={})
-    details = loop.create()
-    assert details
     loop.update_microservice_policy()
     #add op policy FrequencyLimiter that already exists in clamp
-    added = loop.add_operational_policy(policy_type="onap.policies.controlloop.guard.common.FrequencyLimiter",
-                                        policy_version="1.0.0")
-    assert added
+    loop.add_operational_policy(policy_type="onap.policies.controlloop.guard.common.FrequencyLimiter",
+                                policy_version="1.0.0")
     #only frequency configuration is available in mock clamp
     loop.add_op_policy_config(loop.add_frequency_limiter, limit=1)
     submit = loop.act_on_loop_policy(action="submit")

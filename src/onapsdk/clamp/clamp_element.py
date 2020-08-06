@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
-import os
 
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
@@ -15,12 +14,11 @@ class Clamp(Onap):
     #class variable
     _base_url = settings.CLAMP_URL
     _cert: tuple = None
-    clamp_dir = os.getcwd().rsplit('/onapsdk')[0]+"/src/onapsdk/clamp/"
 
     @classmethod
     def base_url(cls) -> str:
         """Give back the base url of Clamp."""
-        return "{}/restservices/clds/v2".format(cls._base_url)
+        return f"{cls._base_url}/restservices/clds/v2"
 
     @classmethod
     def create_cert(cls) -> None:
@@ -43,12 +41,11 @@ class Clamp(Onap):
             if required template exists in CLAMP or not
 
         """
-        url = "{}/templates/".format(cls.base_url())
-        template_list = cls.send_message_json('GET',
+        url = f"{cls.base_url()}/templates/"
+        for template in cls.send_message_json('GET',
                                               'Get Loop Templates',
                                               url,
-                                              cert=cls._cert)
-        for template in template_list:
+                                              cert=cls._cert):
             if template["modelService"]["serviceDetails"]["name"] == service.name:
                 return template["name"]
         raise ValueError("Template not found")
@@ -66,7 +63,7 @@ class Clamp(Onap):
             if required policy exists in CLAMP or not
 
         """
-        url = "{}/policyToscaModels/".format(cls.base_url())
+        url = f"{cls.base_url()}/policyToscaModels/"
         policies = cls.send_message_json('GET',
                                          'Get stocked policies',
                                          url,

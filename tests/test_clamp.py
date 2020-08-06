@@ -376,13 +376,14 @@ def test_add_op_policy_config_error(mock_send_message, mock_extract):
     """Test Loop Instance add op policy configuration."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
     mock_send_message.return_value = False
-    #if u put a non cong function 
-    loop.add_op_policy_config(loop.add_frequency_limiter)
-    mock_send_message.assert_called_once() 
-    method, description, url = mock_send_message.call_args[0]
-    assert method == "POST"
-    assert description == "ADD operational policy config"
-    assert url == (f"{loop.base_url()}/loop/updateOperationalPolicies/{loop.name}")
+    #if u put a non cong function
+    with pytest.raises(ValueError):      
+        loop.add_op_policy_config(loop.add_frequency_limiter)
+        mock_send_message.assert_called_once() 
+        method, description, url = mock_send_message.call_args[0]
+        assert method == "POST"
+        assert description == "ADD operational policy config"
+        assert url == (f"{loop.base_url()}/loop/updateOperationalPolicies/{loop.name}")
 
 
 @mock.patch.object(LoopInstance, 'refresh_status')
@@ -390,7 +391,6 @@ def test_add_op_policy_config_error(mock_send_message, mock_extract):
 def test_submit_policy(mock_send_message, mock_refresh):
     """Test submit policies to policy engine."""
     loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_refresh.return_value = SUBMITED_POLICY
     action = loop.act_on_loop_policy("submit")
     mock_send_message.assert_called_once_with('PUT',
                                             'submit policy',
@@ -398,8 +398,9 @@ def test_submit_policy(mock_send_message, mock_refresh):
                                             cert=loop._cert,
                                             exception=ValueError)
     mock_refresh.assert_called_once()
+    loop.details = SUBMITED_POLICY
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT_AND_DEPLOYED"
-    assert action
+
 
 
 @mock.patch.object(LoopInstance, 'refresh_status')
@@ -415,40 +416,8 @@ def test_not_submited_policy(mock_send_message, mock_refresh):
                                             cert=loop._cert,
                                             exception=ValueError)
     mock_refresh.assert_called_once()
+    loop.details = NOT_SUBMITED_POLICY
     assert loop.details["components"]["POLICY"]["componentState"]["stateName"] == "SENT"
-    assert not action
-
-
-@mock.patch.object(LoopInstance, 'refresh_status')
-@mock.patch.object(LoopInstance, 'send_message')
-def test_submited_microservice_to_dcae(mock_send_message, mock_refresh):
-    """Test deploy microservice to DCAE."""
-    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_refresh.return_value = SUBMITED
-    deploy = loop.deploy_microservice_to_dcae()
-    mock_send_message.assert_called_once_with('PUT',
-                                            'Deploy microservice to DCAE',
-                                            (f"{loop.base_url()}/loop/deploy/LOOP_test"),
-                                            cert=loop._cert,
-                                            exception=ValueError)
-    assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLED_SUCCESSFULLY"
-    assert deploy
-
-
-@mock.patch.object(LoopInstance, 'refresh_status')
-@mock.patch.object(LoopInstance, 'send_message')
-def test_not_submited_microservice_to_dcae(mock_send_message, mock_refresh):
-    """Test deploy microservice to DCAE."""
-    loop = LoopInstance(template="template", name="LOOP_test", details=LOOP_DETAILS)
-    mock_refresh.return_value = NOT_SUBMITED
-    deploy = loop.deploy_microservice_to_dcae()
-    mock_send_message.assert_called_once_with('PUT',
-                                            'Deploy microservice to DCAE',
-                                            (f"{loop.base_url()}/loop/deploy/LOOP_test"),
-                                            cert=loop._cert,
-                                            exception=ValueError)
-    assert loop.details["components"]["DCAE"]["componentState"]["stateName"] == "MICROSERVICE_INSTALLATION_FAILED"
-    assert not deploy
 
 
 @mock.patch.object(LoopInstance, 'send_message')

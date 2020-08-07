@@ -296,21 +296,21 @@ class LoopInstance(Clamp):
             self._logger.error(("an error occured during file upload for config to loop's"
                                 " Op policy %s"), self.name)
             raise ValueError("Couldn't add the operational policy configuration")
-    
+
     def submit(self):
         """Submit policies to policy engine."""
-        new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-        return new_state == "SENT_AND_DEPLOYED"
+        state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+        return state == "SENT_AND_DEPLOYED"
 
     def stop(self):
         """Undeploy Policies from policy engine."""
-        new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-        return new_state == "SENT"
+        state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+        return state == "SENT"
 
     def restart(self):
         """Redeploy policies to policy engine."""
         state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-        return new_state == "SENT_AND_DEPLOYED"
+        return state == "SENT_AND_DEPLOYED"
 
     def act_on_loop_policy(self, func) -> bool:
         """

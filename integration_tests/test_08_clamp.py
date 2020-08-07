@@ -54,11 +54,11 @@ def test_Loop_customization():
                                 policy_version="1.0.0")
     #only frequency configuration is available in mock clamp
     loop.add_op_policy_config(loop.add_frequency_limiter, limit=1)
-    submit = loop.act_on_loop_policy(action="submit")
+    submit = loop.act_on_loop_policy(loop.submit)
     assert submit
-    stop = loop.act_on_loop_policy(action="stop")
+    stop = loop.act_on_loop_policy(loop.stop)
     assert stop
-    restart = loop.act_on_loop_policy(action="restart")
+    restart = loop.act_on_loop_policy(loop.restart)
     assert restart
     deploy = loop.deploy_microservice_to_dcae()
     assert deploy

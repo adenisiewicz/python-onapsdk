@@ -391,7 +391,7 @@ def test_add_op_policy_config_error(mock_send_message, mock_extract):
 def test_submit_policy(mock_send_message, mock_refresh):
     """Test submit policies to policy engine."""
     loop = LoopInstance(template="template", name="test", details=LOOP_DETAILS)
-    action = loop.act_on_loop_policy("submit")
+    action = loop.act_on_loop_policy(loop.submit)
     mock_send_message.assert_called_once_with('PUT',
                                             'submit policy',
                                             (f"{loop.base_url()}/loop/submit/LOOP_test"),
@@ -409,7 +409,7 @@ def test_not_submited_policy(mock_send_message, mock_refresh):
     """Test submit policies to policy engine."""
     loop = LoopInstance(template="template", name="test", details=LOOP_DETAILS)
     mock_refresh.return_value = NOT_SUBMITED_POLICY
-    action = loop.act_on_loop_policy("submit")
+    action = loop.act_on_loop_policy(loop.submit)
     mock_send_message.assert_called_once_with('PUT',
                                             'submit policy',
                                             (f"{loop.base_url()}/loop/submit/LOOP_test"),

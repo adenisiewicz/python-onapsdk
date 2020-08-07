@@ -296,31 +296,42 @@ class LoopInstance(Clamp):
             self._logger.error(("an error occured during file upload for config to loop's"
                                 " Op policy %s"), self.name)
             raise ValueError("Couldn't add the operational policy configuration")
+    
+    def submit(self):
+        """Submit policies to policy engine."""
+        new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+        return new_state == "SENT_AND_DEPLOYED"
 
-    def act_on_loop_policy(self, action: str) -> bool:
+    def stop(self):
+        """Undeploy Policies from policy engine."""
+        new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+        return new_state == "SENT"
+
+    def restart(self):
+        """Redeploy policies to policy engine."""
+        state = self.details["components"]["POLICY"]["componentState"]["stateName"]
+        return new_state == "SENT_AND_DEPLOYED"
+
+    def act_on_loop_policy(self, func) -> bool:
         """
         Act on loop's policy.
 
         Args:
-            action : action to be done from (submit, stop, restart)
+            func (function): function of action to be done (submit, stop, restart)
 
         Returns:
             action state : failed or done
 
         """
-        url = f"{self.base_url()}/loop/{action}/{self.name}"
+        url = f"{self.base_url()}/loop/{func.__name__}/{self.name}"
         self.send_message('PUT',
-                          f'{action} policy',
+                          f'{func.__name__} policy',
                           url,
                           cert=self._cert,
                           exception=ValueError)
-        self.validate_details()
-        old_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
         self.refresh_status()
         self.validate_details()
-        new_state = self.details["components"]["POLICY"]["componentState"]["stateName"]
-        action_done = (new_state != old_state and not(action != "stop" and new_state == "SENT"))
-        return action_done
+        return func()
 
     def deploy_microservice_to_dcae(self) -> bool:
         """

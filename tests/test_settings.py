@@ -10,7 +10,7 @@ from onapsdk.configuration.loader import SettingsLoader
 
 def test_global_settings():
     """Test global settings."""
-    assert len(settings._settings) == 11
+    assert len(settings._settings) == 10
     assert settings.AAI_URL == "https://aai.api.sparky.simpledemo.onap.org:30233"
     assert settings.CDS_URL == "https://portal.api.simpledemo.onap.org:30497"
     assert settings.SDNC_URL == "https://sdnc.api.simpledemo.onap.org:30267"

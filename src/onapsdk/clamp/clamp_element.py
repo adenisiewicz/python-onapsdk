@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
-
+from pathlib import Path
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.sdc.service import Service
@@ -24,7 +24,7 @@ class Clamp(Onap):
     def create_cert(cls) -> None:
         """Create certificate tuple."""
         #Must modify key from parameters to hide it
-        cls._cert = (settings.CERT_CERT, settings.CERT_KEY)
+        cls._cert = (settings.CERT / 'cert.pem', settings.CERT / 'cert.key')
 
     @classmethod
     def check_loop_template(cls, service: Service) -> str:

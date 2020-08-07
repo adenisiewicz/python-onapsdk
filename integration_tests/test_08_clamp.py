@@ -35,8 +35,7 @@ def test_Loop_creation():
     response = requests.post("{}/reset".format(Clamp._base_url))
     response.raise_for_status()
     loop = LoopInstance(template=loop_template, name="instance01", details={})
-    details = loop.create()
-    assert details
+    loop.create()
 
 @pytest.mark.integration
 def test_Loop_customization():
@@ -48,6 +47,7 @@ def test_Loop_customization():
     response = requests.post("{}/reset".format(Clamp._base_url))
     response.raise_for_status()
     loop = LoopInstance(template=loop_template, name="instance01", details={})
+    loop.create()
     loop.update_microservice_policy()
     #add op policy FrequencyLimiter that already exists in clamp
     loop.add_operational_policy(policy_type="onap.policies.controlloop.guard.common.FrequencyLimiter",

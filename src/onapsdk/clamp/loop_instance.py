@@ -28,7 +28,7 @@ class LoopInstance(Clamp):
         """
         super().__init__()
         self.template = template
-        self.name = name
+        self.name = "LOOP_" + name
         self._details = details
 
     @property
@@ -124,7 +124,6 @@ class LoopInstance(Clamp):
             ValueError : error occured while creating the loop
 
         """
-        self.name = "LOOP_" + self.name
         url = f"{self.base_url()}/loop/create/{self.name}?templateName={self.template}"
         instance_details = self.send_message_json('POST',
                                                   'Create Loop Instance',

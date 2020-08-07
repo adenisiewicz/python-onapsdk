@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Clamp module."""
-from pathlib import Path
 from onapsdk.configuration import settings
 from onapsdk.onap_service import OnapService as Onap
 from onapsdk.sdc.service import Service

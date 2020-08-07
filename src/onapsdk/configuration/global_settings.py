@@ -1,6 +1,6 @@
 """Global settings module."""  # pylint: disable=bad-whitespace
 
-import os
+from pathlib import Path
 
 ######################
 #                    #
@@ -24,5 +24,5 @@ CLAMP_URL   = "https://clamp.api.simpledemo.onap.org:30258"
 #                    #
 ######################
 
-CERT_CERT = os.getcwd().rsplit('/onapsdk')[0]+"/src/onapsdk/configuration/cert.pem"
-CERT_KEY  = os.getcwd().rsplit('/onapsdk')[0]+"/src/onapsdk/configuration/cert.key"
+CERT_CERT = Path.cwd() / 'src' / 'onapsdk' / 'configuration' / 'cert.pem'
+CERT_KEY  = Path.cwd() / 'src' / 'onapsdk' / 'configuration' / 'cert.key'

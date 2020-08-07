@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: Apache-2.0
 """Control Loop module."""
-import os
 import json
+from pathlib import Path
 from jsonschema import validate, ValidationError
 
 from onapsdk.clamp.clamp_element import Clamp
@@ -91,8 +91,7 @@ class LoopInstance(Clamp):
 
         """
         if not self._loop_schema:
-            _root = os.getcwd().rsplit('/onapsdk')[0]
-            schema_file = _root +"/src/onapsdk/clamp/schema_details.json"
+            schema_file = Path.cwd() / 'src' / 'onapsdk' / 'clamp' / 'schema_details.json'
             with open(schema_file, "rb") as plan:
                 self._loop_schema = json.load(plan)
         return self._loop_schema

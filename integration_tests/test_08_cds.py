@@ -12,8 +12,8 @@ from onapsdk.cds.data_dictionary import DataDictionarySet
 @pytest.mark.integration
 def test_cds_connection():
 
-    TEST_DD_PATH = os.path.join(os.getcwd(), "test_files/test_dd.json")
-    TEST_CBA_PATH = os.path.join(os.getcwd(), "test_files/test_vLB_CBA_Python.zip")
+    TEST_DD_PATH = os.path.join(os.getcwd(), "integration_tests/test_files/test_dd.json")
+    TEST_CBA_PATH = os.path.join(os.getcwd(), "integration_tests/test_files/test_vLB_CBA_Python.zip")
 
 
     # Endpoint availability

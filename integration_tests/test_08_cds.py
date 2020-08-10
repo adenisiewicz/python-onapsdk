@@ -50,20 +50,16 @@ def test_CDS_request():
 
     #  2. Write dd's to the server
     dd_set.upload()
-    # TODO test result
 
     #  3. Read Blueprint from  from a file
     blueprint = Blueprint.load_from_file(tmp_path_cba)
-    # TODO test result
+    assert type(blueprint.cba_file_bytes) == bytes
 
     #  4. Enrich and publish
     blueprint = blueprint.enrich()
-    assert blueprint.cba_file_bytes is not None
     assert type(blueprint.cba_file_bytes) == bytes
     
     blueprint.publish()
-    # TODO test result
-    # TODO add response?
 
     # #  5. Write enriched blueprint to a file
     with TemporaryDirectory() as tmpdirname:

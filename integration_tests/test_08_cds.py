@@ -1,5 +1,10 @@
 import pytest
 import requests
+import os
+
+from tempfile import TemporaryDirectory, TemporaryFile
+
+from onapsdk.configuration import settings
 
 from onapsdk.cds.blueprint import Blueprint, CbaMetadata, Mapping, MappingSet, Workflow
 from onapsdk.cds.cds_element import CdsElement
@@ -23,20 +28,19 @@ def test_CDS_request():
     CdsElement._url = "http://127.0.0.1:8080"
     tmp_path_dd = "C:\\Users\\IHalych\\Desktop\\Projects\\files\\dd.json"
     tmp_path_cba = "C:\\Users\\IHalych\\Desktop\\Projects\\files\\vLB_CBA_Python.zip"
-    save_blueprint_file = "C:\\Users\\IHalych\\Desktop\\Projects\\files\\saved_cba\\tmp_vLB_CBA_Python.zip"
 
     # 0. test URLs
-    response = requests.post("{}/api/v1/dictionary".format(CdsElement._url))
+    response = requests.post("{}/api/v1/dictionary".format(CdsElement._url)) # TODO replace URL: settings.CDS_URL
     json_response = response.json()
     assert response.status_code == 200
     assert json_response['success'] == True
     assert json_response is not None
 
-    response = requests.post("{}/api/v1/blueprint-model/enrich".format(CdsElement._url))
+    response = requests.post("{}/api/v1/blueprint-model/enrich".format(CdsElement._url)) # TODO replace URL: settings.CDS_URL
     assert response.status_code == 200
     assert type(response.content) == bytes
 
-    response = requests.post("{}/api/v1/blueprint-model/publish".format(CdsElement._url))
+    response = requests.post("{}/api/v1/blueprint-model/publish".format(CdsElement._url)) # TODO replace URL: settings.CDS_URL
     assert response.status_code == 200
     assert type(response.content) == bytes
 
@@ -62,5 +66,6 @@ def test_CDS_request():
     # TODO add response?
 
     # #  5. Write enriched blueprint to a file
-    blueprint.save(save_blueprint_file)
-    # TODO test result
+    with TemporaryDirectory() as tmpdirname:
+        path = os.path.join(tmpdirname, "test-CBA-enriched.zip")
+        blueprint.save(path)

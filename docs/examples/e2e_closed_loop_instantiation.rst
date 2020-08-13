@@ -63,7 +63,7 @@ E2E Instantiation of a Closed Loop
 
     loop = LoopInstance(template=loop_template, name=LOOP_INSTANCE_NAME, details={}, cert=CERT)
     loop.create()
-    if self.details:
+    if loop.details:
         logger.info("Loop instance %s successfully created !!", LOOP_INSTANCE_NAME)
     else:
         logger.error("An error occured while creating the loop instance")

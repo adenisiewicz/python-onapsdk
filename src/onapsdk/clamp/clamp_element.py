@@ -22,6 +22,7 @@ class Clamp(Onap):
             cert (tuple): certificate required for CLAMP authentification
 
         """
+        super().__init__(cls)
         cls.cert = cert
 
     @classmethod

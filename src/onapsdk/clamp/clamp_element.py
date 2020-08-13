@@ -12,18 +12,22 @@ class Clamp(Onap):
 
     #class variable
     _base_url = settings.CLAMP_URL
-    _cert: tuple = None
+
+    @classmethod
+    def __init__(cls, cert: tuple = None):
+        """
+        Initialize CLAMP object.
+
+        Args:
+            cert (tuple): certificate required for CLAMP authentification
+
+        """
+        cls.cert = cert
 
     @classmethod
     def base_url(cls) -> str:
         """Give back the base url of Clamp."""
         return f"{cls._base_url}/restservices/clds/v2"
-
-    @classmethod
-    def create_cert(cls) -> None:
-        """Create certificate tuple."""
-        #Must modify key from parameters to hide it
-        cls._cert = (settings.CERT / 'cert.pem', settings.CERT / 'cert.key')
 
     @classmethod
     def check_loop_template(cls, service: Service) -> str:
@@ -44,7 +48,7 @@ class Clamp(Onap):
         for template in cls.send_message_json('GET',
                                               'Get Loop Templates',
                                               url,
-                                              cert=cls._cert):
+                                              cert=cls.cert):
             if template["modelService"]["serviceDetails"]["name"] == service.name:
                 return template["name"]
         raise ValueError("Template not found")
@@ -66,7 +70,7 @@ class Clamp(Onap):
         policies = cls.send_message_json('GET',
                                          'Get stocked policies',
                                          url,
-                                         cert=cls._cert)
+                                         cert=cls.cert)
         exist_policy = False
         for policy in policies:
             if policy["policyAcronym"] == policy_name:

@@ -1,6 +1,5 @@
 """Global settings module."""  # pylint: disable=bad-whitespace
 
-from pathlib import Path
 
 ######################
 #                    #
@@ -17,11 +16,3 @@ SDNC_URL    = "https://sdnc.api.simpledemo.onap.org:30267"
 SO_URL      = "http://so.api.simpledemo.onap.org:30277"
 VID_URL     = "https://vid.api.simpledemo.onap.org:30200"
 CLAMP_URL   = "https://clamp.api.simpledemo.onap.org:30258"
-
-######################
-#                    #
-#   PATH SETTINGS    #
-#                    #
-######################
-
-CERT = Path.cwd() / 'src' / 'onapsdk' / 'configuration'

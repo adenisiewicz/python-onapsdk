@@ -18,6 +18,7 @@ E2E Instantiation of a Closed Loop
     SERVICE_NAME = "Test_SDK"
     POLICY_NAME = ["MinMax", "FrequencyLimiter"]
     LOOP_INSTANCE_NAME = "instance01"
+    CERT = (PEM, KEY) # you must add clamp cert for AUTHENTIFICATION
 
     Clamp.set_proxy({ 'http': 'socks5h://127.0.0.1:8080', 'https': 'socks5h://127.0.0.1:8080'})
     Service.set_proxy({ 'http': 'socks5h://127.0.0.1:8080', 'https': 'socks5h://127.0.0.1:8080'})
@@ -32,8 +33,7 @@ E2E Instantiation of a Closed Loop
     logger.info("******** CLAMP AUTHENTIFICATION *******")
     logger.info("***************************************")
 
-    clamp = Clamp()
-    Clamp.create_cert()
+    clamp = Clamp(cert=CERT)
 
     logger.info("*************************************")
     logger.info("******** LOOP TEMPLATES CHECK *******")
@@ -61,9 +61,9 @@ E2E Instantiation of a Closed Loop
     logger.info("******** LOOP INSTANTIATION *******")
     logger.info("***********************************")
 
-    loop = LoopInstance(template=loop_template, name=LOOP_INSTANCE_NAME, details={})
-    details = loop.create()
-    if details:
+    loop = LoopInstance(template=loop_template, name=LOOP_INSTANCE_NAME, details={}, cert=CERT)
+    loop.create()
+    if self.details:
         logger.info("Loop instance %s successfully created !!", LOOP_INSTANCE_NAME)
     else:
         logger.error("An error occured while creating the loop instance")
@@ -87,7 +87,7 @@ E2E Instantiation of a Closed Loop
     loop.add_op_policy_config(loop.add_frequency_limiter)
 
     logger.info("******** SUBMIT POLICIES TO PE *******")
-    submit = loop.act_on_loop_policy(action="submit")
+    submit = loop.act_on_loop_policy(loop.submit)
 
     logger.info("******** CHECK POLICIES SUBMITION *******")
     if submit :

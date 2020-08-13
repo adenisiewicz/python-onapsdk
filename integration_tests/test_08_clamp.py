@@ -15,7 +15,6 @@ from onapsdk.clamp.loop_instance import LoopInstance
 def test_Clamp_requirements():
     """Integration tests for Clamp."""
     requests.get("{}/reset".format(Clamp._base_url))
-    Clamp.create_cert()
     #no add resource in clamp
     #svc.name already exists in mock clamp
     svc = Service(name="service01")
@@ -29,7 +28,6 @@ def test_Clamp_requirements():
 def test_Loop_creation():
     """Integration tests for Loop Instance."""
     requests.get("{}/reset".format(Clamp._base_url))
-    Clamp.create_cert()
     svc = Service(name="service01")
     loop_template = Clamp.check_loop_template(service=svc)
     response = requests.post("{}/reset".format(Clamp._base_url))
@@ -41,7 +39,6 @@ def test_Loop_creation():
 def test_Loop_customization():
     """Integration tests for Loop Instance."""
     requests.get("{}/reset".format(Clamp._base_url))
-    Clamp.create_cert()
     svc = Service(name="service01")
     loop_template = Clamp.check_loop_template(service=svc)
     response = requests.post("{}/reset".format(Clamp._base_url))

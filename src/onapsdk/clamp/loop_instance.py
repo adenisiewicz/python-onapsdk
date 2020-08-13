@@ -16,7 +16,9 @@ class LoopInstance(Clamp):
     #class variable
     _loop_schema = None
     operational_policies = ""
-    def __init__(self, template: str, name: str, details: dict) -> None:
+
+    def __init__(self, template: str, name: str, details: dict,
+                 cert: tuple = None) -> None:
         """
         Initialize loop instance object.
 
@@ -24,9 +26,10 @@ class LoopInstance(Clamp):
             template (str): template from which we build the loop
             name (str) : loop creation name
             details (dict) : dictionnary containing all loop details
+            cert (tuple): certificate required for CLAMP authentification
 
         """
-        super().__init__()
+        super().__init__(cert=cert)
         self.template = template
         self.name = "LOOP_" + name
         self._details = details
@@ -58,7 +61,7 @@ class LoopInstance(Clamp):
         loop_details = self.send_message_json('GET',
                                               'Get loop details',
                                               url,
-                                              cert=self._cert)
+                                              cert=self.cert)
         if loop_details:
             return loop_details
         raise ValueError("Couldn't get the appropriate details")
@@ -75,7 +78,7 @@ class LoopInstance(Clamp):
         loop_details = self.send_message_json('GET',
                                               'Get loop status',
                                               url,
-                                              cert=self._cert)
+                                              cert=self.cert)
         if loop_details:
             self.details = loop_details
         else:
@@ -127,7 +130,7 @@ class LoopInstance(Clamp):
         instance_details = self.send_message_json('POST',
                                                   'Create Loop Instance',
                                                   url,
-                                                  cert=self._cert)
+                                                  cert=self.cert)
         if  instance_details:
             self.details = instance_details
         else:
@@ -150,7 +153,7 @@ class LoopInstance(Clamp):
         add_response = self.send_message_json('PUT',
                                               'Create Operational Policy',
                                               url,
-                                              cert=self._cert)
+                                              cert=self.cert)
         if self.details["operationalPolicies"] is None:
             self.details["operationalPolicies"] = []
         if (add_response and (len(add_response["operationalPolicies"]) > len(
@@ -173,7 +176,7 @@ class LoopInstance(Clamp):
         self.details = self.send_message_json('PUT',
                                               'Remove Operational Policy',
                                               url,
-                                              cert=self._cert,
+                                              cert=self.cert,
                                               exception=ValueError)
 
     def update_microservice_policy(self) -> None:
@@ -197,7 +200,7 @@ class LoopInstance(Clamp):
                                               'ADD TCA config',
                                               url,
                                               data=data,
-                                              cert=self._cert,
+                                              cert=self.cert,
                                               exception=ValueError)
         except  ValueError:
             self._logger.error(("an error occured during file upload for TCA config to loop's"
@@ -287,7 +290,7 @@ class LoopInstance(Clamp):
                                           'ADD operational policy config',
                                           url,
                                           data=self.operational_policies,
-                                          cert=self._cert,
+                                          cert=self.cert,
                                           exception=ValueError)
         if upload_result:
             self._logger.info(("Files for op policy config %s have been uploaded to loop's"
@@ -327,7 +330,7 @@ class LoopInstance(Clamp):
         self.send_message('PUT',
                           f'{func.__name__} policy',
                           url,
-                          cert=self._cert,
+                          cert=self.cert,
                           exception=ValueError)
         self.refresh_status()
         self.validate_details()
@@ -345,7 +348,7 @@ class LoopInstance(Clamp):
         self.send_message('PUT',
                           'Deploy microservice to DCAE',
                           url,
-                          cert=self._cert,
+                          cert=self.cert,
                           exception=ValueError)
         self.validate_details()
         state = self.details["components"]["DCAE"]["componentState"]["stateName"]
@@ -363,7 +366,7 @@ class LoopInstance(Clamp):
         self.send_message('PUT',
                           'Undeploy microservice from DCAE',
                           url,
-                          cert=self._cert,
+                          cert=self.cert,
                           exception=ValueError)
 
     def delete(self) -> None:
@@ -373,5 +376,5 @@ class LoopInstance(Clamp):
         self.send_message('PUT',
                           'Delete loop instance',
                           url,
-                          cert=self._cert,
+                          cert=self.cert,
                           exception=ValueError)

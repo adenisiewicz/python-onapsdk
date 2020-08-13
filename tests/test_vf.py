@@ -4,10 +4,12 @@
 
 from unittest import mock
 from unittest.mock import MagicMock
+from pathlib import Path
 
 import pytest
 
 import onapsdk.constants as const
+from onapsdk.sdc.properties import Property
 from onapsdk.sdc.sdc_resource import SdcResource
 from onapsdk.sdc.vf import Vf
 from onapsdk.sdc.vsp import Vsp
@@ -347,3 +349,36 @@ def test_onboard_whole_vf(mock_create, mock_submit, mock_load):
         mock_create.assert_called_once()
         mock_submit.assert_called_once()
         mock_load.assert_called_once()
+
+
+@mock.patch.object(Vf, "send_message_json")
+def test_add_properties(mock_send_message_json):
+    vf = Vf(name="test")
+    vf._identifier = "toto"
+    vf._unique_identifier = "toto"
+    vf._status = const.CERTIFIED
+    with pytest.raises(AttributeError):
+        vf.add_property(Property(name="test", property_type="string"))
+    vf._status = const.DRAFT
+    vf.add_property(Property(name="test", property_type="string"))
+    mock_send_message_json.assert_called_once()
+
+@mock.patch.object(Vf, 'load')
+@mock.patch.object(Vf, 'send_message')
+def test_add_artifact_to_vf(mock_send_message, mock_load):
+    """Test VF add artifact"""
+    vf = Vf(name="test")
+    vf.status = const.DRAFT
+    mycbapath = Path(Path(__file__).resolve().parent, "data/vLB_CBA_Python.zip")
+
+    result = vf.add_deployment_artifact(artifact_label="cba",
+                                        artifact_type="CONTROLLER_BLUEPRINT_ARCHIVE",
+                                        artifact_name="vLB_CBA_Python.zip",
+                                        artifact=mycbapath)
+    mock_send_message.assert_called()
+    method, description, url = mock_send_message.call_args[0]
+    assert method == "POST"
+    assert description == "Add deployment artifact for test sdc resource"
+    assert url == ("https://sdc.api.fe.simpledemo.onap.org:30207/sdc1/feProxy/rest/v1/catalog/resources/"
+                    f"{vf.unique_identifier}/artifacts")
+

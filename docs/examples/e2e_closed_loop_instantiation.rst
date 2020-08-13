@@ -33,7 +33,7 @@ E2E Instantiation of a Closed Loop
     logger.info("******** CLAMP AUTHENTIFICATION *******")
     logger.info("***************************************")
 
-    clamp = Clamp(cert=CERT)
+    Clamp(cert=CERT)
 
     logger.info("*************************************")
     logger.info("******** LOOP TEMPLATES CHECK *******")

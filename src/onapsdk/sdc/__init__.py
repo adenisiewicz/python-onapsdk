@@ -104,7 +104,7 @@ class SDC(OnapService, ABC):
 
         """
         self._logger.debug("check if %s %s exists in SDC",
-                            type(self).__name__, self.name)
+                           type(self).__name__, self.name)
         objects = self.get_all()
 
         self._logger.debug("filtering objects of all versions to be %s", self.name)
@@ -112,13 +112,13 @@ class SDC(OnapService, ABC):
 
         if len(relevant_objects) == 0:
             self._logger.info("%s %s doesn't exist in SDC",
-                            type(self).__name__, self.name)
+                              type(self).__name__, self.name)
             return False
 
         max_version_object = max(relevant_objects, key=attrgetter('version'))
 
         self._logger.info("%s found, updating information",
-                                    type(self).__name__)
+                          type(self).__name__)
         self._copy_object(max_version_object)
         
         return True

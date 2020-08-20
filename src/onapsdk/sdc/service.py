@@ -840,4 +840,6 @@ class Service(SdcResource):  # pylint: disable=too-many-instance-attributes, too
         else:
             for vnf in self.vnfs:
                 vnf.vf_modules = list(filter(\
-                    lambda x: x.name.startswith(vnf.tosca_groups_parsed_name), self.vf_modules))
+                    lambda vf_module: vf_module.name.startswith(
+                        vnf.tosca_groups_parsed_name),  # pylint: disable=cell-var-from-loop
+                    self.vf_modules))

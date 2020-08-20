@@ -495,6 +495,31 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=too-many-ancestors
                           vnf_parameters: Iterable["InstantiationParameter"] = None,
                           vf_module_parameters: Iterable["InstantiationParameter"] = None\
                               ) -> "ServiceInstantiation":
+        """Instantiate service using SO macro request.
+
+        Args:
+            sdc_service (SdcService): Service to instantiate
+            cloud_region (CloudRegion): Cloud region to use in instantiation request
+            tenant (Tenant): Tenant to use in instantiation request
+            customer (Customer): Customer to use in instantiation request
+            owning_entity (OwningEntity): Owning entity to use in instantiation request
+            project (Project): Project to use in instantiation request
+            line_of_business_object (LineOfBusiness): LineOfBusiness to use
+                in instantiation request
+            platform_object (Platform): Platform to use in instantiation request
+            service_instance_name (str, optional): Service instance name. Defaults to None.
+            vnf_parameters: (Iterable[InstantiationParameter]): Parameters which are
+                going to be used for vnfs instantiation. Defaults to None.
+            vf_module_parameters: (Iterable[InstantiationParameter]):  Parameters which are
+                going to be used for vf modules instantiation. Defaults to None.
+
+        Raises:
+            ValueError: Instantiation request returns HTTP error code.
+
+        Returns:
+            ServiceInstantiation: instantiation request object
+
+        """
         if not sdc_service.distributed:
             raise ValueError("Service is not distributed")
         if service_instance_name is None:

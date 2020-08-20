@@ -120,7 +120,6 @@ class SDC(OnapService, ABC):
         self._logger.info("%s found, updating information",
                           type(self).__name__)
         self._copy_object(max_version_object)
-        
         return True
 
     def submit(self) -> None:

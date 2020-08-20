@@ -2,6 +2,7 @@
     "requestDetails": {
         "requestInfo": {
             "suppressRollback": false,
+            "productFamilyId": "1234",
             "requestorId": "demo",
             "instanceName": "{{ service_instance_name }}",
             "source": "VID"
@@ -51,6 +52,7 @@
                                     "lineOfBusiness": {
                                         "lineOfBusinessName": "{{ line_of_business.name }}"
                                     },
+                                    "productFamilyId": "1234",
                                     "instanceName": "{{ vnf.metadata["name"] }}",
                                     "instanceParams": [
                                         {

@@ -65,7 +65,8 @@ class Definition(MSB):
         definition: dict = cls.send_message_json(
             "GET",
             "Get definition",
-            url
+            url,
+            exception=ValueError
         )
         return cls(
             definition.get("rb-name"),

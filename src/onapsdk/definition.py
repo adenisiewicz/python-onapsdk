@@ -87,7 +87,7 @@ class Definition(MSB):
         """
         url: str = f"{cls.base_url}{cls.api_version}/rb/definition/{rb_name}"
         if rb_version is not None:
-            url: str = f"{cls.base_url}{cls.api_version}/rb/definition/{rb_name}/{rb_version}"
+            url: str = f"{url}/{rb_version}"
         cls.send_message(
             "DELETE",
             "Delete definition",

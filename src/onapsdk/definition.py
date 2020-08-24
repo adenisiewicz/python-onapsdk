@@ -49,7 +49,7 @@ class Definition(MSB):
             )
 
     @classmethod
-    def get_definition_by_name_version(cls, rb_name: str, rb_version) -> "Definition":
+    def get_definition_by_name_version(cls, rb_name: str, rb_version: str) -> "Definition":
         """Get definition by it's name and version.
 
         Args:

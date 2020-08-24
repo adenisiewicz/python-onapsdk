@@ -44,7 +44,7 @@ class Definition(MSB):
                 definition.get("rb-name"),
                 definition.get("rb-version"),
                 definition.get("chart-name"),
-                definition.get("chart-name"),
+                definition.get("description"),
                 definition.get("labels")
             )
 
@@ -71,7 +71,7 @@ class Definition(MSB):
             definition.get("rb-name"),
             definition.get("rb-version"),
             definition.get("chart-name"),
-            definition.get("chart-name"),
+            definition.get("description"),
             definition.get("labels")
         )
 

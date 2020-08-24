@@ -8,10 +8,6 @@ class Definition(MSB):
 
     api_version = "/api/multicloud-k8s/v1/v1"
 
-    @property
-    def url(self) -> str:
-        """Definition url."""
-
     def __init__(self, rb_name: str,
                  rb_version: str,
                  chart_name: str,

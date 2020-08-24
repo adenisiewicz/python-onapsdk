@@ -12,7 +12,7 @@ class Definition(MSB):
     def url(self) -> str:
         """Definition url."""
 
-    def __init__(self, rb_name: str, 
+    def __init__(self, rb_name: str,
                  rb_version: str,
                  chart_name: str,
                  description: str,
@@ -97,7 +97,8 @@ class Definition(MSB):
     def create(cls, rb_name: str,
                rb_version: str,
                chart_name: str = '',
-               description: str = "", labels=None) -> "Definition":
+               description: str = "",
+               labels=None) -> "Definition":
         """Create Definition.
 
         Args:
@@ -131,3 +132,127 @@ class Definition(MSB):
             exception=ValueError
         )
         return cls.get_definition_by_name_version(rb_name, rb_version)
+
+    def create_profile(self, profile_name: str,
+                       namespace: str,
+                       kubernetes_version: str,
+                       release_name=None) -> "Profile":
+        """Create Profile for Definition.
+
+        Args:
+            profile_name (str): Name of profile
+            namespace (str): Namespace that service is created in
+            kubernetes_version (str): Required Kubernetes version
+            release_name (str): Release name
+
+        Raises:
+            ValueError: request response with HTTP error code
+
+        Returns:
+            Profile: Created object
+
+        """
+        url: str = f"{self.base_url}{self.api_version}/rb/definition/" \
+                   f"{self.rb_name}/{self.rb_version}/profile"
+        if release_name is None:
+            release_name = profile_name
+        self.send_message(
+            "POST",
+            "Create profile for definition",
+            url,
+            data=jinja_env().get_template("create_profile_for_definition.json.j2").render(
+                rb_name=self.rb_name,
+                rb_version=self.rb_version,
+                profile_name=profile_name,
+                release_name=release_name,
+                namespace=namespace,
+                kubernetes_version=kubernetes_version
+            ),
+            exception=ValueError
+        )
+        return self.get_profile_by_name(profile_name)
+
+    def get_all_profiles(self):
+        """Get all profiles.
+
+        Yields:
+            Profile: Profile object
+
+        """
+        url: str = f"{self.base_url}{self.api_version}/rb/definition/" \
+                   f"{self.rb_name}/{self.rb_version}/profile"
+
+        for profile in self.send_message_json("GET",
+                                              "Get profiles",
+                                              url):
+            yield Profile(
+                profile.get("rb-name"),
+                profile.get("rb-version"),
+                profile.get("profile-name"),
+                profile.get("namespace"),
+                profile.get("kubernetes-version"),
+                profile.get("labels"),
+                profile.get("release-name")
+            )
+
+    def get_profile_by_name(self, profile_name: str) -> "Profile":
+        """Get profile by it's name.
+
+        Args:
+            profile_name (str): profile name
+
+        Returns:
+            Profile: Profile object
+
+        """
+        url: str = f"{self.base_url}{self.api_version}/rb/definition/" \
+                   f"{self.rb_name}/{self.rb_version}/profile/{profile_name}"
+
+        profile: dict = self.send_message_json(
+            "GET",
+            "Get profile",
+            url,
+            exception=ValueError
+        )
+        return Profile(
+            profile.get("rb-name"),
+            profile.get("rb-version"),
+            profile.get("profile-name"),
+            profile.get("namespace"),
+            profile.get("kubernetes-version"),
+            profile.get("labels"),
+            profile.get("release-name")
+        )
+
+class Profile:
+    """Profile class."""
+
+    def __init__(self, rb_name: str,
+                 rb_version: str,
+                 profile_name: str,
+                 namespace: str,
+                 kubernetes_version: str,
+                 labels=None,
+                 release_name=None) -> None:
+        """Definition object initialization.
+
+        Args:
+            rb_name (str): Definition name
+            rb_version (str): Definition version
+            profile_name (str): Name of profile
+            release_name (str): Release name, if release_name is not provided,
+            profile-name will be used
+            namespace (str): Namespace that service is created in
+            kubernetes_version (str): Required Kubernetes version
+            labels (str): Labels
+        """
+        super().__init__()
+        if release_name is None:
+            release_name = profile_name
+        self.rb_name: str = rb_name
+        self.rb_version: str = rb_version
+        self.profile_name: str = profile_name
+        self.release_name: str = release_name
+        self.namespace: str = namespace
+        self.kubernetes_version: str = kubernetes_version
+        self.labels: str = labels

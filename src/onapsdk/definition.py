@@ -96,7 +96,7 @@ class Definition(MSB):
 
     @classmethod
     def create(cls, rb_name: str, rb_version: str, chart_name: str = '',
-               description: str = "", labels: dict = {}) -> "Definition":
+               description: str = "", labels=None) -> "Definition":
         """Create Definition.
 
         Args:
@@ -113,6 +113,8 @@ class Definition(MSB):
             Definition: Created object
 
         """
+        if labels is None:
+            labels = {}
         url: str = f"{cls.base_url}{cls.api_version}/rb/definition"
         cls.send_message(
             "POST",

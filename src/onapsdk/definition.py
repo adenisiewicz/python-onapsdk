@@ -1,16 +1,22 @@
+"""Definition module."""
 from onapsdk.msb import MSB
 from onapsdk.utils.jinja import jinja_env
 
 
 class Definition(MSB):
     """Definition class."""
+
     api_version = "/api/multicloud-k8s/v1/v1"
 
     @property
     def url(self) -> str:
-        pass
+        """Definition url."""
 
-    def __init__(self, rb_name: str, rb_version: str, chart_name: str, description: str, labels: dict) -> None:
+    def __init__(self, rb_name: str, 
+                 rb_version: str,
+                 chart_name: str,
+                 description: str,
+                 labels: dict) -> None:
         """Definition object initialization.
 
         Args:
@@ -77,9 +83,7 @@ class Definition(MSB):
         )
 
     def delete_definition(self) -> None:
-        """Delete definition.
-
-        """
+        """Delete definition."""
         url: str = f"{self.base_url}{self.api_version}/rb/definition/{self.rb_name}"
         if self.rb_version is not None:
             url: str = f"{url}/{self.rb_version}"
@@ -90,7 +94,9 @@ class Definition(MSB):
         )
 
     @classmethod
-    def create(cls, rb_name: str, rb_version: str, chart_name: str = '',
+    def create(cls, rb_name: str,
+               rb_version: str,
+               chart_name: str = '',
                description: str = "", labels=None) -> "Definition":
         """Create Definition.
 

@@ -75,20 +75,14 @@ class Definition(MSB):
             definition.get("labels")
         )
 
-    @classmethod
-    def delete_definition(cls, rb_name: str, rb_version: str = None) -> None:
+    def delete_definition(self) -> None:
         """Delete definition.
 
-        Args:
-            rb_name (str): Definition name
-            rb_version (str): Definition version, if not provided al versions of
-             definition will be deleted
-
         """
-        url: str = f"{cls.base_url}{cls.api_version}/rb/definition/{rb_name}"
-        if rb_version is not None:
-            url: str = f"{url}/{rb_version}"
-        cls.send_message(
+        url: str = f"{self.base_url}{self.api_version}/rb/definition/{self.rb_name}"
+        if self.rb_version is not None:
+            url: str = f"{url}/{self.rb_version}"
+        self.send_message(
             "DELETE",
             "Delete definition",
             url

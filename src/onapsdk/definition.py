@@ -221,6 +221,7 @@ class Definition(MSB):
             profile.get("release-name")
         )
 
+
 class Profile:
     """Profile class."""
 
@@ -231,7 +232,7 @@ class Profile:
                  kubernetes_version: str,
                  labels=None,
                  release_name=None) -> None:
-        """Definition object initialization.
+        """Profile object initialization.
 
         Args:
             rb_name (str): Definition name

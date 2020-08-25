@@ -129,6 +129,25 @@ class Definition(MSB):
         )
         return cls.get_definition_by_name_version(rb_name, rb_version)
 
+    def upload_definition_artifact(self, package: bytes = None):
+        """Upload artifact for Definition.
+
+        Args:
+            package (bytes): Definition artifact to be uploaded to multicloud-k8s plugin
+        Raises:
+            ValueError: request response with HTTP error code
+
+        """
+        url: str = f"{self.url}/{self.rb_name}/{self.rb_version}/content"
+        self.send_message(
+            "POST",
+            "Upload Definition Artifact",
+            url,
+            data=package,
+            headers={},
+            exception=ValueError
+        )
+
     def create_profile(self, profile_name: str,
                        namespace: str,
                        kubernetes_version: str,
@@ -266,3 +285,22 @@ class Profile(MSB):
         self.namespace: str = namespace
         self.kubernetes_version: str = kubernetes_version
         self.labels: str = labels
+
+    def upload_profile_artifact(self, package: bytes = None):
+        """Upload artifact for Profile.
+
+        Args:
+
+        Raises:
+            ValueError: request response with HTTP error code
+
+        """
+        url: str = f"{self.url}/{self.profile_name}/content"
+        self.send_message(
+            "POST",
+            "Upload Profile Artifact",
+            url,
+            data=package,
+            headers={},
+            exception=ValueError
+        )

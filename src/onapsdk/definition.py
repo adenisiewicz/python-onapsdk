@@ -3,6 +3,7 @@ from onapsdk.msb import MSB
 from onapsdk.utils.jinja import jinja_env
 
 
+# pylint: disable=too-many-arguments, too-few-public-methods
 class Definition(MSB):
     """Definition class."""
 

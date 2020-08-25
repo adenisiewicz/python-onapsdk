@@ -221,8 +221,21 @@ class Definition(MSB):
         )
 
 
-class Profile:
+class Profile(MSB):
     """Profile class."""
+
+    api_version = "/api/multicloud-k8s/v1/v1"
+
+    @property
+    def url(self) -> str:
+        """URL address for Profile calls.
+
+        Returns:
+            str: URL to Profile in Multicloud-k8s API.
+
+        """
+        return f"{self.base_url}{self.api_version}/rb/definition/" \
+               f"{self.rb_name}/{self.rb_version}/profile/"
 
     def __init__(self, rb_name: str,
                  rb_version: str,

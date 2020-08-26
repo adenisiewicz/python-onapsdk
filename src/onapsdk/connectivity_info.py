@@ -1,5 +1,6 @@
 """Connectivity-Info module."""
 from onapsdk.msb import MSB
+from onapsdk.utils.jinja import jinja_env
 
 
 class ConnectivityInfo(MSB):
@@ -59,3 +60,38 @@ class ConnectivityInfo(MSB):
             "Delete Connectivity Info",
             url
         )
+
+    @classmethod
+    def create_connectivity_info(cls,
+                                 cloud_region_id: str,
+                                 cloud_owner: str,
+                                 kubeconfig: bytes = None) -> "ConnectivityInfo":
+        """Create Connectivity Info.
+
+        Args:
+            cloud_region_id (str): Cloud region ID
+            cloud_owner (str): Cloud owner name
+            kubeconfig (bytes): kubernetes cluster kubeconfig file
+
+        Raises:
+            ValueError: request response with HTTP error code
+
+        Returns:
+            ConnectivityInfo: Created object
+
+        """
+        json_file = jinja_env().get_template("add_connectivity_info.json.j2").render(
+            cloud_region_id=cloud_region_id,
+            cloud_owner=cloud_owner
+        )
+        url: str = f"{cls.url}"
+        cls.send_message(
+            "POST",
+            "Create Connectivity Info",
+            url,
+            files={"file": kubeconfig,
+                   "metadata": (None, json_file)},
+            headers={},
+            exception=ValueError
+        )
+        return cls.get_connectivity_info(cloud_region_id)

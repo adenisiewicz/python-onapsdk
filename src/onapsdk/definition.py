@@ -8,7 +8,7 @@ class Definition(MSB):
     """Definition class."""
 
     api_version = "/api/multicloud-k8s/v1/v1"
-    url = f"{MSB.base_url}{api_version}/rb/definition"
+    base_url = f"{MSB.base_url}{api_version}/rb/definition"
 
     def __init__(self, rb_name: str,
                  rb_version: str,
@@ -39,7 +39,7 @@ class Definition(MSB):
             Definition: Definition object
 
         """
-        url: str = f"{cls.url}"
+        url: str = f"{cls.base_url}"
         for definition in cls.send_message_json("GET",
                                                 "Get definitions",
                                                 url):
@@ -63,7 +63,7 @@ class Definition(MSB):
             Definition: Definition object
 
         """
-        url: str = f"{cls.url}/{rb_name}/{rb_version}"
+        url: str = f"{cls.base_url}/{rb_name}/{rb_version}"
         definition: dict = cls.send_message_json(
             "GET",
             "Get definition",
@@ -80,7 +80,7 @@ class Definition(MSB):
 
     def delete_definition(self) -> None:
         """Delete definition."""
-        url: str = f"{self.url}/{self.rb_name}"
+        url: str = f"{self.base_url}/{self.rb_name}"
         if self.rb_version is not None:
             url: str = f"{url}/{self.rb_version}"
         self.send_message(
@@ -113,7 +113,7 @@ class Definition(MSB):
         """
         if labels is None:
             labels = {}
-        url: str = f"{cls.url}"
+        url: str = f"{cls.base_url}"
         cls.send_message(
             "POST",
             "Create definition",
@@ -138,7 +138,7 @@ class Definition(MSB):
             ValueError: request response with HTTP error code
 
         """
-        url: str = f"{self.url}/{self.rb_name}/{self.rb_version}/content"
+        url: str = f"{self.base_url}/{self.rb_name}/{self.rb_version}/content"
         self.send_message(
             "POST",
             "Upload Definition Artifact",

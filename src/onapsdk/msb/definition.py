@@ -175,8 +175,8 @@ class Definition(MSB):
             "POST",
             "Create profile for definition",
             url,
-            data=jinja_env().get_template("multicloud_k8s_create_profile_for_definition.json.j2").
-                render(
+            data=jinja_env().get_template("multicloud_k8s_create_profile_"
+                                          "for_definition.json.j2").render(
                 rb_name=self.rb_name,
                 rb_version=self.rb_version,
                 profile_name=profile_name,

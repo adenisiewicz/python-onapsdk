@@ -118,7 +118,7 @@ class Definition(MSB):
             "POST",
             "Create definition",
             url,
-            data=jinja_env().get_template("add_definition.json.j2").render(
+            data=jinja_env().get_template("multicloud_k8s_add_definition.json.j2").render(
                 rb_name=rb_name,
                 rb_version=rb_version,
                 chart_name=chart_name,
@@ -175,7 +175,7 @@ class Definition(MSB):
             "POST",
             "Create profile for definition",
             url,
-            data=jinja_env().get_template("create_profile_for_definition.json.j2").render(
+            data=jinja_env().get_template("multicloud_k8s_create_profile_for_definition.json.j2").render(
                 rb_name=self.rb_name,
                 rb_version=self.rb_version,
                 profile_name=profile_name,

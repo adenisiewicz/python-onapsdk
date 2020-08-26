@@ -80,7 +80,7 @@ class ConnectivityInfo(MSB):
             ConnectivityInfo: Created object
 
         """
-        json_file = jinja_env().get_template("add_connectivity_info.json.j2").render(
+        json_file = jinja_env().get_template("multicloud_k8s_add_connectivity_info.json.j2").render(
             cloud_region_id=cloud_region_id,
             cloud_owner=cloud_owner
         )

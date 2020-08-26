@@ -115,11 +115,15 @@ class SDC(OnapService, ABC):
                               type(self).__name__, self.name)
             return False
 
-        max_version_object = max(relevant_objects, key=attrgetter('version'))
+        if hasattr(self, 'version_filter') and self.version_filter is not None: # pylint: disable=no-member
+            all_versioned = list(filter(lambda obj: obj.version == self.version_filter, relevant_objects)) # pylint: disable=no-member
+            versioned_object = all_versioned.pop()
+        else:
+            versioned_object = max(relevant_objects, key=attrgetter('version'))
 
         self._logger.info("%s found, updating information",
                           type(self).__name__)
-        self._copy_object(max_version_object)
+        self._copy_object(versioned_object)
         return True
 
     def submit(self) -> None:

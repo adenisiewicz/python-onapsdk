@@ -177,13 +177,13 @@ class Definition(MSB):
             url,
             data=jinja_env().get_template("multicloud_k8s_create_profile_"
                                           "for_definition.json.j2").render(
-                rb_name=self.rb_name,
-                rb_version=self.rb_version,
-                profile_name=profile_name,
-                release_name=release_name,
-                namespace=namespace,
-                kubernetes_version=kubernetes_version
-            ),
+                                              rb_name=self.rb_name,
+                                              rb_version=self.rb_version,
+                                              profile_name=profile_name,
+                                              release_name=release_name,
+                                              namespace=namespace,
+                                              kubernetes_version=kubernetes_version
+                                          ),
             exception=ValueError
         )
         return self.get_profile_by_name(profile_name)

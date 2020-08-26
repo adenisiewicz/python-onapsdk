@@ -110,13 +110,18 @@ class SDC(OnapService, ABC):
         self._logger.debug("filtering objects of all versions to be %s", self.name)
         relevant_objects = list(filter(lambda obj: obj == self, objects))
 
-        if len(relevant_objects) == 0:
+        if not relevant_objects:
             self._logger.info("%s %s doesn't exist in SDC",
                               type(self).__name__, self.name)
             return False
 
         if hasattr(self, 'version_filter') and self.version_filter is not None: # pylint: disable=no-member
-            all_versioned = list(filter(lambda obj: obj.version == self.version_filter, relevant_objects)) # pylint: disable=no-member
+            all_versioned = list(filter(lambda obj: obj.version == self.version_filter,  # pylint: disable=no-member
+                                        relevant_objects))
+            if not all_versioned:
+                self._logger.info("Version %s of %s %s, doesn't exist in SDC",
+                                  self.version_filter, type(self).__name__, self.name) # pylint: disable=no-member
+                return False
             versioned_object = all_versioned.pop()
         else:
             versioned_object = max(relevant_objects, key=attrgetter('version'))

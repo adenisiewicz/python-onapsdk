@@ -167,8 +167,7 @@ class Definition(MSB):
             Profile: Created object
 
         """
-        url: str = f"{self.base_url}{self.api_version}/rb/definition/" \
-                   f"{self.rb_name}/{self.rb_version}/profile"
+        url: str = f"{self.base_url}/{self.rb_name}/{self.rb_version}/profile"
         if release_name is None:
             release_name = profile_name
         self.send_message(
@@ -195,8 +194,7 @@ class Definition(MSB):
             Profile: Profile object
 
         """
-        url: str = f"{self.base_url}{self.api_version}/rb/definition/" \
-                   f"{self.rb_name}/{self.rb_version}/profile"
+        url: str = f"{self.base_url}/{self.rb_name}/{self.rb_version}/profile"
 
         for profile in self.send_message_json("GET",
                                               "Get profiles",
@@ -221,8 +219,7 @@ class Definition(MSB):
             Profile: Profile object
 
         """
-        url: str = f"{self.base_url}{self.api_version}/rb/definition/" \
-                   f"{self.rb_name}/{self.rb_version}/profile/{profile_name}"
+        url: str = f"{self.base_url}/{self.rb_name}/{self.rb_version}/profile/{profile_name}"
 
         profile: dict = self.send_message_json(
             "GET",

@@ -1,6 +1,6 @@
 """Definition module."""
-from onapsdk.msb import MSB
 from onapsdk.utils.jinja import jinja_env
+from ..msb_service import MSB
 
 
 # pylint: disable=too-many-arguments, too-few-public-methods

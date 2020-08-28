@@ -1,6 +1,6 @@
 """Connectivity-Info module."""
-from onapsdk.msb import MSB
 from onapsdk.utils.jinja import jinja_env
+from ..msb_service import MSB
 
 
 class ConnectivityInfo(MSB):

@@ -186,7 +186,10 @@ class ServiceSubscription(AaiElement):
             CloudRegion: CloudRegion object
 
         """
-        return next(self.cloud_regions)
+        try:
+            return next(self.cloud_regions)
+        except StopIteration:
+            raise AttributeError
 
     @property
     def tenant(self) -> "Tenant":
@@ -201,7 +204,10 @@ class ServiceSubscription(AaiElement):
             Tenant: Tenant object
 
         """
-        return next(self.tenants)
+        try:
+            return next(self.tenants)
+        except StopIteration:
+            raise AttributeError
 
     @property
     def _cloud_regions_tenants_data(self) -> Iterator["ServiceSubscriptionCloudRegionTenantData"]:
@@ -234,8 +240,12 @@ class ServiceSubscription(AaiElement):
         for cr_data in self._cloud_regions_tenants_data:
             cloud_region_set.add((cr_data.cloud_owner, cr_data.cloud_region_id))
         for cloud_region_data in cloud_region_set:
-            yield CloudRegion.get_by_id(cloud_owner=cloud_region_data[0],
-                                        cloud_region_id=cloud_region_data[1])
+            try:
+                yield CloudRegion.get_by_id(cloud_owner=cloud_region_data[0],
+                                            cloud_region_id=cloud_region_data[1])
+            except ValueError:
+                self._logger.error("Can't get cloud region %s %s", cloud_region_data[0], \
+                                                                   cloud_region_data[1])
 
     @property
     def tenants(self) -> Iterator["Tenant"]:
@@ -246,9 +256,12 @@ class ServiceSubscription(AaiElement):
 
         """
         for cr_data in self._cloud_regions_tenants_data:
-            cloud_region: CloudRegion = CloudRegion.get_by_id(cr_data.cloud_owner,
-                                                              cr_data.cloud_region_id)
-            yield cloud_region.get_tenant(cr_data.tenant_id)
+            try:
+                cloud_region: CloudRegion = CloudRegion.get_by_id(cr_data.cloud_owner,
+                                                                  cr_data.cloud_region_id)
+                yield cloud_region.get_tenant(cr_data.tenant_id)
+            except ValueError:
+                self._logger.error("Can't get %s tenant", cr_data.tenant_id)
 
     @property
     def sdc_service(self) -> "SdcService":

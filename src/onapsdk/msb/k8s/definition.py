@@ -17,6 +17,7 @@ class DefinitionBase(MSB):
             rb_name (str): Definition name
             rb_version (str): Definition version
         """
+        super().__init__()
         self.rb_name: str = rb_name
         self.rb_version: str = rb_version
 

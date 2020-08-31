@@ -28,7 +28,7 @@ class ConnectivityInfo(MSB):
         self.kubeconfig: str = kubeconfig
 
     @classmethod
-    def get_connectivity_info(cls, cloud_region_id: str) -> "ConnectivityInfo":
+    def get_connectivity_info_by_region_id(cls, cloud_region_id: str) -> "ConnectivityInfo":
         """Get connectivity-info by its name (cloud region id).
 
         Args:
@@ -52,7 +52,7 @@ class ConnectivityInfo(MSB):
             connectivity_info["kubeconfig"]
         )
 
-    def delete_connectivity_info(self) -> None:
+    def delete(self) -> None:
         """Delete connectivity info."""
         url: str = f"{self.url}/{self.cloud_region_id}"
         self.send_message(
@@ -62,10 +62,10 @@ class ConnectivityInfo(MSB):
         )
 
     @classmethod
-    def create_connectivity_info(cls,
-                                 cloud_region_id: str,
-                                 cloud_owner: str,
-                                 kubeconfig: bytes = None) -> "ConnectivityInfo":
+    def create(cls,
+               cloud_region_id: str,
+               cloud_owner: str,
+               kubeconfig: bytes = None) -> "ConnectivityInfo":
         """Create Connectivity Info.
 
         Args:
@@ -94,4 +94,4 @@ class ConnectivityInfo(MSB):
             headers={},
             exception=ValueError
         )
-        return cls.get_connectivity_info(cloud_region_id)
+        return cls.get_connectivity_info_by_region_id(cloud_region_id)

@@ -4,11 +4,69 @@ from ..msb_service import MSB
 
 
 # pylint: disable=too-many-arguments, too-few-public-methods
-class Definition(MSB):
-    """Definition class."""
+class DefinitionBase(MSB):
+    """DefinitionBase class."""
 
-    api_version = "/api/multicloud-k8s/v1/v1"
-    base_url = f"{MSB.base_url}{api_version}/rb/definition"
+    base_url = f"{MSB.base_url}/api/multicloud-k8s/v1/v1/rb/definition"
+
+    def __init__(self, rb_name: str,
+                 rb_version: str) -> None:
+        """Definition-Base object initialization.
+
+        Args:
+            rb_name (str): Definition name
+            rb_version (str): Definition version
+        """
+        self.rb_name: str = rb_name
+        self.rb_version: str = rb_version
+
+    @property
+    def url(self) -> str:
+        """URL address for Definition Based calls.
+
+        Returns:
+            str: URL to RB Definition
+
+        """
+        return f"{self.base_url}/{self.rb_name}/{self.rb_version}"
+
+    def delete(self) -> None:
+        """Delete Definition Based object.
+
+        Args:
+
+        Raises:
+            ValueError: request response with HTTP error code
+
+        """
+        self.send_message(
+            "DELETE",
+            f"Delete {self.__class__.__name__}",
+            self.url
+        )
+
+    def upload_artifact(self, package: bytes = None):
+        """Upload artifact.
+
+        Args:
+            package (bytes): Artifact to be uploaded to multicloud-k8s plugin
+        Raises:
+            ValueError: request response with HTTP error code
+
+        """
+        url: str = f"{self.url}/content"
+        self.send_message(
+            "POST",
+            "Upload Artifact content",
+            url,
+            data=package,
+            headers={},
+            exception=ValueError
+        )
+
+
+class Definition(DefinitionBase):
+    """Definition class."""
 
     def __init__(self, rb_name: str,
                  rb_version: str,
@@ -24,7 +82,7 @@ class Definition(MSB):
             description (str): Definition description
             labels (str): Labels
         """
-        super().__init__()
+        super().__init__(rb_name, rb_version)
         self.rb_name: str = rb_name
         self.rb_version: str = rb_version
         self.chart_name: str = chart_name
@@ -39,10 +97,9 @@ class Definition(MSB):
             Definition: Definition object
 
         """
-        url: str = f"{cls.base_url}"
         for definition in cls.send_message_json("GET",
                                                 "Get definitions",
-                                                url):
+                                                cls.base_url):
             yield cls(
                 definition.get("rb-name"),
                 definition.get("rb-version"),
@@ -76,17 +133,6 @@ class Definition(MSB):
             definition.get("chart-name"),
             definition.get("description"),
             definition.get("labels")
-        )
-
-    def delete_definition(self) -> None:
-        """Delete definition."""
-        url: str = f"{self.base_url}/{self.rb_name}"
-        if self.rb_version is not None:
-            url: str = f"{url}/{self.rb_version}"
-        self.send_message(
-            "DELETE",
-            "Delete definition",
-            url
         )
 
     @classmethod
@@ -129,25 +175,6 @@ class Definition(MSB):
         )
         return cls.get_definition_by_name_version(rb_name, rb_version)
 
-    def upload_definition_artifact(self, package: bytes = None):
-        """Upload artifact for Definition.
-
-        Args:
-            package (bytes): Definition artifact to be uploaded to multicloud-k8s plugin
-        Raises:
-            ValueError: request response with HTTP error code
-
-        """
-        url: str = f"{self.base_url}/{self.rb_name}/{self.rb_version}/content"
-        self.send_message(
-            "POST",
-            "Upload Definition Artifact",
-            url,
-            data=package,
-            headers={},
-            exception=ValueError
-        )
-
     def create_profile(self, profile_name: str,
                        namespace: str,
                        kubernetes_version: str,
@@ -167,7 +194,7 @@ class Definition(MSB):
             Profile: Created object
 
         """
-        url: str = f"{self.base_url}/{self.rb_name}/{self.rb_version}/profile"
+        url: str = f"{self.url}/profile"
         if release_name is None:
             release_name = profile_name
         self.send_message(
@@ -194,7 +221,7 @@ class Definition(MSB):
             Profile: Profile object
 
         """
-        url: str = f"{self.base_url}/{self.rb_name}/{self.rb_version}/profile"
+        url: str = f"{self.url}/profile"
 
         for profile in self.send_message_json("GET",
                                               "Get profiles",
@@ -219,7 +246,7 @@ class Definition(MSB):
             Profile: Profile object
 
         """
-        url: str = f"{self.base_url}/{self.rb_name}/{self.rb_version}/profile/{profile_name}"
+        url: str = f"{self.url}/profile/{profile_name}"
 
         profile: dict = self.send_message_json(
             "GET",
@@ -237,22 +264,116 @@ class Definition(MSB):
             profile.get("release-name")
         )
 
+    def get_all_configuration_templates(self):
+        """Get all configuration templates.
 
-class Profile(MSB):
-    """Profile class."""
+        Yields:
+            ConfigurationTemplate: ConfigurationTemplate object
 
-    api_version = "/api/multicloud-k8s/v1/v1"
+        """
+        url: str = f"{self.url}/config-template"
+
+        for template in self.send_message_json("GET",
+                                               "Get configuration templates",
+                                               url):
+            yield ConfigurationTemplate(
+                self.rb_name,
+                self.rb_version,
+                template.get("template-name"),
+                template.get("description")
+            )
+
+    def create_configuration_template(self, template_name: str,
+                                      description="") -> "ConfigurationTemplate":
+        """Create configuration template.
+
+        Args:
+            template_name (str): Name of the template
+            description (str): Description
+
+        Raises:
+            ValueError: request response with HTTP error code
+
+        Returns:
+            ConfigurationTemplate: Created object
+
+        """
+        url: str = f"{self.url}/config-template"
+
+        self.send_message(
+            "POST",
+            "Create configuration template",
+            url,
+            data=jinja_env().get_template("multicloud_k8s_create_configuration_"
+                                          "template.json.j2").render(
+                                              template_name=template_name,
+                                              description=description
+                                          ),
+            exception=ValueError
+        )
+
+        return self.get_configuration_template_by_name(template_name)
+
+    def get_configuration_template_by_name(self, template_name: str) -> "ConfigurationTemplate":
+        """Get configuration template.
+
+        Args:
+            template_name (str): Name of the template
+
+        Raises:
+            ValueError: request response with HTTP error code
+
+        Returns:
+            ConfigurationTemplate: object
+
+        """
+        url: str = f"{self.url}/config-template/{template_name}"
+
+        template: dict = self.send_message_json(
+            "GET",
+            "Get Configuration template",
+            url,
+            exception=ValueError
+        )
+        return ConfigurationTemplate(
+            self.rb_name,
+            self.rb_version,
+            template.get("template-name"),
+            template.get("description")
+        )
+
+
+class ProfileBase(DefinitionBase):
+    """ProfileBase class."""
+
+    def __init__(self, rb_name: str,
+                 rb_version: str,
+                 profile_name: str) -> None:
+        """Profile-Base object initialization.
+
+        Args:
+            rb_name (str): Definition name
+            rb_version (str): Definition version
+            profile_name (str): Name of profile
+        """
+        super().__init__(rb_name, rb_version)
+        self.rb_name: str = rb_name
+        self.rb_version: str = rb_version
+        self.profile_name: str = profile_name
 
     @property
     def url(self) -> str:
         """URL address for Profile calls.
 
         Returns:
-            str: URL to Profile in Multicloud-k8s API.
+            str: URL to RB Profile
 
         """
-        return f"{self.base_url}{self.api_version}/rb/definition/" \
-               f"{self.rb_name}/{self.rb_version}/profile/"
+        return f"{super().url}/profile/{self.profile_name}"
+
+
+class Profile(ProfileBase):
+    """Profile class."""
 
     def __init__(self, rb_name: str,
                  rb_version: str,
@@ -268,37 +389,46 @@ class Profile(MSB):
             rb_version (str): Definition version
             profile_name (str): Name of profile
             release_name (str): Release name, if release_name is not provided,
-            profile-name will be used
             namespace (str): Namespace that service is created in
             kubernetes_version (str): Required Kubernetes version
-            labels (str): Labels
+            labels (dict): Labels
         """
-        super().__init__()
+        super().__init__(rb_name, rb_version, profile_name)
         if release_name is None:
             release_name = profile_name
-        self.rb_name: str = rb_name
-        self.rb_version: str = rb_version
-        self.profile_name: str = profile_name
         self.release_name: str = release_name
         self.namespace: str = namespace
         self.kubernetes_version: str = kubernetes_version
-        self.labels: str = labels
+        self.labels: dict = labels
+        if self.labels is None:
+            self.labels = dict()
 
-    def upload_profile_artifact(self, package: bytes = None):
-        """Upload artifact for Profile.
 
-        Args:
+class ConfigurationTemplate(DefinitionBase):
+    """ConfigurationTemplate class."""
 
-        Raises:
-            ValueError: request response with HTTP error code
+    @property
+    def url(self) -> str:
+        """URL address for ConfigurationTemplate calls.
+
+        Returns:
+            str: URL to Configuration template in Multicloud-k8s API.
 
         """
-        url: str = f"{self.url}/{self.profile_name}/content"
-        self.send_message(
-            "POST",
-            "Upload Profile Artifact",
-            url,
-            data=package,
-            headers={},
-            exception=ValueError
-        )
+        return f"{super().url}/config-template/{self.template_name}"
+
+    def __init__(self, rb_name: str,
+                 rb_version: str,
+                 template_name: str,
+                 description="") -> None:
+        """Configuration-Template object initialization.
+
+        Args:
+            rb_name (str): Definition name
+            rb_version (str): Definition version
+            template_name (str): Configuration template name
+            description (str): Namespace that service is created in
+        """
+        super().__init__(rb_name, rb_version)
+        self.template_name: str = template_name
+        self.description: str = description

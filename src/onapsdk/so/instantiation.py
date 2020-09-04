@@ -513,7 +513,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=too-many-ancestors
                           line_of_business: "LineOfBusiness",
                           platform: "Platform",
                           service_instance_name: str = None,
-                          vnf_parameters: Iterable["VnfParameters"] = None) -> "ServiceInstantiation":
+                          vnf_parameters: Iterable["VnfParameters"] = None
+                         ) -> "ServiceInstantiation":
         """Instantiate service using SO macro request.
 
         Args:

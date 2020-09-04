@@ -34,7 +34,7 @@ class VnfParameter:
 class VnfParameters:
     """Class to store vnf parameters used for macro instantiation.
 
-    Contains value lists: List vnf Instantiation parameters and list of 
+    Contains value lists: List vnf Instantiation parameters and list of
     vfModule parameters
     """
 
@@ -200,7 +200,6 @@ class VfModuleInstantiation(Instantiation):  # pytest: disable=too-many-ancestor
             instance_id=response["requestReferences"].get("instanceId"),
             vf_module=vf_module
         )
-
 
 class NodeTemplateInstantiation(Instantiation, ABC):  # pytest: disable=too-many-ancestors
     """Base class for service's node_template object instantiation."""
@@ -514,8 +513,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=too-many-ancestors
                           line_of_business: "LineOfBusiness",
                           platform: "Platform",
                           service_instance_name: str = None,
-                          vnf_parameters: Iterable["VnfParameters"] = None
-                              ) -> "ServiceInstantiation":
+                          vnf_parameters: Iterable["VnfParameters"] = None) -> "ServiceInstantiation":
         """Instantiate service using SO macro request.
 
         Args:

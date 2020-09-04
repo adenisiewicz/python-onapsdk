@@ -60,7 +60,11 @@
                                     "instanceParams": [
                                         {
                                             {% for vnf_parameter in vnf_parameters %}
-                                            "{{ vnf_parameter.name }}": "{{ vnf_parameter.value }}"{% if not loop.last %},{% endif %}
+                                            {% if vnf_parameter.name == vnf.metadata["name"] %}
+                                            {% for parameter in vnf_parameter.vnf_parameters %}  
+                                            "{{ parameter.name }}": "{{ parameter.value }}"{% if not loop.last %},{% endif %}
+                                            {% endfor %}
+                                            {% endif %}
                                             {% endfor %}
                                         }
                                     ],
@@ -77,8 +81,18 @@
                                             "instanceName": "{{ vf_module.name }}",
                                             "instanceParams": [
                                                 {
-                                                    {% for vf_module_parameter in vf_module_parameters %}
-                                                    "{{ vf_module_parameter.name }}": "{{ vf_module_parameter.value }}"{% if not loop.last %},{% endif %}
+                                                    {% for vnf_parameter in vnf_parameters %}
+                                                    {% if vnf_parameter.name == vnf.metadata["name"] %}
+                                                    {% set mylist = vf_module.name.split('..') %}
+                                                    {% set item = mylist|length-2 %}
+                                                    {% for vf_module_parameter in vnf_parameter.vfmodule_parameters %}
+                                                    {% if vf_module_parameter.name == mylist[item] %}
+                                                    {% for parameter in vf_module_parameter.vfmodule_parameters %}  
+                                                    "{{ parameter.name }}": "{{ parameter.value }}"{% if not loop.last %},{% endif %}
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                    {% endif %}
                                                     {% endfor %}
                                                 }
                                             ]

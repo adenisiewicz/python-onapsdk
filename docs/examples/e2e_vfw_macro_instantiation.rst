@@ -29,7 +29,8 @@ E2E Instantiation of vFW
         ServiceInstantiation,
         VnfInstantiation,
         InstantiationParameter,
-        VnfParameter
+        VnfParameters,
+        VfmoduleParameters
     )
     from onapsdk.sdc.properties import Property
     from onapsdk.sdc import SDC
@@ -378,6 +379,62 @@ E2E Instantiation of vFW
         logger.info("******** Owning Entity not existing: create *******")
         owning_entity = AaiOwningEntity.create(vid_owning_entity.name, str(uuid4()))
 
+    ###########################################################################
+    ######## VFModule parameters ##############################################
+    ###########################################################################
+    vfm_base=[
+       InstantiationParameter(name="sec_group", value=TENANT_SEC_GROUP),
+       InstantiationParameter(name="public_net_id", value=PUBLIC_NET)
+    ]
+
+    vfm_vsn=[
+       InstantiationParameter(name="sec_group", value=TENANT_SEC_GROUP),
+       InstantiationParameter(name="public_net_id", value=PUBLIC_NET)
+    ]
+
+    vfm_vfw=[
+       InstantiationParameter(name="sec_group", value=TENANT_SEC_GROUP),
+       InstantiationParameter(name="public_net_id", value=PUBLIC_NET)
+    ]
+
+    vfm_vpkg=[
+       InstantiationParameter(name="sec_group", value=TENANT_SEC_GROUP),
+       InstantiationParameter(name="public_net_id", value=PUBLIC_NET)
+    ]
+
+    base_paras=VfmoduleParameters("base_template",vfm_base)
+    vpkg_paras=VfmoduleParameters("vpkg",vfm_vpkg)
+    vsn_paras=VfmoduleParameters("vsn",vfm_vsn)
+    vfw_paras=VfmoduleParameters("vfw",vfm_vfw)
+
+    ###########################################################################
+    ######## VNF parameters ###################################################
+    ###########################################################################
+
+    vnf_vfw=[
+       InstantiationParameter(name="onap_private_net_id", value=ONAP_PRIVATE_NET),
+       InstantiationParameter(name="onap_private_subnet_id", value=ONAP_PRIVATE_SUBNET),
+       InstantiationParameter(name="pub_key", value="ssh-rsa    AAAAB3NzaC1yc2EAAAADAQABAAABAQDFBOB1Ea2yej68aqIQw10kEsVf+rNoxT39qrV8JvvTK2yhkniQka1t2oD9h6DlXOLM3HJ6nBegWjOasJmIbminKZ6wvmxZrDVFJXp9Sn1gni0vtEnlDgH14shRUrFDYO0PYjXRHoj7QXZMYxtAdFSbzGuCsaTLcV/xchLBQmqZ4AGhMIiYMfJJF+Ygy0lbgcVmT+8DH7kUUt8SAdh2rRsYFwpKANnQJyPV1dBNuTcD0OW1hEOhXnwqH28tjfb7uHJzTyGZlTmwTs544teTNz5B9L4yT3XiCAlMcaLOBMfBTKRIse+NkiTb+tc60JNnEYR6MqZoqTea/w+YBQaIMcil"),
+       InstantiationParameter(name="image_name", value=IMAGE_NAME),
+       InstantiationParameter(name="flavor_name", value=FLAVOR_NAME),
+       InstantiationParameter(name="sec_group", value=TENANT_SEC_GROUP),
+       InstantiationParameter(name="install_script_version", value="1.4.0-SNAPSHOT"),
+       InstantiationParameter(name="demo_artifacts_version", value="1.4.0-SNAPSHOT"),
+       InstantiationParameter(name="cloud_env", value=CLOUD_TYPE),
+       InstantiationParameter(name="public_net_id", value=PUBLIC_NET),
+       InstantiationParameter(name="aic-cloud-region", value=CLOUD_REGION)
+    ]
+
+    vnf_paras=VnfParameters("vfwcds_VF", vnf_vfw, 
+              [base_paras, vpkg_paras, vsn_paras, vfw_paras])
+
+    # You must define for each VNF and its vFModule the parameters, 
+    # otherwise they stay empty.
+    # The matching critera are:
+    # - VnfParameters.name must match VNF ModelInstanceName
+    #   (see above "vfwcds_VF")
+    # - VfmoduleParameters.name must match substring in vfModule "instanceName"
+    #   (e.g. "vfwcds_vf0..VfwcdsVf..vsn..module-1")
     logger.info("******** Instantiate Service *******")
 
     service_instantiation = ServiceInstantiation.instantiate_macro(
@@ -390,23 +447,7 @@ E2E Instantiation of vFW
         vid_line_of_business,
         vid_platform,
         service_instance_name=SERVICE_INSTANCE_NAME,
-        vnf_parameters=[
-            InstantiationParameter(name="onap_private_net_id", value=ONAP_PRIVATE_NET),
-            InstantiationParameter(name="onap_private_subnet_id", value=ONAP_PRIVATE_SUBNET),
-            InstantiationParameter(name="pub_key", value="ssh-rsa    AAAAB3NzaC1yc2EAAAADAQABAAABAQDFBOB1Ea2yej68aqIQw10kEsVf+rNoxT39qrV8JvvTK2yhkniQka1t2oD9h6DlXOLM3HJ6nBegWjOasJmIbminKZ6wvmxZrDVFJXp9Sn1gni0vtEnlDgH14shRUrFDYO0PYjXRHoj7QXZMYxtAdFSbzGuCsaTLcV/xchLBQmqZ4AGhMIiYMfJJF+Ygy0lbgcVmT+8DH7kUUt8SAdh2rRsYFwpKANnQJyPV1dBNuTcD0OW1hEOhXnwqH28tjfb7uHJzTyGZlTmwTs544teTNz5B9L4yT3XiCAlMcaLOBMfBTKRIse+NkiTb+tc60JNnEYR6MqZoqTea/w+YBQaIMcil"),
-            InstantiationParameter(name="image_name", value=IMAGE_NAME),
-            InstantiationParameter(name="flavor_name", value=FLAVOR_NAME),
-            InstantiationParameter(name="sec_group", value=TENANT_SEC_GROUP),
-            InstantiationParameter(name="install_script_version", value="1.4.0-SNAPSHOT"),
-            InstantiationParameter(name="demo_artifacts_version", value="1.4.0-SNAPSHOT"),
-            InstantiationParameter(name="cloud_env", value=CLOUD_TYPE),
-            InstantiationParameter(name="public_net_id", value=PUBLIC_NET),
-            InstantiationParameter(name="aic-cloud-region", value=CLOUD_REGION)
-        ],
-        vf_module_parameters=[
-            InstantiationParameter(name="sec_group", value=TENANT_SEC_GROUP),
-            InstantiationParameter(name="public_net_id", value=PUBLIC_NET)
-        ]
+        vnf_parameters=[vnf_paras]
     )
 
     if service_instantiation.wait_for_finish():

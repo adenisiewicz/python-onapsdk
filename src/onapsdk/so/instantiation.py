@@ -30,6 +30,28 @@ class VnfParameter:
     name: str
     value: str
 
+@dataclass
+class VnfParameters:
+    """Class to store vnf parameters used for macro instantiation.
+
+    Contains value lists: List vnf Instantiation parameters and list of 
+    vfModule parameters
+    """
+
+    name: str
+    vnf_parameters: Iterable["InstantiationParameter"] = None
+    vfmodule_parameters: Iterable["VfmoduleParameters"] = None
+
+@dataclass
+class VfmoduleParameters:
+    """Class to store vfmodule parameters used for macro instantiation.
+
+    Contains value lists: List of vfModule parameters
+    """
+
+    name: str
+    vfmodule_parameters: Iterable["InstantiationParameter"] = None
+
 
 @dataclass
 class InstantiationParameter:
@@ -492,8 +514,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=too-many-ancestors
                           line_of_business: "LineOfBusiness",
                           platform: "Platform",
                           service_instance_name: str = None,
-                          vnf_parameters: Iterable["InstantiationParameter"] = None,
-                          vf_module_parameters: Iterable["InstantiationParameter"] = None\
+                          vnf_parameters: Iterable["VnfParameters"] = None
                               ) -> "ServiceInstantiation":
         """Instantiate service using SO macro request.
 
@@ -508,10 +529,8 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=too-many-ancestors
                 in instantiation request
             platform_object (Platform): Platform to use in instantiation request
             service_instance_name (str, optional): Service instance name. Defaults to None.
-            vnf_parameters: (Iterable[InstantiationParameter]): Parameters which are
+            vnf_parameters: (Iterable[VnfParameters]): Parameters which are
                 going to be used for vnfs instantiation. Defaults to None.
-            vf_module_parameters: (Iterable[InstantiationParameter]):  Parameters which are
-                going to be used for vf modules instantiation. Defaults to None.
 
         Raises:
             ValueError: Instantiation request returns HTTP error code.
@@ -520,6 +539,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=too-many-ancestors
             ServiceInstantiation: instantiation request object
 
         """
+
         if not sdc_service.distributed:
             raise ValueError("Service is not distributed")
         if service_instance_name is None:
@@ -540,8 +560,7 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=too-many-ancestors
                 line_of_business=line_of_business,
                 platform=platform,
                 service_instance_name=service_instance_name,
-                vnf_parameters=vnf_parameters,
-                vf_module_parameters=vf_module_parameters
+                vnf_parameters=vnf_parameters
             ),
             headers=headers_so_creator(OnapService.headers),
             exception=ValueError

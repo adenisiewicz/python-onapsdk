@@ -538,7 +538,6 @@ class ServiceInstantiation(Instantiation):  # pylint: disable=too-many-ancestors
             ServiceInstantiation: instantiation request object
 
         """
-
         if not sdc_service.distributed:
             raise ValueError("Service is not distributed")
         if service_instance_name is None:

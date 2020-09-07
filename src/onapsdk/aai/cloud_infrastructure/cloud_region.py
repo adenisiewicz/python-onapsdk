@@ -391,8 +391,8 @@ class CloudRegion(AaiElement):  # pylint: disable=too-many-instance-attributes
             resource_version=response.get("resource-version"),
         )
 
-    def get_availability_zone_by_name(
-        self, zone_name: str) -> "AvailabilityZone":
+    def get_availability_zone_by_name(self,
+                                      zone_name: str) -> "AvailabilityZone":
         """Get availability zone with provided Name.
 
         Args:

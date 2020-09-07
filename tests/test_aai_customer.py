@@ -452,6 +452,7 @@ def test_get_availability_zone_wrong_name(mock_send_message_json):
                                cloud_region_id="test_cloud_region",
                                orchestration_disabled=True,
                                in_maint=False)
+    mock_send_message_json.return_value = AVAILABILITY_ZONES
     assertRaises(
         ValueError,
         cloud_region.get_availability_zone_by_name("wrong_name"))

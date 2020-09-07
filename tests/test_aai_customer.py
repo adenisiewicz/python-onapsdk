@@ -407,14 +407,16 @@ def test_customer_subscribe_service(mock_send_message, mock_send_message_json):
 
 
 #test the Cloud Region Class
+AVAILABILITY_ZONE = {
+    "name":"OPNFV LaaS",
+    "hypervisor-type":"1234",
+    "operational-status":"working",
+    "resource-version":"version1.0"
+}
+
 AVAILABILITY_ZONES = {
     "availability-zone":[
-        {
-            "availability-zone-name":"OPNFV LaaS",
-            "hypervisor-type":"1234",
-            "operational-status":"working",
-            "resource-version":"version1.0"
-        }
+        AVAILABILITY_ZONE
     ]
 }
 
@@ -439,23 +441,11 @@ def test_get_availability_zone_from_name(mock_send_message_json):
                                cloud_region_id="test_cloud_region",
                                orchestration_disabled=True,
                                in_maint=False)
-    mock_send_message_json.return_value = AVAILABILITY_ZONES
+    mock_send_message_json.return_value = AVAILABILITY_ZONE
     availability_zone = cloud_region.get_availability_zone_by_name("OPNFV LaaS")
-    assert availability_zone.availability-zone-name == "OPNFV LaaS"
-    assert resource-versionhypervisor_type == "1234"
-    assert resource-version == "version1.0"
-
-@mock.patch.object(CloudRegion, "send_message_json")
-def test_get_availability_zone_wrong_name(mock_send_message_json):
-    """Test Cloud Region property"""
-    cloud_region = CloudRegion(cloud_owner="test_cloud_owner",
-                               cloud_region_id="test_cloud_region",
-                               orchestration_disabled=True,
-                               in_maint=False)
-    mock_send_message_json.return_value = AVAILABILITY_ZONES
-    assertRaises(
-        ValueError,
-        cloud_region.get_availability_zone_by_name("wrong_name"))
+    assert availability_zone.name == "OPNFV LaaS"
+    assert availability_zone.hypervisor_type == "1234"
+    assert availability_zone.resource_version == "version1.0"
 
 @mock.patch.object(CloudRegion, "send_message")
 def test_add_availability_zone(mock_send_message):

@@ -43,7 +43,8 @@ class DefinitionBase(MSB):
         self.send_message(
             "DELETE",
             f"Delete {self.__class__.__name__}",
-            self.url
+            self.url,
+            exception=ValueError
         )
 
     def upload_artifact(self, package: bytes = None):
